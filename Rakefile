@@ -15,8 +15,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "wren"
   gem.homepage = "http://github.com/awmartin/wren"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{A text-based website generator and publisher with multiple rendering features (html, slideshows, pdfs).}
+  gem.description = %Q{Wren is a website generator and publisher that starts with a text-based file system (txt, textile, haml, sass) and publishes it in HTML and CSS on an FTP server, file system, or S3. The idea is to build a library of text-based content that you can remix and publish in various forms (regular HTML, as a slideshow, in a PDF, etc.) but without having to install resource-intensive publishing systems like Wordpress or Rails.}
   gem.email = "awmartin@gmail.com"
   gem.authors = ["William Martin"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
