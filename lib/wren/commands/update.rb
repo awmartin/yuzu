@@ -7,7 +7,7 @@ module Wren::Command
     end
     
     def all
-      updater.update
+      updater.update_all
       updater.done
     end
     
@@ -25,12 +25,12 @@ module Wren::Command
     
     def resources
       puts `compass compile`
-      updater.update_all_resources
+      updater.upload_all_resources
       updater.done
     end
     
     def images
-      updater.update_all_images
+      updater.upload_all_images
       updater.done
     end
     
