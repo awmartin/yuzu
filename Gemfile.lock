@@ -1,6 +1,7 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    fssm (0.2.5)
     git (1.2.5)
     jeweler (1.5.2)
       bundler (~> 1.0.0)
@@ -15,6 +16,7 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.0.0)
+  fssm (>= 0.2.5)
   jeweler (~> 1.5.2)
   rcov
   shoulda
