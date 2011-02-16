@@ -53,9 +53,9 @@ module Wren::Command
     def self.help method
       case method
       when :default
-        "Updates files inn the preview folder."
+        "Updates files in the preview folder."
       when :all
-        "Updates all files in the preview folder. A refresh."
+        "Updates all files in the preview folder. A fresh start."
       when :changed
       when :resources
       when :images

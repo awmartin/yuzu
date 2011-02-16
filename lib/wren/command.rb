@@ -11,13 +11,10 @@ module Wren
     
     class << self
       def run(command, args)
-        config = YAML.load_file(Dir.pwd + '/wren.yml') rescue nil
-        if config.nil?
-          puts "Configuration file (wren.yml) not found."
-          # TODO Create a default config file.
-          Process.exit!(true)
+        config = {}
+        if command.include?("update") or command.include?("preview")
+          config = YAML.load_file(Dir.pwd + '/wren.yml') rescue nil
         end
-        
         run_internal(command, args.dup, config.dup)
       end
       

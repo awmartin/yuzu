@@ -9,9 +9,9 @@ Available Commands
 help                              # Show this help page.
 help [command]                    # Help about the particular command.
 
-preview [filenames]
-preview:all
-preview:images
+preview [filenames]               # Update the preview with the files listed.
+preview:all                       # Update all the processable files in the preview.
+preview:images                    # Copy all the images into the preview folder.
 preview:resources
 preview:assets
 
@@ -21,12 +21,17 @@ update:images
 update:resources
 update:assets
 
+create                            # Creates a new wren project, sass and config file.
+
+generate:config                   # Generates a blank configuration file in the current folder.
+
+watch                             # Starts the auto-updater.
+
 -------
 Commands not implemeted yet.
 
 generate:pdf [filename]           # Generates a pdf for the given file.
-generate:config                   # Generates a blank configuration file in the current folder.
-watch                             # Starts the auto-updater.
+
 -------
 External Commands
 

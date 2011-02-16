@@ -1,0 +1,119 @@
+# Title to be displayed on the site.
+site_name: My Site
+
+# Which connection to use. This should be set to s3, ftp, or filesystem.
+# 'preview' is reserved for a local filesystem preview.
+connection: filesystem
+
+# Connection Configurations
+
+# remote_root_path determines where the remote folder is located on the server, relative 
+# to the FTP user's home directory. If the FTP user is configured to place files directly 
+# into the root of the site, leave this blank.
+# NOTE: This might not work so well yet, especially with links and image urls.
+
+# link_root is the root path for links when rendered in the webpage. It can be different from the
+# remote_root_path, but it's typically just '/' if you're mapping the local folder to a
+# root folder of a domain.
+
+# The preview folder is used to support local design and development before publishing 
+# to a remote server.
+preview:
+  domain: localhost/preview/mysite
+  destination: /Users/username/Sites/preview/mysite
+  link_root: /preview/mysite
+
+# For FTP service to a web server or file server.
+ftp:
+  domain: site.example.com
+  host: example.com
+  username: test%example.com
+  password: 123456
+  link_root: /
+  remote_root_path: 
+
+# All the file system needs is the absolute path of the destination parent folder.
+filesystem:
+  domain: localhost/preview/mysite
+  destination: /Users/username/Sites/preview/mysite
+  link_root: /preview/mysite
+
+# For service at Amazon S3. By default, this is configured to get the access_key and 
+# secret_key from environment variables, like ENV['AMAZON_ACCESS_KEY_ID']. Just put 
+# the name of the environment variable in those two fields.
+s3:
+  domain: mybucket.s3.amazonaws.com
+  bucket: mybucket
+  access_key: AMAZON_ACCESS_KEY_ID
+  secret_key: AMAZON_SECRET_ACCESS_KEY
+  link_root: /
+  remote_root_path: 
+    
+# Proxy configuration if needed. This only works for S3 right now. Not needed for filesystem.
+# Put 'yes' next to use_proxy: to turn on the proxy settings.
+proxy:
+  use_proxy: no
+  host: proxy.nyit.edu
+  port: 80
+  username: 
+  password: 
+
+# This is a list of the local folders to ignore completely, so the recursive updates
+# won't traverse them. The SASS 'src' folder is a good one to exclude.
+folder_blacklist:
+  - src
+
+# Some folders have to be traversed to update resources, but we don't want to create
+# auto-generated index.html files for them. This is the list of such folders.
+no_index_folders:
+  - javascripts
+  - src
+  - stylesheets
+  - images
+
+# Files with these extensions will be ignored.
+extension_blacklist:
+  - .rb
+  - .sass
+  - .yml
+
+# Files with these extensions will be put through the Textile or HAML markup generators.
+processable_extensions:
+  - .text
+  - .textile
+  - .haml
+  - .txt
+
+# Images.
+image_extensions:
+  - .png
+  - .gif
+  - .jpg
+  - .jpeg
+
+# Assets are files that rarely change, like PDFs and Java archives, that should be uploaded
+# once and then ignored. Assets are generally ignored unless you ask them to be uploaded,
+# since they can also be uploaded more easily with a graphic FTP client.
+asset_extensions:
+  - .pdf
+  - .jar
+  - .pde
+  - .java
+  - .html
+
+# Resources are files like CSS and Javascript that still may change when adding functionality
+# and changing the styling of the site. These aren't put through the markup processors and are
+# just uploaded when asked to.
+resource_extensions:
+  - .css
+  - .js
+
+# strict_index_links decides whether to keep generated links as pointing to the folder or to the
+# actual index.html file. It depends on how strict your host is. Dropbox and S3 will not automatically
+# reference an index.html file when using urls like http://dl.dropbox/u/000000/mysite, you have to use
+# http://dl.dropbox/u/000000/mysite/index.html. For links that are generated, like the breadcrumb, 
+# saying 'yes' below ensures the index.html is added to all folder links. For 'no', it ignores them.
+# If you're always using this behind Apache, you *should* be able to set this to 'no' without problems.
+# This does not automatically add index.html to links in the content, textile, or haml files. You have 
+# to do those links yourself.
+use_strict_index_links: yes
