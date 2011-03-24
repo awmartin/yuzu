@@ -1,5 +1,5 @@
 module Wren::Command
-  class Update < Base
+  class Publish < Base
     
     def index
       updater.update_these @args
@@ -20,6 +20,19 @@ module Wren::Command
       puts
       
       updater.update_these updatable_files
+      
+      puts "Looking for new images to upload..."
+      # Traverse images and upload if new.
+      catalog = File.open("images.yml","a+") rescue nil
+      unless catalog.nil?
+        catalog.rewind
+        image_paths = catalog.readlines
+        known_images = image_paths.collect {|img| img.strip}
+        new_images = updater.upload_new_images known_images
+        catalog.puts( new_images.join("\n") )
+        catalog.close
+      end
+      
       updater.done
     end
     

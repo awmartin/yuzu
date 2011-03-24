@@ -6,6 +6,14 @@ module Wren::Command
     end
     
     def pdf
+      f = File.open( @args.first, "r" )
+      unless f.nil?
+        contents = f.readlines.join
+        updater.render_pdf contents, @args.first
+        updater.done
+      else
+        puts "File load error."
+      end
     end
     
     def config
@@ -16,6 +24,5 @@ module Wren::Command
         puts "Config file wren.yml already exists. Rename or erase it to generate a new one."
       end
     end
-    
   end
 end

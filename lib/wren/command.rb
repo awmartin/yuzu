@@ -12,8 +12,12 @@ module Wren
     class << self
       def run(command, args)
         config = {}
-        if command.include?("update") or command.include?("preview")
+        if command.include?("publish") or command.include?("preview")
           config = YAML.load_file(Dir.pwd + '/wren.yml') rescue nil
+        end
+        if config.nil?
+          puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
+          Process.exit!(true)
         end
         run_internal(command, args.dup, config.dup)
       end

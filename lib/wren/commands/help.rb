@@ -15,11 +15,11 @@ preview:images                    # Copy all the images into the preview folder.
 preview:resources
 preview:assets
 
-update [filenames]
-update:all
-update:images
-update:resources
-update:assets
+publish [filenames]
+publish:all
+publish:images
+publish:resources
+publish:assets
 
 create                            # Creates a new wren project, sass and config file.
 

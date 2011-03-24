@@ -4,6 +4,12 @@ source "http://rubygems.org"
 #   gem "activesupport", ">= 2.3.5"
 
 gem 'fssm', ">= 0.2.5"
+gem 'aws-s3', ">= 0.6.2"
+gem 'prawn', ">= 0.8.4"
+gem 'hpricot', ">= 0.8.3"
+gem 'haml', ">= 3.0.25"
+gem 'RedCloth', ">= 4.2.3"
+
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.

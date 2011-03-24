@@ -2,7 +2,9 @@ require 'pathname'
 require 'stringio'
 require 'haml'
 require 'RedCloth'
+require 'prawn'
 require 'suppressor'
+require 'renderers'
 
 class Updater
   
@@ -117,9 +119,10 @@ class Updater
     end
   end
   
+  # Takes an array of file extensions and traverses the file structure to upload them. It also collects all the
+  # file names into an array and returns it.
   # @param extensions Array of Strings: Extensions for the files to upload raw, without processing of any kind.
-  def upload_all_files_of_types current_location=".", extensions=[]
-    
+  def upload_all_files_of_types current_location=".", extensions=[], list=[], new_only=false, catalog=[]
     Dir.foreach(current_location) do |filename|
       # Exclude ".", "..", hidden folders, and partials.
       
@@ -129,30 +132,39 @@ class Updater
         if File::directory?(file_path) and not folder_blacklist.include? file_path
           
           # Update files with these extensions recursively.
-          upload_all_files_of_types file_path, extensions
+          list += upload_all_files_of_types file_path, extensions, [], new_only, catalog
           
         elsif file_path.includes_one_of? extensions
           
-          puts "Opening #{file_path} for upload."
-          file = File.open(file_path, "r")
-          upload_file file_path, file
+          if !new_only or (new_only and !catalog.include?(file_path))
+            puts "Opening #{file_path} for upload."
+            file = File.open(file_path, "r")
+            upload_file file_path, file
+            
+            list += [file_path]
+          end
           
         end
       end
     end
     
+    return list
+  end
+  
+  def upload_new_images known_images=[], current_location="."
+    return upload_all_files_of_types current_location, image_extensions, [], true, known_images
   end
   
   def upload_all_images current_location="."
-    upload_all_files_of_types current_location, image_extensions
+    return upload_all_files_of_types current_location, image_extensions
   end
   
   def upload_all_assets current_location="."
-    upload_all_files_of_types current_location, asset_extensions
+    return upload_all_files_of_types current_location, asset_extensions
   end
   
   def upload_all_resources current_location="."
-    upload_all_files_of_types current_location, resource_extensions
+    return upload_all_files_of_types current_location, resource_extensions
   end
   
   # One point of exit for the process to upload the file to the proper location.
@@ -540,6 +552,11 @@ class Updater
     return ""
   end
   
+  def render_pdf str, local_path=""
+    html = render_textile str, local_path
+    
+    PDFRenderer.new(html).render(local_path)
+  end
   
   def render_haml str
     @suppressor.shutup!
@@ -550,7 +567,6 @@ class Updater
     puts detail.message
     return ""
   end
-  
   
   # We have to pass the path to the file (local_path) since we're replacing CURRENTPATH.
   def render_textile str="", local_path=""
@@ -602,6 +618,7 @@ class Updater
   rescue => exception
     puts "EXCEPTION in Uploader#render_textile"
     puts exception.message
+    puts exception.backtrace
     return ""
   end
   
@@ -791,7 +808,7 @@ class Updater
   end
   
   def linked_path path=""
-    return Pathname.new( File.join( @link_root, path ) ).cleanpath.to_s
+    return Pathname.new( File.join( @link_root.to_s, path.to_s ).to_s ).cleanpath.to_s
   end
   
   def path_to file
@@ -906,8 +923,8 @@ class Updater
   end
   
   def done
-    @uploader.close
-    @suppressor.close
+    @uploader.close unless @uploader.nil?
+    @suppressor.close unless @suppressor.nil?
   end
 
 end

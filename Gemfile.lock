@@ -1,22 +1,44 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    RedCloth (4.2.7)
+    aws-s3 (0.6.2)
+      builder
+      mime-types
+      xml-simple
+    builder (3.0.0)
     fssm (0.2.5)
     git (1.2.5)
+    haml (3.0.25)
+    hpricot (0.8.4)
     jeweler (1.5.2)
       bundler (~> 1.0.0)
       git (>= 1.2.5)
       rake
+    mime-types (1.16)
+    prawn (0.8.4)
+      prawn-core (< 0.9, >= 0.8.4)
+      prawn-layout (< 0.9, >= 0.8.4)
+      prawn-security (< 0.9, >= 0.8.4)
+    prawn-core (0.8.4)
+    prawn-layout (0.8.4)
+    prawn-security (0.8.4)
     rake (0.8.7)
     rcov (0.9.9)
     shoulda (2.11.3)
+    xml-simple (1.0.14)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  RedCloth (>= 4.2.3)
+  aws-s3 (>= 0.6.2)
   bundler (~> 1.0.0)
   fssm (>= 0.2.5)
+  haml (>= 3.0.25)
+  hpricot (>= 0.8.3)
   jeweler (~> 1.5.2)
+  prawn (>= 0.8.4)
   rcov
   shoulda
