@@ -5,6 +5,7 @@ require 'RedCloth'
 require 'prawn'
 require 'suppressor'
 require 'renderers'
+require 'liquid'
 
 class Updater
   
@@ -29,9 +30,23 @@ class Updater
     puts "Loading partials..."
     @html_head = load_partial "_head.haml"
     @header_contents = load_partial "_header.haml"
-    @menu_contents = load_partial "_menu.haml", {:path => @local_relative_path}
-    @footer_contents = load_partial "_footer.haml"
+    @menu_contents = load_partial "_menu.haml"
+    
+    recents = get_recent_blog_posts
+    titles = recents.collect {|entry| extract_title_from_filename entry}
+    @footer_contents = load_partial "_footer.haml", {:recents => recents, :titles => titles}
+    
     puts "Done with partials."
+  end
+  
+  def get_recent_blog_posts
+    if File.exists?(@config['blog_dir'])
+      return get_catalog_contents(@config['blog_dir']).collect {|r| r.gsub(".text",".html")}
+    else
+      return []
+    end
+  rescue => detail
+    return []
   end
   
   def processable? local_path=""
@@ -71,6 +86,10 @@ class Updater
   
   def resource_extensions
     @config['resource_extensions']
+  end
+  
+  def template_dir
+    @config['template_dir']
   end
   
   
@@ -172,6 +191,8 @@ class Updater
   def upload_file local_path="", contents=""
     return if local_path.blank? or contents.blank?
     
+    puts "Uploading #{local_path}"
+    
     if processable?( local_path )
       # Convert the local path file extension to HTML.
       ext = File.extname(local_path)
@@ -231,15 +252,18 @@ class Updater
     # These are the two variables we're trying to populate.
     file = nil
     contents = ""
+    metadata = {}
     
     if File::directory? local_path
       
-      file, local_path = render_index( local_path )
+      puts "Rendering a path, generating an index."
+      file, new_path = render_index( local_path )
       
     elsif processable? local_path
       
       puts "Opening: #{local_path}"
       file = File.open(local_path, 'r')
+      new_path = local_path
       
     else
       # Do nothing.
@@ -252,13 +276,34 @@ class Updater
       # file contents, like rendering a custom index.html file. Just read the
       # contents out of the StringIO wrapper.
       contents = file.readlines
+      template = "_generic.haml"
     else
       # Hand the file over to be processed, which includes conversion to HTML.
-      contents = process_file( file )
+      contents, template, metadata = process_file( file )
       file.close
     end
     
-    post_process local_path, wrap_with_layout(contents), update_all
+    metadata.update({:breadcrumb_path => local_path,
+                    :post_title => extract_title_from_filename(local_path)
+                    })
+    post_process new_path, wrap_with_layout(contents, "", template, metadata), update_all
+  end
+  
+  # Index pages are generated as an unordered list of links to all the folders
+  # and files inside a parent folder. This happens when there is no index.text
+  # or index.haml file found.
+  def render_list_index path
+    return "" if not File::directory?( path )
+    puts "Building an index page for path: #{path}"
+    
+    #@page_title = build_title path
+    @html_head = load_partial "_head.haml"
+    
+    #text = "<h1>#{@page_title}</h1>"
+    text = insert_catalog path
+    
+    #puts "Returning from render_list_index with #{text.length}"
+    return text
   end
   
   # Renders index files, including folders that don't contain index.*.
@@ -274,11 +319,12 @@ class Updater
     
     if index.blank? and not folder_path.includes_one_of?( no_index_folders )
       # Generate a new, customized index.html file, as a list of links.
+      puts "Didn't find an index file. Generating a custom one from folder's contents: #{file_path}"
       str = render_list_index file_path
       index = StringIO.new(str)
       index_path = File.join( folder_path, "index.html")
     end
-    
+    puts "Returning from render_index: #{index_path.to_s}"
     return index, index_path
   end
   
@@ -310,14 +356,21 @@ class Updater
     headers = /h1\.\s|h2\.\s|h3\.\s|h4\.\s/
     past_first_header = false
     
-    lines = file.readlines
+    file.rewind
+    # Sometimes, the files have INSERTCONTENTS for their primary contents.
+    str = file.readlines.join("\n")
+    contents = insert_contents str
+    lines = contents.split("\n")
+    
+    # Check to see if there is a header at all...
+    # TODO: Really should check to see if a paragraph shows up before a header.
+    if contents.match(/h2\.\s/).nil?
+      past_first_header = true
+    end
+    
     lines.each do |line|
       if past_first_header and not line.strip.blank? and line.strip[0].chr != "!" and line.match(headers).blank?
-        if File.extname( file.path ).include?(".text")
-          paragraph = render_textile line, file.path
-        else
-          paragraph = line
-        end
+        paragraph = line.to_s.gsub("\n","").strip
         break
       end
       
@@ -326,7 +379,99 @@ class Updater
       end
     end
     
+    # Remove p(class). from the found paragraph.
+    paragraph.gsub!(/p\([A-Za-z0-9\s]*\)\.\s/,"")
+    
     return paragraph
+  end
+  
+  def extract_first_image file
+    file.rewind
+    
+    # Sometimes, the files have INSERTCONTENTS for their primary contents.
+    str = file.readlines.join("\n")
+    contents = insert_contents str
+    lines = contents.split("\n")
+    
+    lines.each do |line|
+      matches = line.match(/IMAGES\(([A-Za-z0-9\,\.\-\/_]*)\)/)
+      if not matches.nil?
+        m = matches[0].gsub("IMAGES(","").gsub(")","")
+        image = m.split(",")[0]
+        return image
+      end
+    end
+    return ""
+  end
+  
+  def extract_title_from_filename filename
+    post_filename = filename.split("/").last
+    if post_filename.include?("index")
+      post_filename = filename.split("/")[-2]
+      if post_filename.blank?
+        post_filename = "Home"
+      end
+    end
+    # Regex removes the leading date for posts, e.g. 2011-05-28-
+    return titleize( post_filename.sub(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/,"") )
+  end
+  
+  def extract_date_from_filename filename
+    post_filename = filename.split("/").last
+    if not post_filename.match(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/).nil?
+      months = {"01" => "January","02" => "February", "03" => "March", "04" => "April", "05" => "May", "06" => "June",
+                "07" => "July", "08" => "August", "09" => "September", "10" => "October", "11" => "November", "12" => "December"}
+      date_parts = post_filename.split("-")[0..2]
+      post_date = date_parts[0].to_s + " " + months[date_parts[1]] + " " + date_parts[2].to_s
+      return post_date
+    else
+      return ""
+    end
+  end
+  
+  def get_catalog_contents path="", options={}
+    default_options = {
+      :ordered => false,
+      :class => "",
+      :count => 12,
+      :start => 0,
+      :sort_by => :name,
+      :block_template => "_block.haml",
+      :blocks_per_row => 1,
+      :exclude_paths => []
+    }
+    options = default_options.dup.update(options)
+    
+    entries = Dir[File.join(path,"*")] # Just lists filenames and directory names
+    
+    # Traverse one folder deep.
+    entries.each do |entry|
+      subpath = entry
+      if File.directory?(subpath)
+        subpath_entries = Dir[File.join(subpath, "*")]
+        entries += subpath_entries
+      end
+    end
+    
+    puts "#{entries.length} entries found."
+    #entries.delete_if {|e| e[0].chr == "."}
+    if options[:sort_by] == :name
+      sorted = entries.sort.reverse
+    elsif options[:sort_by] == :modified
+      sorted = entries.collect { |f|
+        [test(?M, f), f]
+      }.sort.collect { |f| f[1] }
+    end
+    
+    # Attempt to exclude toublemakers... Do this before the list slicing...
+    sorted = sorted.reject {|p| p.include?("index.") or File.directory?(p)}
+    #and not options[:exclude].include?(File.basename(entry_path))
+    
+    count = options[:count]
+    if count > 0
+      sorted = sorted[0...count]
+    end
+    return sorted
   end
   
   # Give it a path, and it returns a string consisting of a list of links and first paragraphs.
@@ -335,9 +480,18 @@ class Updater
   def insert_catalog path="", options={}
     return "" if path.blank?
     return "" if not File.directory? path
+    puts "Inserting catalog for: #{path}"
+    
     default_options = {
       :ordered => false,
-      :class => ""
+      :class => "",
+      :count => 12,
+      :start => 0,
+      :sort_by => :name,
+      :block_template => "_block.haml",
+      :blocks_per_row => 1,
+      :exclude_paths => [],
+      :exclude_indicies => false
     }
     options = default_options.dup.update(options)
     
@@ -351,71 +505,93 @@ class Updater
       css_class = " class=\"#{options[:class]}\""
     end
     
+    sorted = get_catalog_contents path, options
+    
     text = ""
     
-    entries = Dir[File.join(path,"*")] # Just lists filenames and directory names
-    #entries.delete_if {|e| e[0].chr == "."}
-    sorted = entries.collect { |f|
-      [test(?M, f), f]
-    }.sort.collect { |f| f[1] }
-
-    
-    text += "<#{tag}#{css_class}>\n"
-    text += sorted.collect { |entry_path|
-      name = titleize( entry_path.split("/").last )
+    sorted.each_index do |i|
+      if i >= options[:start] 
+        entry_path = sorted[i]
+        puts "Processing catalog item: #{entry_path}"
+        j = i-options[:start]
       
-      #entry_path = File.join( path, entry )
-      
-      if File.directory?( entry_path )
-        # Locate the index.
-        index, index_path = open_index entry_path
-        if index.blank?
-          paragraph = ""
+        if j%options[:blocks_per_row] == 0
+          text += "<hr />\n"
+        end
+        
+        post_title = extract_title_from_filename File.join(path, entry_path)
+        
+        # Extract the date.
+        post_date = extract_date_from_filename entry_path
+        
+        if File.directory?( entry_path )
+          # Locate the index.
+          index, index_path = open_index entry_path
+          if index.blank?
+            paragraph = ""
+            image_path = ""
+          else
+            paragraph = extract_first_paragraph index
+            image_path = extract_first_image index
+            contents = paragraph
+            index.close
+          end
         else
-          paragraph = extract_first_paragraph index
-          index.close
+          if processable? entry_path
+            file = File.open( entry_path, "r" )
+            paragraph = extract_first_paragraph file
+            image_path = extract_first_image file
+            
+            file.rewind
+            lines = file.readlines
+            contents, template, meta = render_textile lines.join("\n"), file.path, {:galleries => false, :strip_styles => true}
+            file.close
+          end
         end
-      else
-        if processable? entry_path
-          file = File.open( entry_path, "r" )
-          paragraph = extract_first_paragraph file
-          file.close
+        
+        linkroot = remove_trailing_slash(@link_root)
+        image_path.gsub!("LINKROOT", linkroot)
+        image_path_small = image_path.gsub(".","-small.")
+        image_path_medium = image_path.gsub(".","-medium.")
+        image_path_large = image_path.gsub(".","-large.")
+        
+        # Build the URL for the link.
+        link_url = File.join(@link_root, entry_path.gsub(".text",".html"))
+        # Add a slash to the ends of folder urls. Makes java applets work.
+        link_url += "/" if File.directory?( entry_path ) and entry_path[-1].chr != "/"
+      
+        if File.directory?( link_url ) and use_strict_index_links
+          link_url = File.join( link_url, "index.html" )
         end
+      
+        #str = "<li><h3><a href=\"#{linked_path(html_path(link_url))}\">#{name}</a></h3>"
+        #str += "#{paragraph}" unless paragraph.blank?
+        #str += "</li>\n"
+      
+        str = load_template options[:block_template], { :post_title => post_title,
+                                                        :post_date => post_date,
+                                                        :contents => contents,
+                                                        :first_paragraph => paragraph,
+                                                        :image_path => image_path,
+                                                        :image_path_small => image_path_small,
+                                                        :image_path_medium => image_path_medium,
+                                                        :image_path_large => image_path_large,
+                                                        :klass => j%options[:blocks_per_row] == options[:blocks_per_row]-1 ? "last" : "",
+                                                        :link_url => link_url,
+                                                        :link_root => @link_root }
+      
+        text += str + "\n"
       end
-      
-      # Build the URL for the link.
-      link_url = entry_path.dup
-      # Add a slash to the ends of folder urls. Makes java applets work.
-      link_url += "/" if File.directory?( entry_path ) and entry_path[-1].chr != "/"
-      
-      if File.directory?( link_url ) and use_strict_index_links
-        link_url = File.join( link_url, "index.html" )
-      end
-      
-      str = "<li><a href=\"#{linked_path(html_path(link_url))}\">#{name}</a>"
-      str += "<br />#{paragraph}" unless paragraph.blank?
-      str += "</li>\n"
-      str
-    }.join
-    text += "</#{tag}>\n"
+    end
+    
     return text
+  rescue => detail
+    puts detail.message
+    return "Error in insert_catalog..."
   end
   
-  # Index pages are generated as an unordered list of links to all the folders
-  # and files inside a parent folder. This happens when there is no index.text
-  # or index.haml file found.
-  def render_list_index path
-    return "" if not File::directory?( path )
-    puts "Building an index page for path #{path}..."
+  def insert_listing path="", options={}
     
-    @page_title = build_title path
-    @html_head = load_partial "_head.haml"
-    @menu_contents = load_partial "_menu.haml", {:path => path}
-    
-    text = "<h1>#{@page_title}</h1>"
-    text += insert_catalog path
-    
-    return text
   end
   
   # This method handles the uploading process and updating dependants.
@@ -477,7 +653,7 @@ class Updater
     
     # Reload the head to refresh. Probably a better way using regex to replace what's needed...
     @html_head = load_partial "_head.haml"
-    @menu_contents = load_partial "_menu.haml", {:path => file.path}
+    @menu_contents = load_partial "_menu.haml"
     
     # Handle files.
     if file_ext.includes_one_of?( image_extensions + asset_extensions )
@@ -486,7 +662,7 @@ class Updater
     elsif file_ext.includes_one_of? ["txt","pde","rb"]
       puts "Plain text or code found."
       
-      return contents
+      return contents, "_generic.haml", {}
     else
       
       if file_ext.include? 'text'
@@ -496,15 +672,15 @@ class Updater
         
       elsif file_ext.include? 'html'
         puts "HTML file found."
-        return contents
+        return contents, "_generic.haml", {}
         
       elsif file_ext.include? 'haml'
         puts "HAML file found."
-        return render_haml( contents )
+        return render_haml( contents ), "_generic.haml", {}
         
       else
         puts "Unprocessable file found."
-        return contents
+        return contents, "_generic.haml", {}
         
       end
     
@@ -516,10 +692,37 @@ class Updater
     return ""
   end
   
+  def load_template local_path="", data={}
+    return "" if local_path.blank?
+    local_path = File.join(template_dir, local_path).to_s
+    puts "Loading template " + local_path.to_s
+    
+    template = File.open(local_path, 'r')
+    contents = template.readlines.join
+    
+    #@suppressor.shutup!
+    result = Haml::Engine.new(contents).render(Object.new, data)
+    
+    #  { 
+    #    :head => @html_head,
+    #    :menu => @menu_contents,
+    #    :content => data.has_key?(:contents) ? data[:contents] : "",
+    #    :header => @header_contents,
+    #    :footer => @footer_contents
+    #  })
+    #@suppressor.ok
+    
+    return result
+  rescue => detail
+    puts detail.message
+    return ""
+  end
+  
   # Loads the HAML partials for the layout. Especially _head.haml, _header.haml, 
   # _footer.haml, _menu.haml.
   def load_partial local_path="", data={}
     return "" if local_path.blank?
+    local_path = File.join(template_dir, local_path).to_s
     
     puts "Loading partial #{local_path}."
     partial = File.open(local_path, 'r')
@@ -532,7 +735,7 @@ class Updater
         :page_title => @page_title,
         :link_root => @link_root,
         :breadcrumb => crumbs
-      })
+      }.update(data))
     @suppressor.ok
     
     return result
@@ -569,25 +772,82 @@ class Updater
   end
   
   # We have to pass the path to the file (local_path) since we're replacing CURRENTPATH.
-  def render_textile str="", local_path=""
+  def render_textile str="", local_path="", options={}
     return "" if str.blank?
+    
+    default_options = {
+      :galleries => true,
+      :strip_styles => false
+    }
+    options = default_options.dup.update(options)
+    
     path_to_file = Pathname.new( path_to(local_path) ).cleanpath.to_s
     
     puts "Rendering textile for #{local_path}..."
     
-    puts "Inserting children..."
-    # Replace all the keywords with their values first.
-    str.gsub!(/INSERTCONTENTS\(([A-Za-z0-9\.\-\/_]*)\)/) do |s|
-      path_of_file_to_insert = remove_leading_slash s.gsub("INSERTCONTENTS(","").gsub(")","")
-      puts "Inserting contents of #{path_of_file_to_insert}"
-      insert_file(path_of_file_to_insert).gsub("MULTIVIEW","")
+    # Handle INSERTCONTENTS directives first...
+    str = insert_contents str
+    
+    if options[:strip_styles]
+      str.gsub!(/p\([A-Za-z0-9]*\)\.\s/,"")
     end
     
+    # Look for images.
+    images = []
+    str.gsub!(/IMAGES\(([A-Za-z0-9\,\.\-\/_]*)\)/) do |s|
+      images_str = s.gsub("IMAGES(","").gsub(")","")
+      images += images_str.split(",")
+      ""
+    end
+    
+    # Look for galleries and insert images.
+    str.gsub!("INSERTGALLERY") do |s|
+      if options[:galleries]
+        url = images.first
+        url.gsub!(".","-large.")
+        "<div class=\"slideshow\">\n<div class=\"slide\">\n!#{url}!\n</div>\n</div>"
+      else
+        ""
+      end
+    end
+    
+    # Look for template specification.
+    template = "_generic.haml"
+    str.gsub!(/TEMPLATE\(([A-Za-z0-9\.\-\/_]*)\)/) do |s|
+      template = s.gsub("TEMPLATE(","").gsub(")","")
+      ""
+    end
+    
+    # Find any sidebar contents.
+    sidebar_contents = ""
+    str.gsub!(/SIDEBARCONTENTS\(\"[A-Za-z0-9\.\,\'\"\/\-_]*\"\)/) do |s|
+      sidebar_contents = s.gsub("SIDEBARCONTENTS(\"","").gsub("\")","")
+      ""
+    end
+    
+    
+    
     puts "Inserting catalogs..."
-    str.gsub!(/INSERTCATALOG\(([A-Za-z0-9\.\-\/_]*)\)/) do |s|
-      path_of_folder_to_insert = remove_leading_slash s.gsub("INSERTCATALOG(","").gsub(")","")
-      puts "Inserting catalog of #{path_of_folder_to_insert}"
-      insert_catalog(path_of_folder_to_insert, {:ordered => true, :class => "blocks"})
+    str.gsub!(/INSERTCATALOG\(([A-Za-z0-9\,\.\-\/_]*)\)/) do |s|
+      arg_str = s.gsub("INSERTCATALOG(","").gsub(")","")
+      args = arg_str.split(",")
+      
+      # Extract the arguments.
+      path_of_folder_to_insert = remove_leading_slash args[0].to_s
+      start = args.length > 1 ? args[1].to_i : 0
+      count = args.length > 2 ? args[2].to_i : 0
+      blocks_per_row = args.length > 3 ? args[3].to_i : 3
+      block_template = args.length > 4 ? args[4].to_s : "_block.haml"
+      
+      puts "Inserting catalog of #{path_of_folder_to_insert} with #{count} items (zero = all)."
+      
+      insert_catalog(path_of_folder_to_insert, {:ordered => true, 
+                                                :class => "blocks", 
+                                                :count => count,
+                                                :start => start,
+                                                :blocks_per_row => blocks_per_row,
+                                                :block_template => block_template,
+                                                :exclude => [File.basename(local_path)]})
     end
     
     # Build the CURRENTPATH value.
@@ -604,22 +864,28 @@ class Updater
     if str.include?("MULTIVIEW")
       make_slideshow str.gsub("MULTIVIEW",""), local_path
       make_accordion str.gsub("MULTIVIEW",""), local_path
-      
       str.gsub!( "MULTIVIEW", multiview(local_path) )
     end
-    
     
     # Image url replacement. Not needed on an Apache server.
     #user_id = ENV['DROPBOX_ON_RAILS_USER_ID']
     #full_url = "http://dl.dropbox.com/u/#{user_id}#{APP_@config[:site_folder]}".gsub('/Public','')
     #str = replace_image_urls str, full_url
     
-    return RedCloth.new(str).to_html
+    return RedCloth.new(str).to_html, template, {}
   rescue => exception
     puts "EXCEPTION in Uploader#render_textile"
     puts exception.message
     puts exception.backtrace
     return ""
+  end
+  
+  def insert_contents str
+    str.gsub(/INSERTCONTENTS\(([A-Za-z0-9\.\-\/_]*)\)/) do |s|
+      path_of_file_to_insert = remove_leading_slash s.gsub("INSERTCONTENTS(","").gsub(")","")
+      puts "Inserting contents of #{path_of_file_to_insert}"
+      insert_file(path_of_file_to_insert).gsub("MULTIVIEW","")
+    end
   end
   
   def make_slideshow original_contents, local_path
@@ -674,19 +940,37 @@ class Updater
   # Layout and content helpers ..................................................................
   
   # Puts the header and footer in place.
-  def wrap_with_layout contents="", js=""
-    pre = "<!DOCTYPE html>\n<html lang='en-US' xml:lang='en-US' xmlns='http://www.w3.org/1999/xhtml'>\n"
-    pre += @html_head.to_s
-    pre += "<body>\n"
-    pre += "<div class='container'>\n"
-    pre += "<div class='header'>#{@header_contents}#{@menu_contents}</div> <!-- header -->\n"
-    pre += "<div class='content'>#{contents}</div> <!-- content -->\n"
-    pre += "<div class='footer'>#{@footer_contents}</div> <!-- footer -->\n"
-    pre += "</div> <!-- container -->\n"
-    pre += insert_javascript("https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js")
-    pre += insert_javascript("https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js")
-    pre += js unless js.blank?
-    pre += "</body>\n</html>"
+  def wrap_with_layout contents="", js="", template="_generic.haml", meta={}
+    puts "wrap_with_layout"
+    
+    first_paragraph = meta.has_key?(:first_paragraph) ? meta[:first_paragraph] : ""
+    breadcrumb = meta.has_key?(:breadcrumb_path) ? render_breadcrumb(meta[:breadcrumb_path]) : ""
+    post_title = meta.has_key?(:post_title) ? meta[:post_title] : "No Title"
+    
+    return load_template(template, {:head => @html_head, 
+                                    :contents => contents,
+                                    :header => @header_contents,
+                                    :footer => @footer_contents,
+                                    :menu => @menu_contents,
+                                    :first_paragraph => first_paragraph,
+                                    :breadcrumb => breadcrumb,
+                                    :post_title => post_title})
+    
+#    pre = "<!DOCTYPE html>\n<html lang='en-US' xml:lang='en-US' xmlns='http://www.w3.org/1999/xhtml'>\n"
+#    pre += @html_head.to_s
+#    pre += "<body>\n"
+#    pre += "<div class='container'>\n"
+#    pre += "<div class='header'>#{@header_contents}#{@menu_contents}</div> <!-- header -->\n"
+#    pre += "<div class='content'>#{contents}</div> <!-- content -->\n"
+#    pre += "<div class='footer'>#{@footer_contents}</div> <!-- footer -->\n"
+#    pre += "</div> <!-- container -->\n"
+#    pre += insert_javascript("https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js")
+#    pre += insert_javascript("https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js")
+#    pre += js unless js.blank?
+#    pre += "</body>\n</html>"
+  rescue => detail
+    puts "Exception in wrap_with_layout"
+    puts detail.message
   end
   
   def multiview where=""
@@ -866,6 +1150,8 @@ class Updater
   end
   
   def render_breadcrumb path
+    path = path.dup
+    
     add_html_to_end = false
     if path.include?("index.")
       # Remove the index.
@@ -910,8 +1196,8 @@ class Updater
       
       crumbs += [link_to( titleize(folder), linked_path(this_url) )]
     end
-
-    return crumbs.join(" &gt; ")
+    crumbs.reverse!
+    return "&nbsp;&middot; " + crumbs[1..(crumbs.length-1)].join(" &middot; ")
   end
 
   def is_outline?

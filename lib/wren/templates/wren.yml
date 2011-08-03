@@ -1,6 +1,8 @@
 # Title to be displayed on the site.
 site_name: My Site
 
+template_dir: _templates
+
 # Which connection to use. This should be set to s3, ftp, or filesystem.
 # 'preview' is reserved for a local filesystem preview.
 connection: filesystem

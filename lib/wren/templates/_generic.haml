@@ -1,0 +1,17 @@
+%html
+
+  = head
+
+  .container
+    .header
+      = menu
+
+    .content{:role => 'main'}
+      .page-header.entry-header
+        %h1= post_title
+        .breadcrumb= breadcrumb
+      %hr
+      .page-content.entry-content
+        = contents
+  
+  = footer
