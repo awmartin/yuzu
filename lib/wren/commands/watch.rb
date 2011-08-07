@@ -3,7 +3,7 @@ require 'fssm'
 def rebuild_site(file_path)
   puts ">>> Change Detected to: #{file_path} <<<"
   
-  IO.popen("wren preview #{file_path}") do |io|
+  IO.popen("wrendev preview:single #{file_path}") do |io|
     print( io.readpartial(512) ) until io.eof?
   end
   

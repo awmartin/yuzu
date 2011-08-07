@@ -11,6 +11,11 @@ module Wren::Command
       updater.done
     end
     
+    def single
+      updater.update_these @args
+      updater.done
+    end
+    
     def changed
       git_diff_output = `git diff --name-only --diff-filter=AMRX`
       changed_files = git_diff_output.split("\n")
