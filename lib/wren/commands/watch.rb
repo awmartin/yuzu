@@ -1,9 +1,9 @@
 require 'fssm'
 
-def rebuild_site(file_path)
-  puts ">>> Change Detected to: #{file_path} <<<"
-  
-  IO.popen("wrendev preview:single #{file_path}") do |io|
+def rebuild_site(base, relative_path)
+  puts ">>> Change Detected to: #{relative_path} <<<"
+
+  IO.popen("wren preview:single #{relative_path}") do |io|
     print( io.readpartial(512) ) until io.eof?
   end
   
@@ -15,11 +15,11 @@ module Wren::Command
     # Method to start the watcher.
     def index
       
-      puts ">>> Watching for Changes <<<"
+      puts ">>> Wren is watching for changes <<<"
       FSSM.monitor("#{Dir.pwd}", '**/*') do
-        update {|base, relative| rebuild_site(relative)}
-        delete {|base, relative| rebuild_site(relative)}
-        create {|base, relative| rebuild_site(relative)}
+        update {|base, relative| rebuild_site(base, relative)}
+        delete {|base, relative| rebuild_site(base, relative)}
+        create {|base, relative| rebuild_site(base, relative)}
       end
 
     end

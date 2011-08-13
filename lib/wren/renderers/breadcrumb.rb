@@ -1,24 +1,32 @@
 
-def render_breadcrumb path, config, pageinfo
-  path = path.dup
+def render_breadcrumb path, config, pageinfo, blog_categories=nil
+  file_path = path.dup
   use_strict_index_links = config.use_strict_index_links
   
   add_html_to_end = false
-  if path.include?("index.")
+  if file_path.include?("index.")
     # Remove the index.
     index_file = File.basename(path)
-    path.sub!(index_file, "")
+    file_path.sub!(index_file, "")
   
-  elsif not File.directory?(path)
+  elsif not File.directory?(file_path)
     # Remove the file extension, but make sure the breadcrumb
     # adds .html to the file name when it becomes a link later.
-    ext = File.extname(path)
-    path.sub!(ext,"")
+    ext = File.extname(file_path)
+    file_path.sub!(ext,"")
     add_html_to_end = true
   
   end
   
-  path = Pathname.new(path).cleanpath.to_s
+  # If blog_categories is not blank, insert /category/ to the path.
+  # Indices are not categorizable.
+  if not blog_categories.blank? and not path.include?('index')
+    puts "Adding category to blog breadcrumb."
+    file_path.sub!(config.blog_dir, "#{config.blog_dir}/#{blog_categories.first}")
+  end
+  
+  # Clean the path.
+  file_path = Pathname.new(file_path).cleanpath.to_s
   
   crumbs = []
   if use_strict_index_links
@@ -28,8 +36,8 @@ def render_breadcrumb path, config, pageinfo
   end
   url = "/"
   
-  paths = path.to_s.split('/')
-  paths.delete_if {|p| p == "."}
+  paths = file_path.to_s.split('/')
+  #paths.delete_if {|p| p == "."}
   
   paths.each do |folder|
     this_url = ""

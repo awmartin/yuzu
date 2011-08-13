@@ -52,6 +52,10 @@ class WrenConfig
     @config['template_dir']
   end
   
+  def blog_dir
+    @config['blog_dir']
+  end
+  
   def link_root_for_service service
     @config[service]['link_root'].to_s
   end

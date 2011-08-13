@@ -244,3 +244,4 @@ def get_file_type config, file
     return :unknown
   end
 end
+

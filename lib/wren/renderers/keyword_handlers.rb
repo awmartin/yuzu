@@ -123,18 +123,28 @@ def extract_categories str
     categories = categories.collect {|str| str.strip}
     ""
   end
+  
+  if categories.blank?
+    categories = ["Uncategorized"] # TODO: config var for default category
+  end
+  
   return categories, tr
 end
 
 
 def get_recent_blog_posts blog_dir
   blog_dir = @config.blog_dir
+  
   if File.exists?(blog_dir)
     return get_catalog_contents(blog_dir).collect {|r| r.gsub(".text",".html")}
   else
     return []
   end
-rescue => detail
+  
+rescue => exception
+  puts ">>>> Exception in get_recent_blog_posts"
+  puts exception.message
+  puts exception.backtrace
   return []
 end
 
@@ -147,13 +157,14 @@ def get_catalog_contents path="", options={}
     :sort_by => :name,
     :block_template => "_block.haml",
     :blocks_per_row => 1,
-    :exclude_paths => []
+    :exclude_paths => [],
+    :category_filter => "" # TODO
   }
   options = default_options.dup.update(options)
   
   entries = Dir[File.join(path,"*")] # Just lists filenames and directory names
   
-  # Traverse one folder deep.
+  # Traverse one folder deep to gather all files.
   entries.each do |entry|
     subpath = entry
     if File.directory?(subpath)
@@ -162,8 +173,9 @@ def get_catalog_contents path="", options={}
     end
   end
   
+  # Sort all the entries.
+  # TODO: Sort by filename, not the path itself.
   puts "#{entries.length} entries found."
-  #entries.delete_if {|e| e[0].chr == "."}
   if options[:sort_by] == :name
     sorted = entries.sort.reverse
   elsif options[:sort_by] == :modified
@@ -174,6 +186,7 @@ def get_catalog_contents path="", options={}
   
   # Attempt to exclude troublemakers... Do this before the list slicing...
   sorted = sorted.reject {|p| p.include?("index.") or File.directory?(p)}
+  #sorted.delete_if {|e| e[0].chr == "."}
   #and not options[:exclude].include?(File.basename(entry_path))
   
   count = options[:count]
@@ -264,9 +277,9 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
           image_path = extract_first_image(file)
           
           if file_type == :textile
-            contents, template, meta = TextileRenderer.new(config, pageinfo, false, true).render(lines.join("\n"), file.path)
+            contents, template, metadata = TextileRenderer.new(config, pageinfo, false, true).render(lines.join("\n"), file.path)
           elsif file_type == :haml
-            contents, template, meta = HamlRenderer.new(config, pageinfo, false).render(lines.join("\n"), file.path)
+            contents, template, metadata = HamlRenderer.new(config, pageinfo, false).render(lines.join("\n"), file.path)
           end
           
           file.close
@@ -274,6 +287,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
       end
       
       linkroot = remove_trailing_slash(pageinfo.link_root)
+      
       image_path.gsub!("LINKROOT", linkroot)
       image_path_small = image_path.gsub(".","-small.")
       image_path_medium = image_path.gsub(".","-medium.")
@@ -283,7 +297,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
       link_url = File.join(pageinfo.link_root, html_path(entry_path))
       
       # Add a slash to the ends of folder urls. Makes java applets work.
-      link_url += "/" if File.directory?( entry_path ) and entry_path[-1].chr != "/"
+      link_url += "/" if File.directory?(entry_path) and entry_path[-1].chr != "/"
       
       if File.directory?( link_url ) and config.use_strict_index_links
         link_url = File.join( link_url, "index.html" )
@@ -300,7 +314,8 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
               :image_path_large => image_path_large,
               :klass => (((j%options[:blocks_per_row]) == (options[:blocks_per_row]-1)) ? "last" : ""),
               :link_url => link_url,
-              :link_root => pageinfo.link_root}
+              :link_root => pageinfo.link_root,
+              :categories => metadata[:categories]}
       str = lyt.load_template(options[:block_template], opts)
       
       str = str.gsub(/\n\s*/,"")
@@ -331,8 +346,8 @@ def insert_catalogs str, local_path, config, pageinfo
     # Extract the arguments.
     path_of_folder_to_insert = remove_leading_slash(args[0].to_s)
     start = args.length > 1 ? args[1].to_i : 0
-    count = args.length > 2 ? args[2].to_i : 0
-    blocks_per_row = args.length > 3 ? args[3].to_i : 3
+    count = args.length > 2 ? args[2].to_i : 10
+    blocks_per_row = args.length > 3 ? args[3].to_i : 1
     block_template = args.length > 4 ? args[4].to_s : "_block.haml"
     
     puts "Inserting catalog of #{path_of_folder_to_insert} with #{count} items (zero = all)."

@@ -56,14 +56,15 @@ class LayoutHandler
     partial = File.open(local_path, 'r')
     contents = partial.readlines.join
     crumbs = data.has_key?(:path) ? render_breadcrumb(data[:path], @config, @pageinfo) : ""
-  
-    #@suppressor.shutup!
-    result = Haml::Engine.new(contents, {:format => :html5}).render(Object.new, 
-      { 
+    
+    local_vars = { 
         :html_title => @html_title || "",
         :link_root => @link_root || "",
         :breadcrumb => crumbs || ""
-      }.update(data))
+      }.update(data)
+    
+    #@suppressor.shutup!
+    result = Haml::Engine.new(contents, {:format => :html5}).render(Object.new, local_vars)
     #@suppressor.ok
   
     return result
@@ -72,15 +73,36 @@ class LayoutHandler
     puts detail.backtrace
     return ""
   end
-
+  
+  def is_in_blog? path
+    path.to_s.split("/").first == @config.blog_dir
+  end
+  
   # Puts the header and footer in place.
-  def wrap_with_layout contents="", js="", template="_generic.haml", meta={}
-    puts "wrap_with_layout"
-  
-    first_paragraph = meta.has_key?(:first_paragraph) ? meta[:first_paragraph] : ""
-    breadcrumb = meta.has_key?(:breadcrumb_path) ? render_breadcrumb(meta[:breadcrumb_path], @config, @pageinfo) : ""
-    post_title = meta.has_key?(:post_title) ? meta[:post_title] : "Untitled"
-  
+  def wrap_with_layout contents="", js="", template="_generic.haml", metadata={}
+    puts "wrap_with_layout, template=#{template}"
+    # Check if this is in the blog. If so, then tell the breadcrumb it needs to render with categories.
+    
+    first_paragraph = metadata.has_key?(:first_paragraph) ? metadata[:first_paragraph] : ""
+    categories = metadata.has_key?(:categories) ? metadata[:categories] : []
+    
+    if metadata.has_key?(:breadcrumb_path)
+      
+      # Post must be placed in the root blog folder for categories to kick in. Else, use the folder.
+      num_paths = metadata[:breadcrumb_path].split("/").length
+      
+      # If this file is in the blog directory, send in the categories to the breadcrumb.
+      if is_in_blog?(metadata[:breadcrumb_path]) and num_paths == 2
+        breadcrumb = render_breadcrumb(metadata[:breadcrumb_path], @config, @pageinfo, categories)
+      else
+        breadcrumb = render_breadcrumb(metadata[:breadcrumb_path], @config, @pageinfo)
+      end
+    else
+      breadcrumb = ""
+    end
+    
+    post_title = metadata.has_key?(:post_title) ? metadata[:post_title] : "Untitled"
+    
     return load_template(template, {:head => @html_head, 
                                     :contents => contents,
                                     :header => @header_contents,
@@ -88,11 +110,12 @@ class LayoutHandler
                                     :menu => @menu_contents,
                                     :first_paragraph => first_paragraph,
                                     :breadcrumb => breadcrumb,
-                                    :post_title => post_title})
-  rescue => detail
+                                    :post_title => post_title,
+                                    :categories => categories})
+  rescue => exception
     puts "Exception in wrap_with_layout..."
-    puts detail.message
-    puts detail.backtrace
+    puts exception.message
+    puts exception.backtrace
   end
 
   def wrap_tag_contents tag, str
