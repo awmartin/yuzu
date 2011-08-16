@@ -14,7 +14,7 @@ class MultiviewRenderer
     slideshow_contents = RedCloth.new(slideshow).to_html
   
     js = insert_javascript "slideshow.js"
-    wrapped_contents = wrap_with_layout(slideshow_contents, js)
+    wrapped_contents = wrap_with_layout(slideshow_contents, js) # TODO: Update
     wrapped_contents.gsub!("class='content'", "class='content slideshow'")
   
     post_process slideshow_path( local_path ), wrapped_contents
@@ -31,7 +31,7 @@ class MultiviewRenderer
     accordion_contents = RedCloth.new(accordion).to_html
   
     js = insert_javascript "accordion.js"
-    wrapped_contents = wrap_with_layout(accordion_contents, js)
+    wrapped_contents = wrap_with_layout(accordion_contents, js) # TODO: Update
     wrapped_contents.gsub!("class='content'", "class='content accordion'")
   
     post_process accordion_path( local_path ), wrapped_contents

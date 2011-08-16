@@ -56,7 +56,7 @@ class Updater
       # Exclude ".", "..", hidden folders, and partials.
       
       if filename[0].chr != "." and filename[0].chr != "_"
-        file_path = concat_path( current_location, filename )
+        file_path = concat_path(current_location, filename)
         
         # Don't traverse the folders blacklist at all.
         if File::directory?(file_path) and not file_path.includes_one_of?(@config.folder_blacklist)
@@ -96,19 +96,19 @@ class Updater
       # Exclude ".", "..", hidden folders, and partials.
       
       if filename[0].chr != "." and filename[0].chr != "_"
-        file_path = concat_path( current_location, filename )
+        file_path = concat_path(current_location, filename)
         
-        if File::directory?(file_path) and not @config.folder_blacklist.include? file_path
+        if File::directory?(file_path) and not @config.folder_blacklist.include?(file_path)
           
           # Update files with these extensions recursively.
-          list += upload_all_files_of_types file_path, extensions, [], new_only, catalog
+          list += upload_all_files_of_types(file_path, extensions, [], new_only, catalog)
           
-        elsif file_path.includes_one_of? extensions
+        elsif file_path.includes_one_of?(extensions)
           
           if !new_only or (new_only and !catalog.include?(file_path))
             puts "Opening #{file_path} for upload."
             file = File.open(file_path, "r")
-            upload_file file_path, file
+            upload_file(file_path, file)
             
             list += [file_path]
           end
@@ -121,19 +121,19 @@ class Updater
   end
   
   def upload_new_images known_images=[], current_location="."
-    return upload_all_files_of_types current_location, @config.image_extensions, [], true, known_images
+    return upload_all_files_of_types(current_location, @config.image_extensions, [], true, known_images)
   end
   
   def upload_all_images current_location="."
-    return upload_all_files_of_types current_location, @config.image_extensions
+    return upload_all_files_of_types(current_location, @config.image_extensions)
   end
   
   def upload_all_assets current_location="."
-    return upload_all_files_of_types current_location, @config.asset_extensions
+    return upload_all_files_of_types(current_location, @config.asset_extensions)
   end
   
   def upload_all_resources current_location="."
-    return upload_all_files_of_types current_location, @config.resource_extensions
+    return upload_all_files_of_types(current_location, @config.resource_extensions)
   end
   
   # One point of exit for the process to upload the file to the proper location.
@@ -143,18 +143,19 @@ class Updater
     
     puts "Uploading #{local_path}"
     
-    if @config.processable?( local_path )
+    if @config.processable?(local_path)
       # Convert the local path file extension to HTML.
       ext = File.extname(local_path)
       html_path = local_path.sub(ext, ".html")
-      @uploader.upload html_path, contents
+      @uploader.upload(html_path, contents)
     else
-      @uploader.upload local_path, contents
+      @uploader.upload(local_path, contents)
     end
     
-  rescue => detail
+  rescue => exception
     puts "Updater#upload_file exception..."
-    puts detail.message
+    puts exception.message
+    puts exception.backtrace
   end
   
 
@@ -176,7 +177,7 @@ class Updater
         
         puts "Uploading #{local_path}."
         file = File.open(local_path,"r")
-        upload_file local_path, file
+        upload_file(local_path, file)
         
       else
         
@@ -191,26 +192,26 @@ class Updater
   # Update this file first.
   # Look for files that depend on this one... Update them.
   # @param file_path String Should be the *relative* path for the file.
-  def update_path local_path, update_all=false
-    puts "\nupdate_path ------"
-    puts "Attempting to update: #{local_path}"
+  def update_path local_path, should_update_dependants=false
+    puts "\nUpdater#update_path-------- Attempting to update: #{local_path}"
     
     # These are the variables we're trying to populate.
     file = nil
     contents = ""
     metadata = {}
     
-    if File::directory? local_path
+    if File::directory?(local_path)
       
-      puts "Rendering a path, generating an index."
-      file, new_path = render_index( local_path )
+      puts "Rendering a folder, so generating an index."
+      
+      file, new_path = render_index(local_path) # file is a StringIO
       template = "_index.haml"
       
     elsif @config.processable?(local_path)
       
       puts "Opening: #{local_path}"
       file = File.open(local_path, 'r')
-      new_path = local_path
+      new_path = local_path.dup
       template = "_generic.haml"
       
     else
@@ -219,16 +220,79 @@ class Updater
       return
     end
     
-    if file.is_a? StringIO
+    # Here we have the file.
+    # Need contents, template, metadata
+    # And also the results of INSERTCATALOG to determine pagination.
+
+
+    if file.is_a?(StringIO) or (file.is_a?(File) and file.path.to_s.include?('index.'))
       # If we've been given a StringIO, then something else has generated the
       # file contents, like rendering a custom index.html file. Just read the
       # contents out of the StringIO wrapper.
-      contents = file.readlines
+      
+      puts "Found a StringIO or an index."
+      
+      raw_lines = file.readlines
+      raw_contents = raw_lines.join
+      catalog_path, start_pos, count, num_blocks_per_row, block_template = extract_first_catalog(raw_contents)
+      puts ">>>> start_pos is #{start_pos}, count is #{count}"
+      
+      if catalog_path.nil? or start_pos != -1
+        # Don't paginate
+        puts "  Not paginating: new_path = #{new_path}"
+        contents, template, metadata = process_file(file, new_path)
+        file.close
+        puts "  local_path is #{local_path}, new_path is #{new_path}"
+        wrap_and_process(contents, template, metadata, local_path, new_path, should_update_dependants)
+        return
+      else
+        file.close
+        puts "  Paginating: #{new_path}"
+        
+        # Getting the entries to paginate. Just to count how many there are.
+        # The INSERTCONTENTS directive will find them (again!) when the page is rendered.
+        entries = get_catalog_contents(catalog_path)
+        
+        # Paginate
+        num_entries = entries.length
+        num_pages = [1, (num_entries.to_f / count.to_f).ceil.to_i].max
+        puts "  num_pages is #{num_pages}"
+        
+        file_type = get_file_type(@config, file)
+        
+        num_pages.times do |page_number|
+          puts ">>>>> Rendering page #{page_number+1}."
+          offset = page_number * count
+          page_contents = raw_contents.gsub("PAGINATE", offset.to_s)
+          puts "page_contents is #{page_contents}"
+          
+          if page_number == 0
+            page_path = new_path.dup
+          else
+            page_path = new_path.gsub("index.", "index_#{page_number+1}.")
+          end
+          
+          contents, template, metadata = process_contents(page_contents, file_type, page_path)
+          # Process the page.
+          wrap_and_process(contents, template, metadata, page_path, page_path, should_update_dependants)
+        end
+        
+        return
+      end
+      
     else
-      # Hand the file over to be processed, which includes conversion to HTML.
-      contents, template, metadata = process_file( file )
+      puts "  Regular parsing. No pagination."
+      # Regular parsing. No pagination.
+      contents, template, metadata = process_file(file, new_path)
       file.close
+      wrap_and_process(contents, template, metadata, local_path, new_path, should_update_dependants)
+      return
     end
+  end
+  
+  
+  def wrap_and_process contents, template, metadata, local_path, new_path, should_update_dependants=false
+    puts "wrap_and_process: local_path = #{local_path}, new_path = #{new_path}"
     
     metadata.update({:breadcrumb_path => local_path})
     if not metadata.has_key?(:post_title)
@@ -239,21 +303,77 @@ class Updater
       end
     end
     
-    wrapped_contents = LayoutHandler.new(@config, @pageinfo).wrap_with_layout(contents, "", template, metadata)
+    wrapped_contents = LayoutHandler.new(@config, @pageinfo).wrap_with_layout(contents, template, metadata)
     
-    post_process(new_path, wrapped_contents, update_all)
+    post_process(new_path, wrapped_contents, should_update_dependants)
   end
   
-  # Index pages are generated as an unordered list of links to all the folders
-  # and files inside a parent folder. This happens when there is no index.text
-  # or index.haml file found.
-  def render_list_index path
-    puts "Building an index page for path: #{path}"
-    if not File::directory?( path )
-      puts "  Error: Not a directory."
-      return ""
+  
+  # Just pass File objects that have already been opened. This actually converts the textile 
+  # and haml files into their HTML counterparts.
+  #
+  # @param file - StringIO or File that contains the instructions to render.
+  # @param file_path - The path of the file being rendered. Either file.path or something manually given.
+  # @returns String The rendered HTML contents.
+  def process_file file=nil, file_path=""
+    return "Updater#process_file received a nil file." if file.nil?
+    return "Updater#process_file received an empty path string" if file_path.blank?
+    
+    puts "Processing contents of #{file_path}..."
+    
+    file.rewind
+    
+    @pageinfo.html_title = build_title(file_path, @pageinfo)
+    puts "html_title is #{@pageinfo.html_title}"
+    
+    if file.is_a?(File)
+      @pageinfo.file_type = get_file_type(@config, file)
+    elsif file.is_a?(StringIO)
+      @pageinfo.file_type = :haml
     end
-    return insert_catalog(path, {:blocks_per_row => 3}, @config, @pageinfo)
+    puts "file_type is #{@pageinfo.file_type}"
+    
+    contents = file.readlines.join
+    
+    return process_contents(contents, @pageinfo.file_type, file_path)
+    
+  rescue => detail
+    puts "EXCEPTION in process_file..."
+    puts detail.message
+    puts detail.backtrace
+    return ""
+  end
+  
+  
+  def process_contents contents, file_type, file_path
+    puts "process_contents got #{file_type} for #{file_path}"
+    
+    # Handle files.
+    if file_type == :asset or file_type == :image
+      # Images and other binary files... Do nothing.
+      
+    elsif file_type == :plaintext
+      puts "Plain text or code found."
+      return contents, "_generic.haml", {}
+    
+    elsif file_type == :textile
+      # Catches ".text" and ".textile" extensions.
+      puts "Textile file found."
+      return render_textile(contents, file_path)
+      
+    elsif file_type == :html
+      puts "HTML file found."
+      return contents, "_generic.haml", {}
+      
+    elsif file_type == :haml
+      puts "HAML file found."
+      return render_haml(contents, file_path)
+      
+    else
+      puts "Unprocessable file found."
+      return contents, "_generic.haml", {}
+
+    end
   end
   
   # Renders index files, including folders that don't contain index.*.
@@ -281,39 +401,52 @@ class Updater
     return index, index_path
   end
   
-  def open_index folder_path=""    
-    # Do index.text
-    index_path = File.join(folder_path, "index.text")
-    index = File.open(index_path,'r') rescue nil
-    
-    if index.blank?
-      index_path = File.join(folder_path, "index.textile")
-      index = File.open(index_path,'r') rescue nil
+  # Attempts to locate and open an index.* file in the given folder.
+  def open_index folder_path=""
+    ["index.text", "index.textile", "index.haml", "index.html"].each do |index_filename|
       
-      if index.blank?
-        index_path = File.join(folder_path, "index.haml")
-        index = File.open(index_path,'r') rescue nil
-        
-        if index.blank?
-          index_path = File.join(folder_path, "index.html")
-          index = File.open(index_path,'r') rescue nil
-        end
+      index_path = File.join(folder_path, index_filename)
+      
+      if File.exists?(index_path)
+        index = File.open(index_path, 'r')
+        return index, index_path
+      else
+        return nil, index_path
       end
     end
+  
+  rescue => exception
+    puts "Exception in Updater#open_index"
+    puts exception.message
+    puts exception.backtrace
+    return nil, folder_path.to_s
+  end
+  
+  # Index pages are generated as a generic catalog. This happens when there is no index.text
+  # or index.haml file found.
+  def render_list_index path
+    puts "Building an index page for path: #{path}"
     
-    return index, index_path
+    if not File::directory?( path )
+      puts "  Error: Given path is not a directory."
+      return ""
+    end
+    
+    return "INSERTCATALOG(#{path},PAGINATE,10,3,_block.haml)"
+    
+    #return insert_catalog(path, {:blocks_per_row => 3}, @config, @pageinfo)
   end
   
   # This method handles the uploading process and updating dependants.
-  def post_process local_path, contents, update_all=false
+  def post_process local_path, contents, should_update_dependants=false
     puts "Post processing #{local_path}"
     
     # Combine and upload the contents to a file on the remote server.
-    upload_file local_path, contents
+    upload_file(local_path, contents)
     
-    if update_all
+    if should_update_dependants
       puts "Attempting to update dependants of file: #{local_path}"
-      update_dependants @local_relative_path, local_path
+      update_dependants(@local_relative_path, local_path)
       puts "Done with dependants for #{local_path}"
     end
   end
@@ -348,53 +481,7 @@ class Updater
     puts detail.message
   end
   
-  # Just pass File objects that have already been opened. This actually converts the textile 
-  # and haml files into their HTML counterparts. 
-  # @returns String The rendered HTML contents.
-  def process_file file=nil
-    puts "Processing contents of #{file.path}..."
-    
-    return "" if file.nil?
-    
-    @pageinfo.html_title = build_title(file.path, @pageinfo)
-    puts ">>>> html_title is #{@pageinfo.html_title}"
-    @pageinfo.file_type = get_file_type(@config, file)
-    contents = file.readlines.join
-    
-    # Handle files.
-    if @pageinfo.file_type == :asset or @pageinfo.file_type == :image
-      # Images and other binary files... Do nothing.
-      
-    elsif @pageinfo.file_type == :plaintext
-      puts "Plain text or code found."
-      return contents, "_generic.haml", {}
-    
-    elsif @pageinfo.file_type == :textile
-      # Catches ".text" and ".textile" extensions.
-      puts "Textile file found."
-      return render_textile(contents, file.path)
-      
-    elsif @pageinfo.file_type == :html
-      puts "HTML file found."
-      return contents, "_generic.haml", {}
-      
-    elsif @pageinfo.file_type == :haml
-      puts "HAML file found."
-      return render_haml(contents, file.path)
-      
-    else
-      puts "Unprocessable file found."
-      return contents, "_generic.haml", {}
 
-    end
-    
-  rescue => detail
-    puts "EXCEPTION in process_file..."
-    puts detail.message
-    puts detail.backtrace
-    return ""
-  end
-  
   def render_pdf str, local_path=""
     html = render_textile(str, local_path)
     PDFRenderer.new(html).render(local_path)

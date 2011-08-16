@@ -133,6 +133,8 @@ end
 
 
 def get_recent_blog_posts blog_dir
+  puts "get_recent_blog_posts"
+  
   blog_dir = @config.blog_dir
   
   if File.exists?(blog_dir)
@@ -149,6 +151,8 @@ rescue => exception
 end
 
 def get_catalog_contents path="", options={}
+  puts "get_catalog_contents"
+  
   default_options = {
     :ordered => false,
     :class => "",
@@ -191,7 +195,7 @@ def get_catalog_contents path="", options={}
   
   count = options[:count]
   if count > 0
-    sorted = sorted[0...count]
+    sorted = sorted[options[:start]...(count+options[:start])]
   end
   return sorted
 end
@@ -223,8 +227,6 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
   }
   options = default_options.dup.update(options)
   
-  puts "  catalog options are #{options.to_s}"
-  
   tag = "ul"
   if options[:ordered]
     tag = "ol"
@@ -235,18 +237,23 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
     css_class = " class=\"#{options[:class]}\""
   end
   
-  sorted = get_catalog_contents path, options
+  sorted = get_catalog_contents(path, options)
+  
+  puts "sorted has #{sorted.length} entries"
   
   text = ""
   
   sorted.each_index do |i|
     puts i
-    if i >= options[:start]
-      entry_path = sorted[i]
-      puts "Processing catalog item: #{entry_path}"
-      j = i-options[:start]
     
-      if j%options[:blocks_per_row] == 0
+    actual_index = i + options[:start]
+    
+    if actual_index >= options[:start] # TODO: ?????
+      entry_path = sorted[i]
+      
+      puts "Processing catalog item: #{entry_path}"
+    
+      if i % options[:blocks_per_row] == 0
         text += "<hr />\n"
       end
       
@@ -312,7 +319,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
               :image_path_small => image_path_small,
               :image_path_medium => image_path_medium,
               :image_path_large => image_path_large,
-              :klass => (((j%options[:blocks_per_row]) == (options[:blocks_per_row]-1)) ? "last" : ""),
+              :klass => (((actual_index % options[:blocks_per_row]) == (options[:blocks_per_row] - 1)) ? "last" : ""),
               :link_url => link_url,
               :link_root => pageinfo.link_root,
               :categories => metadata[:categories]}
@@ -330,6 +337,38 @@ rescue => detail
   puts detail.message
   puts detail.backtrace
   return "Error in insert_catalog..."
+end
+
+# @param contents String - Single string containing the contents of the file to search through.
+# @returns folder path(String), start position(integer), count of files(integer), 
+#   blocks per row(integer), block template(String)
+def extract_first_catalog contents
+  matches = contents.match(/INSERTCATALOG\(([A-Za-z0-9\,\.\-\/_]*)\)/)
+  
+  if not matches.nil?
+    arg_str = matches[0].to_s.gsub("INSERTCATALOG(","").gsub(")","")
+    args = arg_str.split(",")
+    
+    path_of_folder_to_insert = remove_leading_slash(args[0].to_s)
+    
+    if args.length > 1
+      if args[1] == "PAGINATE"
+        start = -1 # TODO: Magic number!
+      else
+        start = 0
+      end
+    else
+      start = 0
+    end
+    
+    count = args.length > 2 ? args[2].to_i : 10
+    blocks_per_row = args.length > 3 ? args[3].to_i : 1
+    block_template = args.length > 4 ? args[4].to_s : "_block.haml"
+    
+    return path_of_folder_to_insert, start, count, blocks_per_row, block_template
+  else
+    return nil, nil, nil, nil, nil
+  end
 end
 
 def insert_catalogs str, local_path, config, pageinfo

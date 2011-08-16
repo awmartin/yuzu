@@ -21,7 +21,7 @@ class LayoutHandler
     @header_contents = load_partial "_header.haml"
     @menu_contents = load_partial "_menu.haml"
     
-    recents = get_recent_blog_posts(@config)
+    recents = [] #get_recent_blog_posts(@config)
     titles = recents.collect {|entry| extract_title_from_filename entry}
     @footer_contents = load_partial "_footer.haml", {:recents => recents, :titles => titles}
   end
@@ -79,7 +79,7 @@ class LayoutHandler
   end
   
   # Puts the header and footer in place.
-  def wrap_with_layout contents="", js="", template="_generic.haml", metadata={}
+  def wrap_with_layout contents="", template="_generic.haml", metadata={}
     puts "wrap_with_layout, template=#{template}"
     # Check if this is in the blog. If so, then tell the breadcrumb it needs to render with categories.
     

@@ -1,4 +1,5 @@
 require 'pathname'
+require 'stringio'
 
 def extract_first_paragraph file, file_type
   file.rewind
@@ -104,8 +105,8 @@ def remove_date_from_filename filename
 end
 
 def build_title path, pageinfo
-  path = filter_path(path)
-  clean = Pathname.new(path).cleanpath.to_s
+  tmp_path = filter_path(path)
+  clean = Pathname.new(tmp_path).cleanpath.to_s
   last = clean.to_s.split('/').last
   
   if last.blank? or last == "."
@@ -143,14 +144,14 @@ end
 # Path helpers.........................................................
 
 def filter_path path
-  if path.include?("index.")
+  if path.include?("index")
     # Remove the index.
     index_file = File.basename(path)
-    path.sub!(index_file, "")
+    return path.sub(index_file, "")
   elsif not File.directory?(path)
     # Remove the file extension.
     ext = File.extname(path)
-    path.sub!(ext,"")
+    return path.sub(ext,"")
   end
   return path
 end
@@ -224,6 +225,8 @@ def get_file_type config, file
     return :unknown if file_ext.blank?
   elsif file.is_a?(File)
     file_ext = File.extname(file.path)
+  elsif file.is_a?(StringIO)
+    return :haml # TODO: More intelligent handling of StringIO types. No type-checking?
   else
     return :unknown
   end

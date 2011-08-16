@@ -4,7 +4,7 @@ def render_breadcrumb path, config, pageinfo, blog_categories=nil
   use_strict_index_links = config.use_strict_index_links
   
   add_html_to_end = false
-  if file_path.include?("index.")
+  if file_path.include?("index")
     # Remove the index.
     index_file = File.basename(path)
     file_path.sub!(index_file, "")
