@@ -13,14 +13,14 @@ class HamlRenderer
   end
   
   def render str="", local_path=""
-    str, template, metadata = preprocess_keywords(str, local_path, @config, @pageinfo, @galleries)
+    contents, template, metadata = preprocess_keywords(str, local_path, @config, @pageinfo, @galleries)
     local_vars = {
       :html_title => @pageinfo.html_title
       }
     opts = {
       :format => :html5
       }
-    return Haml::Engine.new(str, opts).render(Object.new, local_vars), template, metadata
+    return Haml::Engine.new(contents, opts).render(Object.new, local_vars), template, metadata
   rescue => exception
     puts "EXCEPTION in HamlRenderer.render"
     
