@@ -85,6 +85,7 @@ class LayoutHandler
     
     first_paragraph = metadata.has_key?(:first_paragraph) ? metadata[:first_paragraph] : ""
     categories = metadata.has_key?(:categories) ? metadata[:categories] : []
+    page_links = metadata.has_key?(:page_links) ? metadata[:page_links] : ""
     
     if metadata.has_key?(:breadcrumb_path)
       
@@ -111,7 +112,8 @@ class LayoutHandler
                                     :first_paragraph => first_paragraph,
                                     :breadcrumb => breadcrumb,
                                     :post_title => post_title,
-                                    :categories => categories})
+                                    :categories => categories,
+                                    :page_links => page_links})
   rescue => exception
     puts "Exception in wrap_with_layout..."
     puts exception.message
