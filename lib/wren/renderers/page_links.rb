@@ -12,5 +12,5 @@ def render_page_links num_pages=1, root_path=""
       links += [link_to(label, concat_path(root_folder, "index_#{page_number + 1}.html"))]
     end
   end
-  return links.join(" | ")
+  return "<div class='page_links'>" + links.join(" ") + "</div>"
 end
