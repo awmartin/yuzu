@@ -274,7 +274,7 @@ class Updater
           end
           
           contents, template, metadata = process_contents(page_contents, file_type, page_path)
-          metadata[:page_links] = render_page_links(num_pages, concat_path(@pageinfo.link_root, page_path))
+          metadata[:page_links] = render_page_links(num_pages, concat_path(@pageinfo.link_root, page_path), page_number+1)
           # Process the page.
           wrap_and_process(contents, template, metadata, page_path, page_path, should_update_dependants)
         end

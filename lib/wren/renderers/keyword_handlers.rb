@@ -177,15 +177,17 @@ def get_catalog_contents path="", options={}
     end
   end
   
-  # Sort all the entries.
-  # TODO: Sort by filename, not the path itself.
   puts "#{entries.length} entries found."
+  
+  # Sort all the entries.
   if options[:sort_by] == :name
-    sorted = entries.sort.reverse
+    sorted = entries.sort{ |a,b| File.basename(b) <=> File.basename(a) }
+    
   elsif options[:sort_by] == :modified
     sorted = entries.collect { |f|
       [test(?M, f), f]
     }.sort.collect { |f| f[1] }
+    
   end
   
   # Attempt to exclude troublemakers... Do this before the list slicing...
@@ -325,6 +327,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
               :categories => metadata[:categories]}
       str = lyt.load_template(options[:block_template], opts)
       
+      # Remove space-indentations.
       str = str.gsub(/\n\s*/,"")
       
       text += str + "\n"
@@ -332,6 +335,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
   end
   
   return text
+  
 rescue => detail
   puts "Exception in insert_catalog..."
   puts detail.message
