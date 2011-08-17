@@ -2,7 +2,7 @@ module Wren::Command
   class Preview < Base
 
     def index
-      updater.update_these @args
+      updater.update_these(@args)
       updater.done
     end
     
@@ -13,7 +13,7 @@ module Wren::Command
     
     def single
       puts "Updating single file..."
-      updater.update_these @args
+      updater.update_these(@args)
       updater.done
     end
     
@@ -25,7 +25,7 @@ module Wren::Command
       puts "Found changes to these files:\n" + updatable_files.join("\n").to_s
       puts
       
-      updater.update_these updatable_files
+      updater.update_these(updatable_files)
       
       puts "Looking for new images to upload..."
       # Traverse images and upload if new.
@@ -52,7 +52,7 @@ module Wren::Command
       images = updater.upload_all_images
       
       catalog = File.open("images.yml","w")
-      catalog.puts images.join("\n")
+      catalog.puts(images.join("\n"))
       catalog.close
       
       updater.done

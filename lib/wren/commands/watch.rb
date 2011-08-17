@@ -2,8 +2,10 @@ require 'fssm'
 
 def rebuild_site(base, relative_path)
   puts ">>> Change Detected to: #{relative_path} <<<"
-
-  IO.popen("wren preview:single #{relative_path}") do |io|
+  
+  # TODO: Apply extension blacklist here.
+  
+  IO.popen("wren preview #{relative_path}") do |io|
     print( io.readpartial(512) ) until io.eof?
   end
   

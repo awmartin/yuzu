@@ -169,6 +169,7 @@ class Updater
   
   # Update a particular list of files, presented as an array.
   def update_these array_of_files=[]
+    puts "Calling Updater#update_these..."
     
     array_of_files.each do |local_path|
       ext = File.extname(local_path)
@@ -176,9 +177,23 @@ class Updater
       # Upload resources, images, and assets
       if ext.includes_one_of?(@config.resource_extensions + @config.image_extensions + @config.asset_extensions)
         
-        puts "Uploading #{local_path}."
-        file = File.open(local_path,"r")
+        puts "Uploading resource #{local_path}."
+        file = File.open(local_path, "r")
         upload_file(local_path, file)
+        file.close
+        
+      elsif ext == ".sass"
+        
+        puts "Found SASS file. Calling compass to update."
+        puts `compass compile`
+        
+        filename = File.basename(local_path)
+        css_file = concat_path("stylesheets", filename.sub(ext, ".css"))
+        
+        puts "Uploading CSS file #{css_file}"
+        file = File.open(css_file, "r")
+        upload_file(css_file, file)
+        file.close
         
       else
         
