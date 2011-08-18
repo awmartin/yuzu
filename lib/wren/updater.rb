@@ -1,18 +1,15 @@
 require 'pathname'
 require 'stringio'
-require 'haml'
-require 'RedCloth'
-require 'prawn'
-require 'suppressor'
 
+require 'suppressor'
 require 'renderers/pdf_renderer'
 require 'renderers/textile_renderer'
 require 'renderers/haml_renderer'
+require 'renderers/markdown_renderer'
 require 'renderers/keyword_handlers'
 require 'renderers/layout'
 require 'renderers/page_links'
 require 'content_handlers'
-
 require 'wren_config'
 
 class PageInfo
@@ -386,6 +383,10 @@ class Updater
     elsif file_type == :haml
       puts "HAML file found."
       return render_haml(contents, file_path)
+    
+    elsif file_type == :markdown
+      puts "Markdown file found."
+      return render_markdown(contents, file_path)
       
     else
       puts "Unprocessable file found."
@@ -522,6 +523,11 @@ class Updater
     return TextileRenderer.new(@config, @pageinfo).render(str, local_path)
   end
 
+  def render_markdown contents="", local_path=""
+    return "", "_generic.haml", {} if contents.blank?
+    return MarkdownRenderer.new(@config, @pageinfo).render(contents, local_path)
+  end
+  
   # Inserts a <script> tag given the javascript name. This accepts either a full path
   # like http://apis.google.com/lib.... or a filename like accordion.js. It expects the
   # javascript file to be in the "javascripts" folder in the root of the file system.

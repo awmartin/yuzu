@@ -9,6 +9,8 @@ def extract_first_paragraph file, file_type
     headers = /h1\.\s|h2\.\s|h3\.\s|h4\.\s/
   elsif file_type == :haml
     headers = /\%h1\s|\%h2\s|\%h3\s|\%h4\s/
+  elsif file_type == :markdown
+    headers = /\#\s|\#\#\s|\#\#\#\s|\#\#\#\#\s/
   end
   past_first_header = false
   
@@ -22,6 +24,8 @@ def extract_first_paragraph file, file_type
       return line.gsub("p(intro). ","")
     elsif line.include?("%p.intro ")
       return line.gsub("%p.intro ","")
+    elsif line.include?("%p ") # Check just for a HAML paragraph. It *should* catch the first one.
+      return line.gsub("%p ", "")
     end
   end
   
@@ -31,8 +35,10 @@ def extract_first_paragraph file, file_type
     past_first_header = true
   end
   
+  directive_pattern = /([A-Z]*)\((.*)/
+  
   lines.each do |line|
-    if past_first_header and not line.strip.blank? and line.strip[0].chr != "!" and line.match(headers).blank?
+    if past_first_header and not line.strip.blank? and line.strip[0].chr != "!" and line.match(headers).nil? and line.match(directive_pattern).nil?
       paragraph = line.to_s.gsub("\n","").strip
       break
     end
@@ -243,6 +249,8 @@ def get_file_type config, file
     return :html
   elsif file_ext.include? 'haml'
     return :haml
+  elsif file_ext.includes_one_of? ["markdown", "md", "mdown"]
+    return :markdown
   else
     return :unknown
   end

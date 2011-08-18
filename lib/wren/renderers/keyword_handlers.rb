@@ -4,6 +4,7 @@ require "content_handlers"
 require 'renderers/layout'
 require 'renderers/textile_renderer'
 require 'renderers/haml_renderer'
+require 'renderers/markdown_renderer'
 
 
 def preprocess_keywords str, local_path, config, pageinfo, galleries
@@ -289,6 +290,8 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
             contents, template, metadata = TextileRenderer.new(config, pageinfo, false, true).render(lines.join("\n"), file.path)
           elsif file_type == :haml
             contents, template, metadata = HamlRenderer.new(config, pageinfo, false).render(lines.join("\n"), file.path)
+          elsif file_type == :markdown
+            contents, template, metadata = MarkdownRenderer.new(config, pageinfo, false).render(lines.join("\n"), file.path)
           end
           
           file.close
