@@ -30,11 +30,20 @@ module Wren::Command
       base_filename = @args.first.gsub(" ", "-").downcase
       
       full_filename = "#{year_str}-#{mon_str}-#{day_str}-#{base_filename}.haml"
-      puts @config_dict
       file_path = File.join(@config.blog_dir, full_filename)
       
       post_title = @args.first
-      contents = "TITLE(#{post_title})\n\n"
+      first_sentence = "The title of this post is #{post_title}."
+      filler_sentence = %Q(
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, 
+sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim 
+ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip 
+ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate 
+velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat 
+cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id 
+est laborum.).gsub("\n", "")
+      contents = "TITLE(#{post_title})\n\n%p #{first_sentence}\n\n%p #{filler_sentence}\n\n"
+      
       
       if File.exists?(full_filename)
         puts "Warning: File #{full_filename} already exists!"
