@@ -8,11 +8,11 @@ class Uploader
   
   attr_accessor :service
   
-  def initialize service='ftp', config={}
+  def initialize service='ftp', config_dict={}
     @remote_root_path = ""
     @service = service
     @suppressor = Suppressor.new
-    @config = config
+    @config_dict = config_dict
     
     connect
   end
@@ -20,9 +20,9 @@ class Uploader
   def connect
     if @service == 'ftp'
       
-      @server_name = @config['ftp']['host'].to_s
-      @username = @config['ftp']['username'].to_s
-      @password = @config['ftp']['password'].to_s
+      @server_name = @config_dict['ftp']['host'].to_s
+      @username = @config_dict['ftp']['username'].to_s
+      @password = @config_dict['ftp']['password'].to_s
       
       puts "Opening a persistent FTP connection to #{@server_name}..."
       
@@ -31,13 +31,13 @@ class Uploader
       @ftp.connect(@server_name)
       @ftp.login @username, @password
       
-      @remote_root_path = @config['ftp']['remote_root_path'].to_s
+      @remote_root_path = @config_dict['ftp']['remote_root_path'].to_s
       
     elsif @service == 's3'
       
-      @bucket_name = @config['s3']['bucket'].to_s
-      @access_key = ENV[ @config['s3']['access_key'] ].to_s
-      @secret_key = ENV[ @config['s3']['secret_key'] ].to_s
+      @bucket_name = @config_dict['s3']['bucket'].to_s
+      @access_key = ENV[ @config_dict['s3']['access_key'] ].to_s
+      @secret_key = ENV[ @config_dict['s3']['secret_key'] ].to_s
       
       puts "Connecting to AWS..."
       
@@ -50,9 +50,9 @@ class Uploader
             :port => 443
           }
         
-        if @config['proxy']['use_proxy']
+        if @config_dict['proxy']['use_proxy']
           options.update( {
-            :proxy => {:host => @config['proxy']['host'], :port => @config['proxy']['port']}
+            :proxy => {:host => @config_dict['proxy']['host'], :port => @config_dict['proxy']['port']}
           } )
         end
         
@@ -65,11 +65,11 @@ class Uploader
       end
       
       @s3_bucket = AWS::S3::Bucket.find(@bucket_name)
-      @remote_root_path = @config['s3']['remote_root_path'].to_s
+      @remote_root_path = @config_dict['s3']['remote_root_path'].to_s
       
     elsif @service == 'filesystem' or @service == 'preview'
       
-      @remote_root_path = @config[@service]['destination'].to_s
+      @remote_root_path = @config_dict[@service]['destination'].to_s
       
     else
       
@@ -79,7 +79,7 @@ class Uploader
   def set_preview
     puts "Setting preview mode..."
     @service = 'preview'
-    @remote_root_path = @config['preview']['destination'].to_s
+    @remote_root_path = @config_dict['preview']['destination'].to_s
   end
   
   def prepend_remote_root local_path=""

@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'uploader'
 require 'updater'
+require 'wren_config'
 
 module Wren::Command
   class Base
@@ -8,21 +9,22 @@ module Wren::Command
 
     attr_accessor :args
     
-    def initialize(args, config)
+    def initialize(args, config_dict)
       @args = args
-      @config = config
+      @config_dict = config_dict
+      @config = WrenConfig.new(config_dict)
     end
     
     def shell(cmd)
-			FileUtils.cd(Dir.pwd) {|d| return `#{cmd}`}
-		end
-		
-		def updater
+      FileUtils.cd(Dir.pwd) {|d| return `#{cmd}`}
+    end
+    
+    def updater
       @updater ||= Updater.new( uploader, @config )
-	  end
-	  
-	  def uploader
-      @uploader ||= Uploader.new( @config['connection'], @config )
+    end
+    
+    def uploader
+      @uploader ||= Uploader.new( @config_dict['connection'], @config_dict )
     end
     
     def self.help method

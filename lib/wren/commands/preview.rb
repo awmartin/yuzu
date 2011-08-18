@@ -71,7 +71,7 @@ module Wren::Command
     end
     
     def uploader
-      @uploader ||= Uploader.new( 'preview', @config )
+      @uploader ||= Uploader.new( 'preview', @config_dict )
     end
     
     def self.help method

@@ -23,15 +23,16 @@ class PageInfo
   attr_accessor :file_type
 end
 
+# Updater holds the state necessary to complete a updates of a single file or of multiple files.
 class Updater
   
   # Pass in a fully initialized Uploader object.
-  def initialize uploader_obj, config_dict
+  def initialize uploader_obj, wren_config_obj
     return if uploader_obj.nil?
-    return if config_dict.length == 0
+    return if wren_config_obj.nil? or not wren_config_obj.is_a?(WrenConfig)
     
     @uploader = uploader_obj
-    @config = WrenConfig.new(config_dict)
+    @config = wren_config_obj
 
     @local_relative_path = "."
     @pageinfo = PageInfo.new

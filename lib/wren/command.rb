@@ -11,14 +11,23 @@ module Wren
     
     class << self
       def run(command, args)
-        config = {}
-        if command.include?("publish") or command.include?("preview")
-          config = YAML.load_file(Dir.pwd + '/wren.yml') rescue nil
+        config_path = File.join(Dir.pwd,"wren.yml")
+        
+        if not File.exists?(config_path)
+          puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
+          Process.exit!(true)
         end
+        
+        config = {}
+        if command.include?("publish") or command.include?("preview") or command.include?("create:post")
+          config = YAML.load_file(config_path) rescue nil
+        end
+        
         if config.nil?
           puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
           Process.exit!(true)
         end
+        
         run_internal(command, args.dup, config.dup)
       end
       
