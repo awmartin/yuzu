@@ -19,7 +19,7 @@ module Wren
         end
         
         config = {}
-        if command.include?("publish") or command.include?("preview") or command.include?("create:post")
+        if command.include?("publish") or command.include?("preview") or command.include?("create:post") or command.include?("watch")
           config = YAML.load_file(config_path) rescue nil
         end
         
