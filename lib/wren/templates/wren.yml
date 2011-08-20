@@ -1,6 +1,7 @@
 # Title to be displayed on the site.
 site_name: My Site
 
+blog_dir: blog
 template_dir: _templates
 
 # Which connection to use. This should be set to s3, ftp, or filesystem.
@@ -64,6 +65,7 @@ proxy:
 # won't traverse them. The SASS 'src' folder is a good one to exclude.
 folder_blacklist:
   - src
+  - .sass-cache
 
 # Some folders have to be traversed to update resources, but we don't want to create
 # auto-generated index.html files for them. This is the list of such folders.
@@ -76,7 +78,7 @@ no_index_folders:
 # Files with these extensions will be ignored.
 extension_blacklist:
   - .rb
-  - .sass
+  - .sassc
   - .yml
 
 # Files with these extensions will be put through the Textile or HAML markup generators.
@@ -85,6 +87,9 @@ processable_extensions:
   - .textile
   - .haml
   - .txt
+  - .markdown
+  - .mdown
+  - .md
 
 # Images.
 image_extensions:

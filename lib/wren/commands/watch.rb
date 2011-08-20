@@ -7,11 +7,17 @@ def rebuild_site(base, relative_path, config)
     if relative_path.includes_one_of?(config.folder_blacklist)
       puts ">>> Blacklisted folder found. No update."
       return
+    elsif relative_path.include?(config.template_dir)
+      puts ">>> Change in a template found. No update (yet)."
+      return
     end
   else
     file_ext = File.extname(relative_path)
     if file_ext.includes_one_of?(config.extension_blacklist)
       puts ">>> Blacklisted extension found. No update."
+      return
+    elsif relative_path.include?(config.template_dir)
+      puts ">>> Change in a template found. No update (yet)."
       return
     end
   end

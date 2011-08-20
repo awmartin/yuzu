@@ -3,16 +3,18 @@
 
   = head
 
-  .container
-    .header
-      = menu
+  %body
+    .container.index
+      .header
+        = header
+        = menu
 
-    .content{:role => 'main'}
-      .page-header.entry-header
-        %h1= post_title
-        .breadcrumb= breadcrumb
-      %hr
-      .page-content.entry-content
-        = contents
+      .content{:role => 'main'}
+        .page-header
+          .breadcrumb= breadcrumb
+
+        .page-content.entry-content
+          = contents
   
-  = footer
+      .footer
+        = footer

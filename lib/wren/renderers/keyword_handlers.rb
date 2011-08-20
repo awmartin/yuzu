@@ -251,13 +251,16 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
     
     actual_index = i + options[:start]
     
-    if actual_index >= options[:start] # TODO: ?????
+    if actual_index >= options[:start]
+      # Need j for start values that are not multiples of blocks_per_row
+      # For example, offsets of 1 will have the "last" css class and <hr> element inserted properly.
+      j = actual_index - options[:start] 
       entry_path = sorted[i]
       
       puts "Processing catalog item: #{entry_path}"
     
-      if i % options[:blocks_per_row] == 0
-        text += "<hr />\n"
+      if j % options[:blocks_per_row] == 0
+        text += "<hr>\n"
       end
       
       post_title = extract_title_from_filename(File.join(path, entry_path))
@@ -278,10 +281,10 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
         end
       else
         if config.processable?(entry_path)
-          file = File.open( entry_path, "r" )
-          file.rewind
-          lines = file.readlines
-          file_type = get_file_type config, file
+          file = File.open(entry_path, "r")
+          file.rewind()
+          lines = file.readlines()
+          file_type = get_file_type(config, file)
           
           paragraph = extract_first_paragraph(file, file_type)
           image_path = extract_first_image(file)
@@ -324,7 +327,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
               :image_path_small => image_path_small,
               :image_path_medium => image_path_medium,
               :image_path_large => image_path_large,
-              :klass => (((actual_index % options[:blocks_per_row]) == (options[:blocks_per_row] - 1)) ? "last" : ""),
+              :klass => (((j % options[:blocks_per_row]) == (options[:blocks_per_row] - 1)) ? "last" : ""),
               :link_url => link_url,
               :link_root => pageinfo.link_root,
               :categories => metadata[:categories]}

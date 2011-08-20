@@ -1,6 +1,8 @@
 
 
 class WrenConfig
+  attr_reader :config_dict
+  
   def initialize config_dict
     @config_dict = config_dict
   end

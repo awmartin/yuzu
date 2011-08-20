@@ -2,7 +2,9 @@ module Wren::Command
   class Create < Base
     def index
       puts `compass create . --using blueprint --syntax sass`
-      puts `mkdir _templates`
+      puts `mkdir #{@config.template_dir}`
+      puts `mkdir #{@config.blog_dir}`
+      
       destination_dir = Dir.pwd
       Dir["#{File.dirname(__FILE__)}/../templates/*"].each do |template|
         file = File.basename(template)

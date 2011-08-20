@@ -57,11 +57,11 @@ class LayoutHandler
     contents = partial.readlines.join
     crumbs = data.has_key?(:path) ? render_breadcrumb(data[:path], @config, @pageinfo) : ""
     
-    local_vars = { 
+    local_vars = @config.config_dict.dup.update({ 
         :html_title => @html_title || "",
         :link_root => @link_root || "",
         :breadcrumb => crumbs || ""
-      }.update(data)
+      }).update(data)
     
     #@suppressor.shutup!
     result = Haml::Engine.new(contents, {:format => :html5}).render(Object.new, local_vars)
