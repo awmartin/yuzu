@@ -11,7 +11,7 @@ module Wren
     
     class << self
       def run(command, args)
-        if command.nil? or args.first.nil?
+        if command == "help"
           run_internal("help", [], nil)
           return
         end
