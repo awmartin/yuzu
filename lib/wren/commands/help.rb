@@ -1,8 +1,11 @@
 module Wren::Command
-	class Help < Base
-	  def index
-	    if @args.first.nil?
-	      puts <<-eos
+  class Help < Base
+    def index
+      if @args.first.nil?
+        puts <<-eos
+This is wren, the Website RENderer. Wren is a blog-aware static website generator and publisher 
+that converts a folder structure with text files and images into an HTML5 website.
+
 -------
 Available Commands
 
@@ -12,8 +15,8 @@ help [command]                    # Help about the particular command.
 preview [filenames]               # Update the preview with the files listed.
 preview:all                       # Update all the processable files in the preview.
 preview:images                    # Copy all the images into the preview folder.
-preview:resources
-preview:assets
+preview:resources                 # Copy all the resources into the preview folder.
+preview:assets                    # Copy all images and other assets into the preview folder.
 
 publish [filenames]
 publish:all
@@ -21,16 +24,14 @@ publish:images
 publish:resources
 publish:assets
 
-create                            # Creates a new wren project, sass and config file.
+create                            # Creates a new wren project in the current folder, sass and config file.
+create:post "[title string]"      # Creates a new blog post in blog_dir, as YYYY-MM-DD-title-string.haml
 
 generate:config                   # Generates a blank configuration file in the current folder.
+generate:thumbnails [filename]    # Generates small, medium, and large versions of the image given.
+generate:pdf [filename]           # Generates a pdf for the given file.
 
 watch                             # Starts the auto-updater.
-
--------
-Commands not implemeted yet.
-
-generate:pdf [filename]           # Generates a pdf for the given file.
 
 -------
 External Commands
@@ -51,24 +52,24 @@ repo should be set to ignore binary assets like images and pdfs.
     end
     
     def parse(command)
-			parts = command.split(':')
-			case parts.size
-				when 1
-					begin
-						return eval("Wren::Command::#{command.capitalize}"), :default
-					rescue NameError, NoMethodError
-						return Wren::Command::App, command
-					end
-				when 2
-					begin
-					  # This isn't working...
-						return eval("Wren::Command::#{parts[0].capitalize}"), parts[1].to_sym
-					rescue NameError
-						raise InvalidCommand
-					end
-				else
-					raise InvalidCommand
-			end
-		end
+      parts = command.split(':')
+      case parts.size
+        when 1
+          begin
+            return eval("Wren::Command::#{command.capitalize}"), :default
+          rescue NameError, NoMethodError
+            return Wren::Command::App, command
+          end
+        when 2
+          begin
+            # This isn't working...
+            return eval("Wren::Command::#{parts[0].capitalize}"), parts[1].to_sym
+          rescue NameError
+            raise InvalidCommand
+          end
+        else
+          raise InvalidCommand
+      end
+    end
   end
 end

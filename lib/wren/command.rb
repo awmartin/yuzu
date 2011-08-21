@@ -11,6 +11,11 @@ module Wren
     
     class << self
       def run(command, args)
+        if command.nil? or args.first.nil?
+          run_internal("help", [], nil)
+          return
+        end
+        
         config_path = File.join(Dir.pwd, "wren.yml")
         
         if not File.exists?(config_path) and command != "create"
