@@ -86,6 +86,7 @@ class LayoutHandler
     first_paragraph = metadata.has_key?(:first_paragraph) ? metadata[:first_paragraph] : ""
     categories = metadata.has_key?(:categories) ? metadata[:categories] : []
     page_links = metadata.has_key?(:page_links) ? metadata[:page_links] : ""
+    post_title = metadata.has_key?(:post_title) ? metadata[:post_title] : "Untitled"
     
     if metadata.has_key?(:breadcrumb_path)
       
@@ -102,13 +103,12 @@ class LayoutHandler
       breadcrumb = ""
     end
     
-    post_title = metadata.has_key?(:post_title) ? metadata[:post_title] : "Untitled"
-    
     return load_template(template, {:head => @html_head, 
                                     :contents => contents,
                                     :header => @header_contents,
                                     :footer => @footer_contents,
                                     :menu => @menu_contents,
+                                    :sidebar_contents => metadata[:sidebar_contents],
                                     :first_paragraph => first_paragraph,
                                     :breadcrumb => breadcrumb,
                                     :post_title => post_title,

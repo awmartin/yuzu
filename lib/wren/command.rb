@@ -11,16 +11,23 @@ module Wren
     
     class << self
       def run(command, args)
-        config_path = File.join(Dir.pwd,"wren.yml")
+        config_path = File.join(Dir.pwd, "wren.yml")
         
-        if not File.exists?(config_path)
+        if not File.exists?(config_path) and command != "create"
           puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
           Process.exit!(true)
         end
         
         config = {}
-        if command.include?("publish") or command.include?("preview") or command.include?("create:post") or command.include?("watch")
-          config = YAML.load_file(config_path) rescue nil
+        begin
+         if command.include?("publish") or command.include?("preview") or command.include?("create:post") or command.include?("watch")
+            config = YAML.load_file(config_path)
+          end
+        rescue => exception
+          puts "Error in parsing wren.yaml"
+          puts exception.message
+          puts exception.description
+          config = nil
         end
         
         if config.nil?

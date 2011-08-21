@@ -71,7 +71,7 @@ folder_blacklist:
 # auto-generated index.html files for them. This is the list of such folders.
 no_index_folders:
   - javascripts
-  - src
+  - sass
   - stylesheets
   - images
 

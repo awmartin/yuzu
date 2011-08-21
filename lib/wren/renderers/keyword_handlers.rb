@@ -16,17 +16,18 @@ def preprocess_keywords str, local_path, config, pageinfo, galleries
   str = insert_contents(str)
   
   metadata[:post_title], str = extract_title(str)
+  metadata[:post_date], str = extract_date(str)
   metadata[:categories], str = extract_categories(str)
-  
+  template, str = extract_template(str)
   images, str = extract_images(str)
   
-  str = insert_gallery(str, images, galleries)
-
-  template, str = extract_template(str)
-  
-  sidebar_contents, str = extract_sidebar_contents(str)
-  
   str = insert_catalogs(str, local_path, config, pageinfo)
+  
+  # Sidebars may contain catalogs, so extract after the catalogs are inserted.
+  metadata[:sidebar_contents], str = extract_sidebar_contents(str)
+  
+  # Galleries must be inserted after images are extracted.
+  str = insert_gallery(str, images, galleries, pageinfo)
   
   str = insert_currentpath(str, linked_path(pageinfo, path_to_file))
   
@@ -71,6 +72,17 @@ def extract_title str
   return post_title, tr
 end
 
+def extract_date str
+  # Extract the title if any.
+  post_date = ""
+  tr = str.gsub(/DATE\(([A-Za-z0-9\,\.\-\/_\s\:\|]*)\)/) do |s|
+    post_date = s.gsub("DATE(","").gsub(")","")
+    ""
+  end
+  return post_date, tr
+end
+
+
 def extract_images str
   # Look for images.
   images = []
@@ -82,17 +94,23 @@ def extract_images str
   return images, tr
 end
 
-def insert_gallery str, images, galleries
+def insert_gallery str, images, galleries, pageinfo
   # Look for galleries and insert images.
+  
   tr = str.gsub("INSERTGALLERY") do |s|
     if galleries
       url = images.first
       url.gsub!(".","-large.")
-      "<div class=\"slideshow\">\n<div class=\"slide\">\n!#{url}!\n</div>\n</div>"
+      if pageinfo.file_type == :haml
+        "\n.slideshow\n  .slide\n    %img{:src=>'#{url}'}\n\n"
+      else
+        "\n\n<div class=\"slideshow\">\n<div class=\"slide\">\n<img src='#{url}'>\n</div>\n</div>\n\n"
+      end
     else
       ""
     end
   end
+  
   return tr
 end
 
@@ -109,7 +127,7 @@ end
 def extract_sidebar_contents str
   # Find any sidebar contents.
   sidebar_contents = ""
-  tr = str.gsub(/SIDEBARCONTENTS\(\"[A-Za-z0-9\%\n\.\,\'\"\/\-_]*\"\)/) do |s|
+  tr = str.gsub(/SIDEBARCONTENTS\(\"([A-Za-z0-9\%\n\.\,\'\"\/\-_]*)\"\)/) do |s|
     sidebar_contents = s.gsub("SIDEBARCONTENTS(\"","").gsub("\")","")
     ""
   end
@@ -262,10 +280,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
       if j % options[:blocks_per_row] == 0
         text += "<hr>\n"
       end
-      
-      post_title = extract_title_from_filename(File.join(path, entry_path))
-      post_date = extract_date_from_filename(entry_path)
-      
+
       if File.directory?(entry_path)
         # Locate the index.
         index, index_path = open_index(entry_path)
@@ -301,12 +316,20 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
         end
       end
       
-      linkroot = remove_trailing_slash(pageinfo.link_root)
+      if not image_path.blank?
+        link_root = remove_trailing_slash(pageinfo.link_root)
       
-      image_path.gsub!("LINKROOT", linkroot)
-      image_path_small = image_path.gsub(".","-small.")
-      image_path_medium = image_path.gsub(".","-medium.")
-      image_path_large = image_path.gsub(".","-large.")
+        image_ext = File.extname(image_path)
+        image_path.gsub!("LINKROOT", link_root)
+        image_path_small = image_path.gsub(image_ext,"-small#{image_ext}")
+        image_path_medium = image_path.gsub(image_ext,"-medium#{image_ext}")
+        image_path_large = image_path.gsub(image_ext,"-large#{image_ext}")
+      else
+        image_path = ""
+        image_path_small = ""
+        image_path_medium = ""
+        image_path_large = ""
+      end
       
       # Build the URL for the link.
       link_url = File.join(pageinfo.link_root, html_path(entry_path))
@@ -316,6 +339,20 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
       
       if File.directory?( link_url ) and config.use_strict_index_links
         link_url = File.join( link_url, "index.html" )
+      end
+      
+      post_title = extract_title_from_filename(File.join(path, entry_path))
+      if metadata.has_key?(:post_title)
+        if not metadata[:post_title].blank?
+          post_title = metadata[:post_title]
+        end
+      end
+      
+      post_date = extract_date_from_filename(entry_path)
+      if metadata.has_key?(:post_date)
+        if not metadata[:post_date].blank?
+          post_date = metadata[:post_date]
+        end
       end
       
       lyt = LayoutHandler.new(config, pageinfo)
