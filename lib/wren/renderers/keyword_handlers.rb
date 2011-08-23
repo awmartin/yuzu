@@ -72,7 +72,7 @@ def extract_title str
   # Extract the title if any.
   post_title = ""
   tr = str.gsub(/TITLE\(([A-Za-z0-9\,\.\-\/_\s\:\|]*)\)/) do |s|
-    post_title = s.gsub("TITLE(","").gsub(")","")
+    post_title = s.gsub("TITLE(", "").gsub(")", "").strip
     ""
   end
   return post_title, tr
@@ -82,7 +82,7 @@ def extract_date str
   # Extract the title if any.
   post_date = ""
   tr = str.gsub(/DATE\(([A-Za-z0-9\,\.\-\/_\s\:\|]*)\)/) do |s|
-    post_date = s.gsub("DATE(","").gsub(")","")
+    post_date = s.gsub("DATE(", "").gsub(")", "").strip
     ""
   end
   return post_date, tr
@@ -94,7 +94,7 @@ def extract_images str
   images = []
   tr = str.gsub(/IMAGES\(([A-Za-z0-9\,\.\-\/_]*)\)/) do |s|
     images_str = s.gsub("IMAGES(","").gsub(")","")
-    images += images_str.split(",")
+    images += images_str.split(",").collect {|im| im.strip}
     ""
   end
   return images, tr
@@ -107,15 +107,43 @@ def insert_gallery str, images, galleries, pageinfo
   tr = str.gsub("INSERTGALLERY") do |s|
     if galleries
       gallery = ""
-      url = images.first
-      big_image = url.gsub(".","-large.")
-      
+
       if pageinfo.file_type == :haml
-        gallery = "\n.slideshow\n  .slide\n    %img{:src=>'#{big_image}'}\n"
+        gallery = "\n.slideshow\n"
+        images.each_index do |i|
+          big_image = images[i].gsub(".", "-large.")
+          if i == 0
+            visibility = "display:block;z-index:2;"
+          else
+            visibility = "display:none;z-index:1;"
+          end
+          gallery += "
+  .slide#slide-#{i}(style='#{visibility}')
+    %img{:src=>'#{big_image}'}
+"
+        end
+        gallery += "
+:javascript
+  var count = #{images.length};
+"
         gallery += ".gallery\n"
       else
-        gallery = "\n\n<div class=\"slideshow\">\n<div class=\"slide\">\n<img src='#{big_image}'>\n</div>\n"
-        gallery += "</div>\n\n"
+        gallery = "\n\n<div class=\"slideshow\">\n"
+        images.each_index do |i|
+          big_image = images[i].gsub(".", "-large.")
+          if i == 0
+            visibility = "display:block;z-index:2;"
+          else
+            visibility = "display:none;z-index:1;"
+          end
+          gallery += "
+<div class='slide' style='#{visibility}'>
+  <img src='#{big_image}'>
+</div>
+"
+        end
+        
+        gallery += "</div>\n"
         gallery += "<div class='gallery'>"
       end
       
@@ -124,15 +152,33 @@ def insert_gallery str, images, galleries, pageinfo
         thumb_url = image.gsub(".", "-small.")
         if pageinfo.file_type == :haml
           if (images.length+i) % 6 == 5
-            gallery += "  .gallery-thumb.last\n    %img{:src => '#{thumb_url}'}\n"
+            gallery += "
+  .gallery-thumb.last
+    %a{:href => '#', :onclick => 'slide(#{i});return false;'}
+      %img{:src => '#{thumb_url}'}
+"
           else
-            gallery += "  .gallery-thumb\n    %img{:src => '#{thumb_url}'}\n"
+            gallery += "
+  .gallery-thumb
+    %a{:href => '#', :onclick => 'slide(#{i});return false;'}
+      %img{:src => '#{thumb_url}'}
+"
           end
         else
           if (images.length+i) % 6 == 5
-            gallery += "<div class='gallery-thumb last'><img src='#{thumb_url}'></div>"
+            gallery += "
+<div class='gallery-thumb last'>
+  <a href='#' onclick='slide(#{i});return false;'>
+    <img src='#{thumb_url}'>
+  </a>
+</div>"
           else
-            gallery += "<div class='gallery-thumb'><img src='#{thumb_url}'></div>"
+            gallery += "
+<div class='gallery-thumb'>
+  <a href='#' onclick='slide(#{i});return false;'>
+    <img src='#{thumb_url}'>
+  </a>
+</div>"
           end
         end
       end
