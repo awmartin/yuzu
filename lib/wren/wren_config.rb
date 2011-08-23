@@ -61,4 +61,12 @@ class WrenConfig
   def link_root_for_service service
     @config_dict[service]['link_root'].to_s
   end
+  
+  def breadcrumb_omit_current_page
+    @config_dict['breadcrumb_omit_current_page']
+  end
+  
+  def breadcrumb_separator
+    @config_dict['breadcrumb_separator']
+  end
 end

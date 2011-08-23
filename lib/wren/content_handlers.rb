@@ -110,22 +110,60 @@ def remove_date_from_filename filename
   return post_filename.sub(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/, "")
 end
 
-def build_title path, pageinfo
-  tmp_path = filter_path(path)
-  clean = Pathname.new(tmp_path).cleanpath.to_s
-  last = clean.to_s.split('/').last
+
+def build_title path, pageinfo, extracted_page_title=""
+  puts ">>>> build_title"
+  puts "  path is #{path}"
+  puts "  extracted_page_title is #{extracted_page_title}"
   
-  if last.blank? or last == "."
+  if extracted_page_title.strip.blank?
+    if File.directory? path
+      page_title = titleize(remove_date_from_filename(File.basename(path)))
+      html_title = "#{page_title} | #{pageinfo.site_name}"
+      
+    else
+      if path.include?("index.")
+        filename = File.basename(path).to_s
+        tmp_path = path.gsub(filename, "").to_s.strip
+        
+        if tmp_path.blank?
+          html_title = pageinfo.site_name
+        else
+          page_title = titleize(remove_date_from_filename(tmp_path))
+          html_title = "#{page_title} | #{pageinfo.site_name}"
+        end
+      else
+        page_title = titleize(remove_date_from_filename(File.basename(path)))
+        html_title = "#{page_title} | #{pageinfo.site_name}"
+      
+      end
+    end
+
+  elsif path.blank? or is_root?(path)
     html_title = pageinfo.site_name
-    title = pageinfo.site_name
+
   else
-    html_title = titleize(remove_date_from_filename last).to_s
-    title = html_title.to_s + " | " + pageinfo.site_name.to_s
+    html_title = "#{extracted_page_title} | #{pageinfo.site_name}"
+  
   end
   
-  return title.to_s
+  puts "  html_title is #{html_title}"
+  
+  return html_title
 end
 
+
+def is_root? path
+  if not File.directory?(path)
+    extension = File.extname(path)
+    path_without_filename = path.gsub(extension, "")
+    if path_without_filename == "index"
+      return true
+    end
+  else
+    return false
+  end
+end
 
 # Like File.join, but cleans up the leading ./ in paths like
 # ./modules/index.text

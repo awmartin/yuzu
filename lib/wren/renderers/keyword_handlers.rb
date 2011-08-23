@@ -16,6 +16,12 @@ def preprocess_keywords str, local_path, config, pageinfo, galleries
   str = insert_contents(str)
   
   metadata[:post_title], str = extract_title(str)
+  
+  # TODO: Warning! Updating state in the middle of processing!
+  # This should only be done for a page, not a catalog.
+  puts "in preprocess_keywords, got #{metadata[:post_title]} for post_title"
+  metadata[:html_title] = build_title(local_path, @pageinfo, metadata[:post_title])
+  
   metadata[:post_date], str = extract_date(str)
   metadata[:categories], str = extract_categories(str)
   template, str = extract_template(str)
@@ -96,16 +102,66 @@ end
 
 def insert_gallery str, images, galleries, pageinfo
   # Look for galleries and insert images.
+  # TODO: Add javascript integration
   
   tr = str.gsub("INSERTGALLERY") do |s|
     if galleries
+      gallery = ""
       url = images.first
-      url.gsub!(".","-large.")
+      big_image = url.gsub(".","-large.")
+      
       if pageinfo.file_type == :haml
-        "\n.slideshow\n  .slide\n    %img{:src=>'#{url}'}\n\n"
+        gallery = "\n.slideshow\n  .slide\n    %img{:src=>'#{big_image}'}\n"
+        gallery += ".gallery\n"
       else
-        "\n\n<div class=\"slideshow\">\n<div class=\"slide\">\n<img src='#{url}'>\n</div>\n</div>\n\n"
+        gallery = "\n\n<div class=\"slideshow\">\n<div class=\"slide\">\n<img src='#{big_image}'>\n</div>\n"
+        gallery += "</div>\n\n"
+        gallery += "<div class='gallery'>"
       end
+      
+      images.each_index do |i|
+        image = images[i]
+        thumb_url = image.gsub(".", "-small.")
+        if pageinfo.file_type == :haml
+          if (images.length+i) % 6 == 5
+            gallery += "  .gallery-thumb.last\n    %img{:src => '#{thumb_url}'}\n"
+          else
+            gallery += "  .gallery-thumb\n    %img{:src => '#{thumb_url}'}\n"
+          end
+        else
+          if (images.length+i) % 6 == 5
+            gallery += "<div class='gallery-thumb last'><img src='#{thumb_url}'></div>"
+          else
+            gallery += "<div class='gallery-thumb'><img src='#{thumb_url}'></div>"
+          end
+        end
+      end
+      
+      num_blanks = 6 - images.length%6
+      num_blanks.times do |i|
+        if pageinfo.file_type == :haml
+          if (images.length+i) % 6 == 5
+            gallery += "  .gallery-thumb.last &nbsp;\n"
+          else
+            gallery += "  .gallery-thumb &nbsp;\n"
+          end
+        else
+          if (images.length+i) % 6 == 5
+            gallery += "<div class='gallery-thumb last'>&nbsp;</div>"
+          else
+            gallery += "<div class='gallery-thumb'>&nbsp;</div>"
+          end
+        end
+      end
+      
+      if pageinfo.file_type == :haml
+        gallery += "%hr\n"
+      else
+        gallery += "</div>\n\n"
+        gallery += "<hr>"
+      end
+      
+      gallery
     else
       ""
     end
@@ -247,12 +303,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
     :exclude_indicies => false
   }
   options = default_options.dup.update(options)
-  
-  tag = "ul"
-  if options[:ordered]
-    tag = "ol"
-  end
-  
+
   css_class = ""
   if not options[:class].blank?
     css_class = " class=\"#{options[:class]}\""

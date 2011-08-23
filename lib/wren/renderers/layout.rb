@@ -12,29 +12,27 @@ class LayoutHandler
     @config = config
     
     @suppressor = Suppressor.new
-    
-    load_page_partials
   end
   
-  def load_page_partials
-    @html_head = load_partial "_head.haml"
-    @header_contents = load_partial "_header.haml"
-    @menu_contents = load_partial "_menu.haml"
+  def load_page_partials metadata
+    @html_head = load_partial "_head.haml", metadata
+    @header_contents = load_partial "_header.haml", metadata
+    @menu_contents = load_partial "_menu.haml", metadata
     
     recents = [] #get_recent_blog_posts(@config)
     titles = recents.collect {|entry| extract_title_from_filename entry}
-    @footer_contents = load_partial "_footer.haml", {:recents => recents, :titles => titles}
+    @footer_contents = load_partial "_footer.haml", metadata.update({:recents => recents, :titles => titles})
   end
   
   def load_template local_path="", data={}
     puts "Loading template " + local_path.to_s
-    
     return "" if local_path.blank?
+    
     local_path = File.join(@config.template_dir, local_path).to_s
-  
+    
     template = File.open(local_path, 'r')
     contents = template.readlines.join
-  
+    
     #@suppressor.shutup!
     result = Haml::Engine.new(contents, {:format => :html5}).render(Object.new, data)
     #@suppressor.ok
@@ -87,6 +85,7 @@ class LayoutHandler
     categories = metadata.has_key?(:categories) ? metadata[:categories] : []
     page_links = metadata.has_key?(:page_links) ? metadata[:page_links] : ""
     post_title = metadata.has_key?(:post_title) ? metadata[:post_title] : "Untitled"
+    html_title = metadata.has_key?(:html_title) ? metadata[:html_title] : @html_title
     
     if metadata.has_key?(:breadcrumb_path)
       
@@ -103,7 +102,9 @@ class LayoutHandler
       breadcrumb = ""
     end
     
-    return load_template(template, {:head => @html_head, 
+    load_page_partials metadata
+    
+    return load_template(template, {:head => @html_head,
                                     :contents => contents,
                                     :header => @header_contents,
                                     :footer => @footer_contents,
@@ -113,7 +114,8 @@ class LayoutHandler
                                     :breadcrumb => breadcrumb,
                                     :post_title => post_title,
                                     :categories => categories,
-                                    :page_links => page_links})
+                                    :page_links => page_links,
+                                    :html_title => html_title})
   rescue => exception
     puts "Exception in wrap_with_layout..."
     puts exception.message

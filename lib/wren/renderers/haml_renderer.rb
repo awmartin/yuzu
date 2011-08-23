@@ -15,7 +15,7 @@ class HamlRenderer
   def render str="", local_path=""
     contents, template, metadata = preprocess_keywords(str, local_path, @config, @pageinfo, @galleries)
     local_vars = {
-      :html_title => @pageinfo.html_title
+      :html_title => metadata[:html_title]
       }
     opts = {
       :format => :html5

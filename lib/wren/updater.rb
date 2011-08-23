@@ -339,7 +339,6 @@ class Updater
     file.rewind
     
     @pageinfo.html_title = build_title(file_path, @pageinfo)
-    puts "html_title is #{@pageinfo.html_title}"
     
     if file.is_a?(File)
       @pageinfo.file_type = get_file_type(@config, file)

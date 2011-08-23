@@ -1,5 +1,6 @@
 
 def render_breadcrumb path, config, pageinfo, blog_categories=nil
+  omit_current_page = config.breadcrumb_omit_current_page rescue false
   file_path = path.dup
   use_strict_index_links = config.use_strict_index_links
   
@@ -37,7 +38,7 @@ def render_breadcrumb path, config, pageinfo, blog_categories=nil
   url = "/"
   
   paths = file_path.to_s.split('/')
-  #paths.delete_if {|p| p == "."}
+  paths.delete_if {|p| p == "."}
   
   paths.each do |folder|
     this_url = ""
@@ -61,7 +62,17 @@ def render_breadcrumb path, config, pageinfo, blog_categories=nil
   
   crumbs.reverse!
   
-  return "&nbsp;&middot; " + crumbs[1..(crumbs.length-1)].join(" &middot; ")
+  sep = config.breadcrumb_separator
+  
+  if crumbs.length == 1
+    return crumbs.first
+  else
+    if omit_current_page
+      return "&nbsp;#{sep} " + crumbs[1..(crumbs.length-1)].join(" #{sep} ")
+    else
+      return crumbs.join(" #{sep} ")
+    end
+  end
 rescue => exception
   puts "Exception in breadcrumb renderer..."
   puts exception.message

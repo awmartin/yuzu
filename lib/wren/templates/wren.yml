@@ -124,3 +124,7 @@ resource_extensions:
 # This does not automatically add index.html to links in the content, textile, or haml files. You have 
 # to do those links yourself.
 use_strict_index_links: yes
+
+breadcrumb_omit_current_page: false
+breadcrumb_separator: "&middot;"
+
