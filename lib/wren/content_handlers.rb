@@ -112,10 +112,7 @@ end
 
 
 def build_title path, pageinfo, extracted_page_title=""
-  puts ">>>> build_title"
-  puts "  path is #{path}"
-  puts "  extracted_page_title is #{extracted_page_title}"
-  
+
   if extracted_page_title.strip.blank?
     if File.directory? path
       page_title = titleize(remove_date_from_filename(File.basename(path)))
@@ -146,8 +143,6 @@ def build_title path, pageinfo, extracted_page_title=""
     html_title = "#{extracted_page_title} | #{pageinfo.site_name}"
   
   end
-  
-  puts "  html_title is #{html_title}"
   
   return html_title
 end

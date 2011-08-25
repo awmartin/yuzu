@@ -34,7 +34,7 @@ class Updater
     @local_relative_path = "."
     @pageinfo = PageInfo.new
     
-    @pageinfo.link_root = @config.link_root_for_service(@uploader.service)
+    @pageinfo.link_root = remove_trailing_slash(@config.link_root_for_service(@uploader.service))
     @pageinfo.html_title = @config.site_name
     @pageinfo.site_name = @config.site_name
     
@@ -162,7 +162,7 @@ class Updater
   
   def update_preview
     @uploader.set_preview
-    @pageinfo.link_root = @config.link_root_for_service('preview')
+    @pageinfo.link_root = remove_trailing_slash(@config.link_root_for_service('preview'))
   end
   
   # Update a particular list of files, presented as an array.
@@ -256,7 +256,6 @@ class Updater
         puts "  Not paginating: new_path = #{new_path}"
         contents, template, metadata = process_file(file, new_path)
         file.close
-        puts "  local_path is #{local_path}, new_path is #{new_path}"
         wrap_and_process(contents, template, metadata, local_path, new_path, should_update_dependants)
         return
       else
@@ -278,7 +277,6 @@ class Updater
           puts ">>>>> Rendering page #{page_number+1}."
           offset = page_number * count
           page_contents = raw_contents.gsub("PAGINATE", offset.to_s)
-          puts "page_contents is #{page_contents}"
           
           if page_number == 0
             page_path = new_path.dup
@@ -299,6 +297,7 @@ class Updater
       puts "  Regular parsing. No pagination."
       # Regular parsing. No pagination.
       contents, template, metadata = process_file(file, new_path)
+      metadata[:sidebar_contents], _, _ = process_contents(metadata[:sidebar_contents], @pageinfo.file_type, new_path)
       file.close
       wrap_and_process(contents, template, metadata, local_path, new_path, should_update_dependants)
       return
@@ -338,7 +337,7 @@ class Updater
     
     file.rewind
     
-    @pageinfo.html_title = build_title(file_path, @pageinfo)
+    #@pageinfo.html_title = build_title(file_path, @pageinfo)
     
     if file.is_a?(File)
       @pageinfo.file_type = get_file_type(@config, file)

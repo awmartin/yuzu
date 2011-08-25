@@ -2,6 +2,7 @@ require 'haml'
 require 'suppressor'
 require 'content_handlers'
 require 'renderers/breadcrumb'
+require 'renderers/gallery'
 
 class LayoutHandler
 
@@ -86,6 +87,12 @@ class LayoutHandler
     page_links = metadata.has_key?(:page_links) ? metadata[:page_links] : ""
     post_title = metadata.has_key?(:post_title) ? metadata[:post_title] : "Untitled"
     html_title = metadata.has_key?(:html_title) ? metadata[:html_title] : @html_title
+    show_gallery = metadata.has_key?(:show_gallery) ? metadata[:show_gallery] : false
+    
+    gallery = ""
+    if show_gallery
+      gallery = render_gallery(metadata[:images], @pageinfo)
+    end
     
     if metadata.has_key?(:breadcrumb_path)
       
@@ -115,7 +122,8 @@ class LayoutHandler
                                     :post_title => post_title,
                                     :categories => categories,
                                     :page_links => page_links,
-                                    :html_title => html_title})
+                                    :html_title => html_title,
+                                    :gallery => gallery})
   rescue => exception
     puts "Exception in wrap_with_layout..."
     puts exception.message

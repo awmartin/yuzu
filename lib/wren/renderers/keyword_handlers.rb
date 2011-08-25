@@ -5,6 +5,7 @@ require 'renderers/layout'
 require 'renderers/textile_renderer'
 require 'renderers/haml_renderer'
 require 'renderers/markdown_renderer'
+require 'renderers/gallery'
 
 
 def preprocess_keywords str, local_path, config, pageinfo, galleries
@@ -25,7 +26,7 @@ def preprocess_keywords str, local_path, config, pageinfo, galleries
   metadata[:post_date], str = extract_date(str)
   metadata[:categories], str = extract_categories(str)
   template, str = extract_template(str)
-  images, str = extract_images(str)
+  metadata[:images], str = extract_images(str)
   
   str = insert_catalogs(str, local_path, config, pageinfo)
   
@@ -33,11 +34,16 @@ def preprocess_keywords str, local_path, config, pageinfo, galleries
   metadata[:sidebar_contents], str = extract_sidebar_contents(str)
   
   # Galleries must be inserted after images are extracted.
-  str = insert_gallery(str, images, galleries, pageinfo)
+  #str = insert_gallery(str, images, galleries, pageinfo)
+  if galleries
+    metadata[:show_gallery], str = show_gallery?(str)
+  else
+    metadata[:show_gallery] = false
+  end
   
   str = insert_currentpath(str, linked_path(pageinfo, path_to_file))
   
-  str = insert_linkroot(str, remove_trailing_slash(pageinfo.link_root))
+  str = insert_linkroot(str, pageinfo.link_root)
   
   #str = insert_multiview(str, local_path)
 
@@ -51,7 +57,7 @@ end
 
 # Simple helper for grabbing the contents of a text file.
 # Used for the direct insertion of content with INSERTCONTENTS(...)
-# This defaults to a path absolute to the root of the file system,
+# This defaults to a path relative to the root of the file system,
 # which might not make sense...
 def insert_file local_path
   file = File.open(local_path, "r")
@@ -100,114 +106,22 @@ def extract_images str
   return images, tr
 end
 
+def show_gallery? str
+  show = false
+  tr = str.gsub("INSERTGALLERY") do |s|
+    show = true
+    ""
+  end
+  return show, tr
+end
+
 def insert_gallery str, images, galleries, pageinfo
   # Look for galleries and insert images.
   # TODO: Add javascript integration
   
   tr = str.gsub("INSERTGALLERY") do |s|
     if galleries
-      gallery = ""
-
-      if pageinfo.file_type == :haml
-        gallery = "\n.slideshow\n"
-        images.each_index do |i|
-          big_image = images[i].gsub(".", "-large.")
-          if i == 0
-            visibility = "display:block;z-index:2;"
-          else
-            visibility = "display:none;z-index:1;"
-          end
-          gallery += "
-  .slide#slide-#{i}(style='#{visibility}')
-    %img{:src=>'#{big_image}'}
-"
-        end
-        gallery += "
-:javascript
-  var count = #{images.length};
-"
-        gallery += ".gallery\n"
-      else
-        gallery = "\n\n<div class=\"slideshow\">\n"
-        images.each_index do |i|
-          big_image = images[i].gsub(".", "-large.")
-          if i == 0
-            visibility = "display:block;z-index:2;"
-          else
-            visibility = "display:none;z-index:1;"
-          end
-          gallery += "
-<div class='slide' style='#{visibility}'>
-  <img src='#{big_image}'>
-</div>
-"
-        end
-        
-        gallery += "</div>\n"
-        gallery += "<div class='gallery'>"
-      end
-      
-      images.each_index do |i|
-        image = images[i]
-        thumb_url = image.gsub(".", "-small.")
-        if pageinfo.file_type == :haml
-          if (images.length+i) % 6 == 5
-            gallery += "
-  .gallery-thumb.last
-    %a{:href => '#', :onclick => 'slide(#{i});return false;'}
-      %img{:src => '#{thumb_url}'}
-"
-          else
-            gallery += "
-  .gallery-thumb
-    %a{:href => '#', :onclick => 'slide(#{i});return false;'}
-      %img{:src => '#{thumb_url}'}
-"
-          end
-        else
-          if (images.length+i) % 6 == 5
-            gallery += "
-<div class='gallery-thumb last'>
-  <a href='#' onclick='slide(#{i});return false;'>
-    <img src='#{thumb_url}'>
-  </a>
-</div>"
-          else
-            gallery += "
-<div class='gallery-thumb'>
-  <a href='#' onclick='slide(#{i});return false;'>
-    <img src='#{thumb_url}'>
-  </a>
-</div>"
-          end
-        end
-      end
-      
-      num_blanks = 6 - images.length%6
-      num_blanks.times do |i|
-        if pageinfo.file_type == :haml
-          if (images.length+i) % 6 == 5
-            gallery += "  .gallery-thumb.last &nbsp;\n"
-          else
-            gallery += "  .gallery-thumb &nbsp;\n"
-          end
-        else
-          if (images.length+i) % 6 == 5
-            gallery += "<div class='gallery-thumb last'>&nbsp;</div>"
-          else
-            gallery += "<div class='gallery-thumb'>&nbsp;</div>"
-          end
-        end
-      end
-      
-      if pageinfo.file_type == :haml
-        gallery += "%hr\n"
-      else
-        gallery += "</div>\n\n"
-        gallery += "<hr>"
-      end
-      
-      gallery
+      render_gallery(images, pageinfo)
     else
       ""
     end
@@ -229,8 +143,8 @@ end
 def extract_sidebar_contents str
   # Find any sidebar contents.
   sidebar_contents = ""
-  tr = str.gsub(/SIDEBARCONTENTS\(\"([A-Za-z0-9\%\n\.\,\'\"\/\-_]*)\"\)/) do |s|
-    sidebar_contents = s.gsub("SIDEBARCONTENTS(\"","").gsub("\")","")
+  tr = str.gsub(/SIDEBARCONTENTS\(([A-Za-z0-9\s\%\n\.\,\'\/\-_]*)\)/) do |s|
+    sidebar_contents = s.gsub("SIDEBARCONTENTS(", "").gsub(")", "")
     ""
   end
   return sidebar_contents, tr
@@ -414,10 +328,8 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
       end
       
       if not image_path.blank?
-        link_root = remove_trailing_slash(pageinfo.link_root)
-      
         image_ext = File.extname(image_path)
-        image_path.gsub!("LINKROOT", link_root)
+        image_path.gsub!("LINKROOT", pageinfo.link_root)
         image_path_small = image_path.gsub(image_ext,"-small#{image_ext}")
         image_path_medium = image_path.gsub(image_ext,"-medium#{image_ext}")
         image_path_large = image_path.gsub(image_ext,"-large#{image_ext}")
