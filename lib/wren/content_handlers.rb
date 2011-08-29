@@ -43,7 +43,7 @@ def extract_first_paragraph file, file_type
       break
     end
     
-    if not line.match(headers).blank? and not past_first_header
+    if not line.strip.blank? and not line.match(headers).blank? and not past_first_header
       past_first_header = true
     end
   end

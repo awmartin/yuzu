@@ -41,6 +41,7 @@ class LayoutHandler
     return result
   rescue => detail
     puts detail.message
+    puts detail.backtrace
     return ""
   end
 
@@ -59,7 +60,8 @@ class LayoutHandler
     local_vars = @config.config_dict.dup.update({ 
         :html_title => @html_title || "",
         :link_root => @link_root || "",
-        :breadcrumb => crumbs || ""
+        :breadcrumb => crumbs || "",
+        :domain => @pageinfo.domain
       }).update(data)
     
     #@suppressor.shutup!
@@ -82,16 +84,20 @@ class LayoutHandler
     puts "wrap_with_layout, template=#{template}"
     # Check if this is in the blog. If so, then tell the breadcrumb it needs to render with categories.
     
-    first_paragraph = metadata.has_key?(:first_paragraph) ? metadata[:first_paragraph] : ""
-    categories = metadata.has_key?(:categories) ? metadata[:categories] : []
-    page_links = metadata.has_key?(:page_links) ? metadata[:page_links] : ""
-    post_title = metadata.has_key?(:post_title) ? metadata[:post_title] : "Untitled"
-    html_title = metadata.has_key?(:html_title) ? metadata[:html_title] : @html_title
-    show_gallery = metadata.has_key?(:show_gallery) ? metadata[:show_gallery] : false
-    
-    gallery = ""
-    if show_gallery
-      gallery = render_gallery(metadata[:images], @pageinfo)
+    # Handle defaults for metadata.
+    # TODO: Handle this in a more intelligent page class.
+    metadata[:first_paragraph] = "" if not metadata.has_key?(:first_paragraph)
+    metadata[:categories] = [] if not metadata.has_key?(:categories)
+    metadata[:page_links] = "" if not metadata.has_key?(:page_links)
+    metadata[:post_title] = "Untitled" if not metadata.has_key?(:post_title)
+    metadata[:html_title] = @html_title if not metadata.has_key?(:html_title)
+    metadata[:show_gallery] = false if not metadata.has_key?(:show_gallery)
+    metadata[:images] = [] if not metadata.has_key?(:images)
+
+    if metadata[:show_gallery]
+      metadata[:gallery] = render_gallery(metadata[:images], @pageinfo)
+    else
+      metadata[:gallery] = ""
     end
     
     if metadata.has_key?(:breadcrumb_path)
@@ -101,29 +107,23 @@ class LayoutHandler
       
       # If this file is in the blog directory, send in the categories to the breadcrumb.
       if is_in_blog?(metadata[:breadcrumb_path]) and num_paths == 2
-        breadcrumb = render_breadcrumb(metadata[:breadcrumb_path], @config, @pageinfo, categories)
+        metadata[:breadcrumb] = render_breadcrumb(metadata[:breadcrumb_path], @config, @pageinfo, metadata[:categories])
       else
-        breadcrumb = render_breadcrumb(metadata[:breadcrumb_path], @config, @pageinfo)
+        metadata[:breadcrumb] = render_breadcrumb(metadata[:breadcrumb_path], @config, @pageinfo)
       end
     else
-      breadcrumb = ""
+      metadata[:breadcrumb] = ""
     end
     
     load_page_partials metadata
     
-    return load_template(template, {:head => @html_head,
-                                    :contents => contents,
-                                    :header => @header_contents,
-                                    :footer => @footer_contents,
-                                    :menu => @menu_contents,
-                                    :sidebar_contents => metadata[:sidebar_contents],
-                                    :first_paragraph => first_paragraph,
-                                    :breadcrumb => breadcrumb,
-                                    :post_title => post_title,
-                                    :categories => categories,
-                                    :page_links => page_links,
-                                    :html_title => html_title,
-                                    :gallery => gallery})
+    return load_template(template, {
+                           :head => @html_head,
+                           :contents => contents,
+                           :header => @header_contents,
+                           :footer => @footer_contents,
+                           :menu => @menu_contents,
+                           :domain => @pageinfo.domain}.update(metadata))
   rescue => exception
     puts "Exception in wrap_with_layout..."
     puts exception.message

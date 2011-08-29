@@ -13,6 +13,7 @@ require 'content_handlers'
 require 'wren_config'
 
 class PageInfo
+  attr_accessor :domain
   attr_accessor :link_root
   attr_accessor :html_title
   attr_accessor :post_title
@@ -37,6 +38,7 @@ class Updater
     @pageinfo.link_root = remove_trailing_slash(@config.link_root_for_service(@uploader.service))
     @pageinfo.html_title = @config.site_name
     @pageinfo.site_name = @config.site_name
+    @pageinfo.domain = @config.domain_for_service(@uploader.service)
     
     @suppressor = Suppressor.new
     
@@ -137,15 +139,15 @@ class Updater
   
   # One point of exit for the process to upload the file to the proper location.
   # The Uploader object keeps track of the destination and the service (s3, filesystem, etc.).
-  def upload_file local_path="", contents=""
+  def upload_file local_path="", contents="", target_extension=".html"
     return if local_path.blank? or contents.blank?
     
     puts "Uploading #{local_path}"
     
     if @config.processable?(local_path)
-      # Convert the local path file extension to HTML.
+      # Convert the local path file extension to the target extension.
       ext = File.extname(local_path)
-      html_path = local_path.sub(ext, ".html")
+      html_path = local_path.sub(ext, target_extension)
       @uploader.upload(html_path, contents)
     else
       @uploader.upload(local_path, contents)
@@ -319,7 +321,7 @@ class Updater
     
     wrapped_contents = LayoutHandler.new(@config, @pageinfo).wrap_with_layout(contents, template, metadata)
     
-    post_process(new_path, wrapped_contents, should_update_dependants)
+    post_process(new_path, wrapped_contents, metadata, should_update_dependants)
   end
   
   
@@ -444,7 +446,7 @@ class Updater
   def render_list_index path
     puts "Building an index page for path: #{path}"
     
-    if not File::directory?( path )
+    if not File::directory?(path)
       puts "  Error: Given path is not a directory."
       return ""
     end
@@ -455,11 +457,15 @@ class Updater
   end
   
   # This method handles the uploading process and updating dependants.
-  def post_process local_path, contents, should_update_dependants=false
+  def post_process local_path, contents, metadata, should_update_dependants=false
     puts "Post processing #{local_path}"
     
     # Combine and upload the contents to a file on the remote server.
-    upload_file(local_path, contents)
+    target_extension = ".html"
+    if metadata.has_key?(:extension)
+      target_extension = metadata[:extension]
+    end
+    upload_file(local_path, contents, target_extension)
     
     if should_update_dependants
       puts "Attempting to update dependants of file: #{local_path}"

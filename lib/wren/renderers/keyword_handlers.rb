@@ -17,6 +17,7 @@ def preprocess_keywords str, local_path, config, pageinfo, galleries
   str = insert_contents(str)
   
   metadata[:post_title], str = extract_title(str)
+  metadata[:extension], str = extract_extension(str)
   
   # TODO: Warning! Updating state in the middle of processing!
   # This should only be done for a page, not a catalog.
@@ -72,6 +73,15 @@ def insert_contents str
     puts "Inserting contents of #{path_of_file_to_insert}"
     insert_file(path_of_file_to_insert).gsub("MULTIVIEW","")
   end
+end
+
+def extract_extension str
+  file_extension = ".html"
+  tr = str.gsub(/EXTENSION\(\.([A-Za-z0-9\.]*)\)/) do |s|
+    file_extension = s.gsub("EXTENSION(","").gsub(")","")
+    ""
+  end
+  return file_extension, tr
 end
 
 def extract_title str
@@ -253,7 +263,6 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
   
   default_options = {
     :ordered => false,
-    :class => "",
     :count => 12,
     :start => 0,
     :sort_by => :name,
@@ -263,11 +272,8 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
     :exclude_indicies => false
   }
   options = default_options.dup.update(options)
-
-  css_class = ""
-  if not options[:class].blank?
-    css_class = " class=\"#{options[:class]}\""
-  end
+  
+  make_rows = (options[:blocks_per_row].to_i > 0)
   
   sorted = get_catalog_contents(path, options)
   
@@ -287,11 +293,13 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
       entry_path = sorted[i]
       
       puts "Processing catalog item: #{entry_path}"
-    
-      if j % options[:blocks_per_row] == 0
-        text += "<hr>\n"
+      
+      if make_rows
+        if j % options[:blocks_per_row] == 0 and i != 0
+          text += "<hr>\n"
+        end
       end
-
+      
       if File.directory?(entry_path)
         # Locate the index.
         index, index_path = open_index(entry_path)
@@ -326,7 +334,8 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
           file.close
         end
       end
-      
+
+      # Build all the image thumbnail paths.
       if not image_path.blank?
         image_ext = File.extname(image_path)
         image_path.gsub!("LINKROOT", pageinfo.link_root)
@@ -364,6 +373,14 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
         end
       end
       
+      # Build the CSS class for making rows.
+      css_class = ""
+      if make_rows
+        if ((j % options[:blocks_per_row]) == (options[:blocks_per_row] - 1))
+          css_class = "last"
+        end
+      end
+      
       lyt = LayoutHandler.new(config, pageinfo)
       opts = {:post_title => post_title,
               :post_date => post_date,
@@ -373,7 +390,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
               :image_path_small => image_path_small,
               :image_path_medium => image_path_medium,
               :image_path_large => image_path_large,
-              :klass => (((j % options[:blocks_per_row]) == (options[:blocks_per_row] - 1)) ? "last" : ""),
+              :klass => css_class,
               :link_url => link_url,
               :link_root => pageinfo.link_root,
               :categories => metadata[:categories]}
