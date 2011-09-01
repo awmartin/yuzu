@@ -46,6 +46,14 @@ def preprocess_keywords str, local_path, config, pageinfo, galleries
   
   str = insert_linkroot(str, pageinfo.link_root)
   
+  # Old first paragraph extraction.
+  #para = get_first_paragraph(str, pageinfo.file_type, false)
+  #puts ">>>>> first paragraph!"
+  #puts para
+  #str.gsub!(para, "")
+  #metadata[:raw_first_paragraph] = para
+  #metadata[:first_paragraph] = strip_paragraph_style(para, pageinfo.file_type)
+
   #str = insert_multiview(str, local_path)
 
   # Image url replacement. Not needed on an Apache server.
@@ -305,10 +313,12 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
         index, index_path = open_index(entry_path)
         if index.blank?
           paragraph = ""
+          contents = ""
           image_path = ""
         else
           file_type = get_file_type(config, index)
-          paragraph = extract_first_paragraph(index, file_type)
+          paragraph = ""
+          #full_para, paragraph = get_first_html_paragraph(index.readlines.join)
           image_path = extract_first_image(index)
           contents = paragraph
           index.close
@@ -320,7 +330,7 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
           lines = file.readlines()
           file_type = get_file_type(config, file)
           
-          paragraph = extract_first_paragraph(file, file_type)
+          #paragraph = extract_first_paragraph(file, file_type)
           image_path = extract_first_image(file)
           
           if file_type == :textile
@@ -331,6 +341,8 @@ def insert_catalog path="", options={}, config=nil, pageinfo=nil
             contents, template, metadata = MarkdownRenderer.new(config, pageinfo, false).render(lines.join("\n"), file.path)
           end
           
+          full_para, paragraph = get_first_html_paragraph(contents)
+
           file.close
         end
       end

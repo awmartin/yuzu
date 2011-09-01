@@ -214,14 +214,16 @@ class Updater
     # These are the variables we're trying to populate.
     file = nil
     contents = ""
-    metadata = {}
-    
+    metadata = {:is_generated_index => false}
+    is_generated_index = false
+
     if File::directory?(local_path)
       
       puts "Rendering a folder, so generating an index."
       
       file, new_path = render_index(local_path) # file is a StringIO
       template = "_index.haml"
+      is_generated_index = true
       
     elsif @config.processable?(local_path)
       
@@ -239,7 +241,7 @@ class Updater
     # Here we have the file.
     # Need contents, template, metadata
     # And also the results of INSERTCATALOG to determine pagination.
-
+    
 
     if file.is_a?(StringIO) or (file.is_a?(File) and file.path.to_s.include?('index.'))
       # If we've been given a StringIO, then something else has generated the
@@ -287,7 +289,13 @@ class Updater
           end
           
           contents, template, metadata = process_contents(page_contents, file_type, page_path)
-          metadata[:page_links] = render_page_links(num_pages, concat_path(@pageinfo.link_root, page_path), page_number+1)
+          metadata[:page_links] = render_page_links(num_pages, 
+                                                    concat_path(@pageinfo.link_root, page_path), 
+                                                    page_number + 1)
+          
+          # TODO: This is a hack. This should be state carried by the new file abstraction.
+          metadata[:is_generated_index] = is_generated_index
+          
           # Process the page.
           wrap_and_process(contents, template, metadata, page_path, page_path, should_update_dependants)
         end
@@ -298,9 +306,18 @@ class Updater
     else
       puts "  Regular parsing. No pagination."
       # Regular parsing. No pagination.
+      
+      # Attempt to make contents without the first paragraph.
+      # This is a hack for when the new file abstraction is put in place.
+      
       contents, template, metadata = process_file(file, new_path)
-      metadata[:sidebar_contents], _, _ = process_contents(metadata[:sidebar_contents], @pageinfo.file_type, new_path)
+      
+      puts "Processing the contents of the sidebar."
+      metadata[:sidebar_contents], _, _ = process_contents(metadata[:sidebar_contents], 
+                                                           @pageinfo.file_type, 
+                                                           new_path)
       file.close
+      
       wrap_and_process(contents, template, metadata, local_path, new_path, should_update_dependants)
       return
     end
@@ -319,6 +336,26 @@ class Updater
       end
     end
     
+    if metadata[:is_generated_index]
+      puts "GENERATED INDEX!!!"
+      metadata[:first_paragraph] = ""
+      metadata[:contents_without_first_paragraph] = contents
+    else
+      full_para, contents_only = get_first_html_paragraph(contents)
+      metadata[:first_paragraph] = contents_only.to_s
+
+      if full_para.to_s.strip.blank?
+        if contents_only.to_s.strip.blank?
+          metadata[:contents_without_first_paragraph] = contents.to_s
+        else
+          metadata[:contents_without_first_paragraph] = contents.to_s.gsub(contents_only.to_s.strip, "")
+        end
+      else
+        metadata[:contents_without_first_paragraph] = contents.to_s.gsub(full_para.to_s.strip, "")
+      end
+    end
+    
+    puts "FIRST PARAGRAPH: #{metadata[:first_paragraph]}"
     wrapped_contents = LayoutHandler.new(@config, @pageinfo).wrap_with_layout(contents, template, metadata)
     
     post_process(new_path, wrapped_contents, metadata, should_update_dependants)

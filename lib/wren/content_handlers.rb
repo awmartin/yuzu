@@ -1,61 +1,26 @@
 require 'pathname'
 require 'stringio'
 
-def extract_first_paragraph file, file_type
-  file.rewind
-  
-  paragraph = ""
-  if file_type == :textile
-    headers = /h1\.\s|h2\.\s|h3\.\s|h4\.\s/
-  elsif file_type == :haml
-    headers = /\%h1\s|\%h2\s|\%h3\s|\%h4\s/
-  elsif file_type == :markdown
-    headers = /\#\s|\#\#\s|\#\#\#\s|\#\#\#\#\s/
-  end
-  past_first_header = false
-  
-  # Sometimes, the files have INSERTCONTENTS for their primary contents.
-  str = file.readlines.join("\n")
-  contents = insert_contents str
+def get_first_html_paragraph contents
+  html_pattern = /<p\b[^>]*>((.|\n)*?)<\/p>/
   lines = contents.split("\n")
-  
   lines.each do |line|
-    if line.include?("p(intro). ")
-      return line.gsub("p(intro). ","")
-    elsif line.include?("%p.intro ")
-      return line.gsub("%p.intro ","")
-    elsif line.include?("%p ") # Check just for a HAML paragraph. It *should* catch the first one.
-      return line.gsub("%p ", "")
+    m = line.match(html_pattern)
+    if not m.nil?
+      return m[0], m[1]
     end
   end
-  
-  # Check to see if there is a header at all...
-  # TODO: Really should check to see if a paragraph shows up before a header.
-  if contents.match(headers).nil?
-    past_first_header = true
-  end
-  
-  directive_pattern = /([A-Z]*)\((.*)/
-  
-  lines.each do |line|
-    if past_first_header and not line.strip.blank? and line.strip[0].chr != "!" and line.match(headers).nil? and line.match(directive_pattern).nil?
-      paragraph = line.to_s.gsub("\n","").strip
-      break
-    end
-    
-    if not line.strip.blank? and not line.match(headers).blank? and not past_first_header
-      past_first_header = true
-    end
-  end
-  
-  # Remove %p.class from the found paragraph.
+  return nil
+end
+
+def strip_paragraph_style paragraph, file_type
+  tr = ""
   if file_type == :textile
-    paragraph.gsub!(/p\([A-Za-z0-9\.\-\_]*\)\.\s/,"")
+    tr = paragraph.gsub(/p\([A-Za-z0-9\.\-\_]*\)\.\s/,"")
   elsif file_type == :haml
-    paragraph.gsub!(/(\%p)(\.[A-Za-z0-9\.\-\_]*)?\s/,"")
+    tr = paragraph.gsub(/(\%p)(\.[A-Za-z0-9\.\-\_]*)?\s/,"")
   end
-  
-  return paragraph
+  return tr.strip
 end
 
 def extract_first_image file

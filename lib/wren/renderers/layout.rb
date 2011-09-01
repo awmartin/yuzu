@@ -115,7 +115,7 @@ class LayoutHandler
       metadata[:breadcrumb] = ""
     end
     
-    load_page_partials metadata
+    load_page_partials(metadata)
     
     return load_template(template, {
                            :head => @html_head,
