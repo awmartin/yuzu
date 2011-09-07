@@ -60,14 +60,21 @@ end
 def extract_date_from_filename filename
   post_filename = filename.split("/").last
   if not post_filename.match(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/).nil?
-    months = {"01" => "January","02" => "February", "03" => "March", "04" => "April", "05" => "May", "06" => "June",
-              "07" => "July", "08" => "August", "09" => "September", "10" => "October", "11" => "November", "12" => "December"}
     date_parts = post_filename.split("-")[0..2]
-    post_date = date_parts[0].to_s + " " + months[date_parts[1]] + " " + date_parts[2].to_s
-    return post_date
+    return date_parts.join("-")
   else
     return ""
   end
+end
+
+def format_date date
+  return "" if date.blank?
+  months = {"01" => "January","02" => "February", "03" => "March", "04" => "April", 
+    "05" => "May", "06" => "June", "07" => "July", "08" => "August", 
+    "09" => "September", "10" => "October", "11" => "November", "12" => "December"}
+  date_parts = date.split("-")[0..2]
+  post_date = "#{date_parts[0]} #{months[date_parts[1]]} #{date_parts[2]}"
+  return post_date
 end
 
 def remove_date_from_filename filename
@@ -76,12 +83,12 @@ def remove_date_from_filename filename
 end
 
 
-def build_title path, pageinfo, extracted_page_title=""
-
+def build_title path, site_name, extracted_page_title=""
+  
   if extracted_page_title.strip.blank?
     if File.directory? path
       page_title = titleize(remove_date_from_filename(File.basename(path)))
-      html_title = "#{page_title} | #{pageinfo.site_name}"
+      html_title = "#{page_title} | #{site_name}"
       
     else
       if path.include?("index.")
@@ -89,23 +96,23 @@ def build_title path, pageinfo, extracted_page_title=""
         tmp_path = path.gsub(filename, "").to_s.strip
         
         if tmp_path.blank?
-          html_title = pageinfo.site_name
+          html_title = site_name
         else
           page_title = titleize(remove_date_from_filename(tmp_path))
-          html_title = "#{page_title} | #{pageinfo.site_name}"
+          html_title = "#{page_title} | #{site_name}"
         end
       else
         page_title = titleize(remove_date_from_filename(File.basename(path)))
-        html_title = "#{page_title} | #{pageinfo.site_name}"
+        html_title = "#{page_title} | #{site_name}"
       
       end
     end
 
   elsif path.blank? or is_root?(path)
-    html_title = pageinfo.site_name
+    html_title = site_name
 
   else
-    html_title = "#{extracted_page_title} | #{pageinfo.site_name}"
+    html_title = "#{extracted_page_title} | #{site_name}"
   
   end
   

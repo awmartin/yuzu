@@ -1,29 +1,24 @@
 
-def render_breadcrumb path, config, pageinfo, blog_categories=nil
+def render_breadcrumb file_cache, blog_categories=nil
+  path = file_cache.relative_path
+  config = file_cache.config
+
   omit_current_page = config.breadcrumb_omit_current_page rescue false
   file_path = path.dup
   use_strict_index_links = config.use_strict_index_links
   
   add_html_to_end = false
-  if file_path.include?("index")
-    # Remove the index.
-    index_file = File.basename(path)
-    file_path.sub!(index_file, "")
-  
-  elsif not File.directory?(file_path)
-    # Remove the file extension, but make sure the breadcrumb
-    # adds .html to the file name when it becomes a link later.
-    ext = File.extname(file_path)
-    file_path.sub!(ext,"")
-    add_html_to_end = true
-  
+  if file_cache.relative_path.include?("index.")
+    file_path = file_cache.relative_path.gsub(file_cache.basename, "")
+  elsif file_cache.file?
+    file_path = file_cache.relative_path.gsub(file_cache.extension, "")
   end
   
   # If blog_categories is not blank, insert /category/ to the path.
   # Indices are not categorizable.
-  if not blog_categories.blank? and not path.include?('index')
-    puts "Adding category to blog breadcrumb."
-    file_path.sub!(config.blog_dir, "#{config.blog_dir}/#{blog_categories.first}")
+  # Must have a blog_dir specified in the config.
+  if not blog_categories.blank? and not path.include?('index') and !config.blog_dir.blank?
+    file_path.sub!(config.blog_dir, "#{config.blog_dir}/#{blog_categories.first.downcase}")
   end
   
   # Clean the path.
@@ -31,9 +26,9 @@ def render_breadcrumb path, config, pageinfo, blog_categories=nil
   
   crumbs = []
   if use_strict_index_links
-    crumbs += [link_to( "Home", linked_path(pageinfo, "/index.html") )]
+    crumbs += [link_to( "Home", File.join(config.link_root, "/index.html") )]
   else
-    crumbs += [link_to( "Home", linked_path(pageinfo, "/") )]
+    crumbs += [link_to( "Home", File.join(config.link_root, "/") )]
   end
   url = "/"
   
@@ -57,7 +52,7 @@ def render_breadcrumb path, config, pageinfo, blog_categories=nil
     end
     
     str = titleize(folder)
-    crumbs += [link_to( str, linked_path(pageinfo, this_url) )]
+    crumbs += [link_to( str, File.join(config.link_root, this_url) )]
   end
   
   crumbs.reverse!
@@ -73,8 +68,4 @@ def render_breadcrumb path, config, pageinfo, blog_categories=nil
       return crumbs.join(" #{sep} ")
     end
   end
-rescue => exception
-  puts "Exception in breadcrumb renderer..."
-  puts exception.message
-  return ""
 end

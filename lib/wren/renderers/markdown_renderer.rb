@@ -14,6 +14,14 @@ class MarkdownRenderer
     @galleries = galleries
     @strip_styles = strip_styles
   end
+
+  def new_initialize file_cache
+    @file_cache = file_cache
+  end
+
+  def new_render
+    Maruku.new(@file_cache.process_contents).to_html
+  end
   
   def render str="", local_path=""
     puts "Rendering markdown for #{local_path}..."

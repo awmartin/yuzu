@@ -1,9 +1,9 @@
 module Wren
-	module Helpers
+  module Helpers
     def change_extension file_path, new_extension
       file_path.to_s.gsub(File.extname(file_path), new_extension)
     end
-	end
+  end
 end
 
 unless Object.method_defined?(:blank?)

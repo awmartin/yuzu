@@ -1,8 +1,11 @@
-# TODO: Make this a partial.
-def render_gallery images, pageinfo
+# TODO: Make this a partial, e.g. _gallery.haml
+def render_gallery images, file_type, link_root
+  if images.length == 0
+    return ""
+  end
   gallery = ""
 
-  if pageinfo.file_type == :hamlblah
+  if file_type == :hamlblah
     gallery += "\n.slideshow\n"
     images.each_index do |i|
       big_image = images[i].gsub(".", "-large.")
@@ -49,7 +52,7 @@ var count = #{images.length};
   images.each_index do |i|
     image = images[i]
     thumb_url = image.gsub(".", "-small.")
-    if pageinfo.file_type == :hamlblah
+    if file_type == :hamlblah
       if (images.length+i) % 6 == 5
         gallery += "
 .gallery-thumb.last
@@ -64,7 +67,7 @@ var count = #{images.length};
 "
       end
     else
-      if (images.length+i) % 6 == 5
+      if i % 6 == 5
         gallery += "
 <div class='gallery-thumb last'>
 <a href='#' onclick='slide(#{i});return false;'>
@@ -84,7 +87,7 @@ var count = #{images.length};
   
   num_blanks = 6 - images.length%6
   num_blanks.times do |i|
-    if pageinfo.file_type == :hamlblah
+    if file_type == :hamlblah
       if (images.length+i) % 6 == 5
         gallery += "  .gallery-thumb.last &nbsp;\n"
       else
@@ -99,12 +102,12 @@ var count = #{images.length};
     end
   end
   
-  if pageinfo.file_type == :hamlblah
+  if file_type == :hamlblah
     gallery += "%hr\n"
   else
     gallery += "</div>\n\n"
     gallery += "<hr>"
   end
-  
-  gallery.gsub("LINKROOT", pageinfo.link_root)
+
+  gallery.gsub("LINKROOT", link_root)
 end

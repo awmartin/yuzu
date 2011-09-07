@@ -1,10 +1,10 @@
 
-
 class WrenConfig
   attr_reader :config_dict
   
-  def initialize config_dict
+  def initialize config_dict, service='preview'
     @config_dict = config_dict
+    @service = service
   end
   
   def processable? local_path=""
@@ -61,7 +61,15 @@ class WrenConfig
   def link_root_for_service service
     @config_dict[service]['link_root'].to_s
   end
+
+  def link_root
+    link_root_for_service @service
+  end
   
+  def domain
+    domain_for_service @service
+  end
+
   def domain_for_service service
     @config_dict[service]['domain'].to_s
   end
@@ -72,5 +80,9 @@ class WrenConfig
   
   def breadcrumb_separator
     @config_dict['breadcrumb_separator']
+  end
+
+  def indices
+    processable_extensions.collect {|e| "index.#{e.gsub('.','')}"}
   end
 end
