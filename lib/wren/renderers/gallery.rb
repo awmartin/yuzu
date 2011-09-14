@@ -85,7 +85,10 @@ var count = #{images.length};
     end
   end
   
-  num_blanks = 6 - images.length%6
+  # Fill in the rest of the row with blank thumbnails.
+  # The second "% 6" ensures there isn't an extra blank row added
+  # when there are exactly 6 images.
+  num_blanks = (6 - images.length % 6) % 6
   num_blanks.times do |i|
     if file_type == :hamlblah
       if (images.length+i) % 6 == 5

@@ -64,6 +64,7 @@ class Catalog
     @count = args.length > 2 ? args[2].to_i : 10
     @blocks_per_row = args.length > 3 ? args[3].to_i : 1
     @block_template = args.length > 4 ? args[4].to_s : "_block.haml"
+    @category = args.length > 5 ? args[5].to_s : nil
     
     @file_cache = @site_cache[@folder_to_insert]
   end
@@ -73,7 +74,11 @@ class Catalog
     if @list_of_files.nil?
       return [] if @file_cache.nil?
     
-      files = @file_cache.catalog_children
+      if @category.nil?
+        files = @file_cache.catalog_children
+      else
+        files = @file_cache.catalog_children.select {|f| f.categories.include?(@category)}
+      end
 
       if files.length == 0
         @list_of_files = []

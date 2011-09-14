@@ -67,6 +67,8 @@ TEMPLATE(_index.haml)"
             # Open the file and grab its contents
             f = File.open @raw_path, "r"
             @raw_contents = f.readlines.join
+            @modified_date = f.mtime
+            @created_date = f.ctime
             f.close
           else
             # Either blacklisted or a binary file. Open later.
@@ -395,49 +397,58 @@ TEMPLATE(_index.haml)"
 
   def preprocess!
     return if @preprocessed
-        
+    
+    # ------ Pagination ------
     offset = (@page - 1) * items_per_page
+    # Only the first INSERTCATALOG is paginated, since the items_per_page only comes
+    # from the first one found.
     @process_contents = process_contents.gsub("PAGINATE", offset.to_s)
 
     # Insert contents before extracting the categories, template, and images...
+    # This inserts the raw contents of a file. The format must be the same as the parent.
     @process_contents = insert_contents process_contents
-
+    
+    # ----------------- Extractions --------------------
     @categories, @process_contents = extract_categories process_contents
     @template, @process_contents = extract_template process_contents
     @images, @process_contents = extract_images process_contents
-
-    @breadcrumb = render_breadcrumb self, @categories
-
+    @show_gallery, @process_contents = show_gallery? process_contents
+    
     @post_title, @process_contents = extract_title process_contents
     if @post_title.blank?
       @post_title = extract_title_from_filename @raw_path
     end
-
-    @output_extension, @process_contents = extract_extension process_contents
-
-    @html_title = build_title @raw_path, @config.site_name, @post_title
-
+    
     @raw_post_date, @process_contents = extract_date process_contents
     if @raw_post_date.blank?
       @raw_post_date = extract_date_from_filename @raw_path
     end
     @post_date = format_date @raw_post_date
-
+    
+    @output_extension, @process_contents = extract_extension process_contents
     @description, @process_contents = extract_description_meta process_contents
     
-    # paginate
+    # -----------------
+    
+    # Catalogs are paginated, PAGINATE is replaced above.
+    # Catalogs must be inserted before SIDEBARCONTENTS is interpreted, in case
+    # there is a catalog in there. Not sure if it really works, because of HAML
+    # indentation weirdness...
     @process_contents = insert_catalogs @site_cache, process_contents, @page
-
+    
     @sidebar_contents, @process_contents = extract_sidebar_contents process_contents
     @sidebar_contents = render @sidebar_contents
-    @show_gallery, @process_contents = show_gallery? process_contents
-
-    # TODO: update CURRENTPATH handling.
-    @process_contents = insert_currentpath process_contents, File.join(@config.link_root, path_to)
     
+    # Replace LINKROOT and CURRENTPATH once all the other content has been inserted...
+    # TODO: Make sure CURRENTPATH is working properly.
+    @process_contents = insert_currentpath process_contents, File.join(@config.link_root, path_to)
     @process_contents = insert_linkroot process_contents, @config.link_root
     
+    # Generated content ...
+    @breadcrumb = render_breadcrumb self, @categories
+    @html_title = build_title @raw_path, @config.site_name, @post_title
     @gallery = render_gallery @images, file_type, @config.link_root
+    
     @preprocessed = true
   end
 
@@ -466,7 +477,6 @@ TEMPLATE(_index.haml)"
   end
 
   def first_paragraph
-    #return "<p>first paragraph</p>", "first paragraph"
     if @first_paragraph.nil? or @raw_first_paragraph.nil?
       @raw_first_paragraph = ""
       @first_paragraph = ""
@@ -498,7 +508,11 @@ TEMPLATE(_index.haml)"
     if not @images.nil?
       if @images.length > 0
         @images.first
+      else
+        ""
       end
+    else
+      ""
     end
   end
 
@@ -531,14 +545,13 @@ TEMPLATE(_index.haml)"
       @attributes = ({
         :post_title => post_title,
         :post_date => post_date,
-        #:contents => process_contents, #rendered_contents?
         :categories => categories,
         :html_title => html_title,
         :template => template,
         :show_gallery => show_gallery,
         :sidebar_contents => sidebar_contents,
         :images => images,
-        :raw_path => @raw_path,
+        :raw_path => @raw_path, # not paginated, always the first page "index.haml"
         :relative_path => relative_path, # paginated, like "index_2.haml"
         :output_extension => output_extension,
         :link_url => link_url,

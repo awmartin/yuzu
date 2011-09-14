@@ -1,6 +1,12 @@
 module Wren::Command
   class Publish < Base
     
+    def initialize(args, config_dict)
+      @args = args
+      @config_dict = config_dict
+      @config = WrenConfig.new(config_dict, config_dict['connection'])
+    end
+    
     def index
       updater.update_these @args
       updater.done

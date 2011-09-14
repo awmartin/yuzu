@@ -94,11 +94,7 @@ class Updater
   def upload_all_resources
     return upload_all_files_of_types(@config.resource_extensions)
   end
-  
-  def update_preview
-    @uploader.set_preview
-  end
-  
+
   # Update a particular list of files, presented as an array.
   def update_these array_of_files=[]
     puts "Calling Updater#update_these..."
@@ -112,5 +108,4 @@ class Updater
     @uploader.close unless @uploader.nil?
     @suppressor.close unless @suppressor.nil?
   end
-
 end

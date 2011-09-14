@@ -119,14 +119,14 @@ end
 def extract_categories str
   # Find any sidebar contents.
   categories = []
-  tr = str.gsub(/CATEGORIES\(\"[A-Za-z0-9\s\.\,\'\"\/\-_]*\"\)/) do |s|
-    categories = s.gsub("CATEGORIES(\"","").gsub("\")","").split(",")
-    categories = categories.collect {|str| str.strip}
+  tr = str.gsub(/CATEGORIES\([\w\s\.\,\'\"\/\-]*\)/) do |s|
+    categories = s.gsub("CATEGORIES(","").gsub(")","").split(",")
+    categories = categories.collect {|str| str.strip.downcase}
     ""
   end
   
   if categories.blank?
-    categories = ["Uncategorized"] # TODO: config var for default category
+    categories = ["uncategorized"] # TODO: config var for default category
   end
   
   return categories, tr
