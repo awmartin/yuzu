@@ -102,7 +102,10 @@ TEMPLATE(_index.haml)"
   def rendered_path
     if index? and directory?
       if paginate? and @page > 1
-        return File.join @raw_path, "index.html" # Don't paginate generated indices just yet.
+        # Don't paginate generated indices just yet.
+        # If auto-generated indices were paginated, this would add a digit
+        # to the end of the filename.
+        return File.join @raw_path, "index.html" 
       else
         return File.join @raw_path, "index.html"
       end
