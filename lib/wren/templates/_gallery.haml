@@ -1,0 +1,25 @@
+.slideshow
+  - images.each_index do |i|
+    - big_image = images[i].gsub(".", "-large.")
+    - visibility = i == 0 ? "display:block;z-index:2;" : "display:none;z-index:1;"
+    .slide{:id => "slide-#{i}", :style => "#{visibility}"}
+      %img{:src => big_image}
+
+:javascript
+  var count = #{images.length};
+
+.gallery-thumbnails
+  - images.each_index do |i|
+    - image = images[i]
+    - thumb_url = image.gsub(".", "-small.")
+    - klass = i%6 == 5 ? "gallery-thumb last" : "gallery-thumb"
+    %div{:class => klass}
+      %a{:href => "#", :onclick => "slide(#{i});return false;"}
+        %img{:src => "#{thumb_url}"}
+
+  - num_blanks = (6 - images.length % 6) % 6
+  - num_blanks.times do |i|
+    - klass = i%6 == 5 ? "gallery-thumb last" : "gallery-thumb"
+    %div{:class => klass} &nbsp;
+
+%hr

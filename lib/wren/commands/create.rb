@@ -31,7 +31,7 @@ module Wren::Command
       year_str = sprintf "%04d", t.year
       base_filename = @args.first.gsub(" ", "-").downcase
       
-      full_filename = "#{year_str}-#{mon_str}-#{day_str}-#{base_filename}.haml"
+      full_filename = "#{year_str}-#{mon_str}-#{day_str}-#{base_filename}.md"
       file_path = File.join(@config.blog_dir, full_filename)
       
       post_title = @args.first
@@ -44,8 +44,9 @@ ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
 velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat 
 cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id 
 est laborum.).gsub("\n", "")
-      contents = "TITLE(#{post_title})\n\n%p #{first_sentence}\n\n%p #{filler_sentence}\n\n"
-      
+      contents = ["TITLE(#{post_title})", 
+                  first_sentence, 
+                  filler_sentence].join("\n\n")
       
       if File.exists?(full_filename)
         puts "Warning: File #{full_filename} already exists!"
