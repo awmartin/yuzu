@@ -61,7 +61,7 @@ def extract_description_meta str
   return description, tr
 end
 
-def extract_images str
+def extract_images str, link_root
   # Look for images.
   images = []
   tr = str.gsub(/IMAGES\(([\w\,\.\-\/$\s]*)\)/) do |s|
@@ -69,6 +69,7 @@ def extract_images str
     images += images_str.split(",").collect {|im| im.strip}
     ""
   end
+  images = images.collect {|img| img.gsub("LINKROOT", link_root)}
   return images, tr
 end
 

@@ -1,88 +1,58 @@
-# TODO: Make this a partial, e.g. _gallery.haml
-def render_gallery images, file_type, link_root
+require 'haml'
+
+def render_gallery images, config
+  gallery_path = File.join(config.template_dir, "_gallery.haml")
+  
+  if File.exists?(gallery_path)
+    f = File.open(gallery_path, "r")
+    contents = f.readlines.join
+    f.close
+    return Haml::Engine.new(contents, {:format => :html5}).render(Object.new, {:images => images})
+  else
+    return render_gallery_fallback(images)
+  end
+end
+
+# Fallback in case the _gallery.haml file is no where to be found.
+def render_gallery_fallback images
+  puts "Gallery fallback..."
+  
   if images.length == 0
     return ""
   end
-  gallery = ""
+  
+  gallery = "\n\n<div class='slideshow'>\n"
+  images.each_index do |i|
+    big_image = images[i].gsub(".", "-large.")
 
-  if file_type == :hamlblah
-    gallery += "\n.slideshow\n"
-    images.each_index do |i|
-      big_image = images[i].gsub(".", "-large.")
-      if i == 0
-        visibility = "display:block;z-index:2;"
-      else
-        visibility = "display:none;z-index:1;"
-      end
-      gallery += "
-.slide#slide-#{i}(style='#{visibility}')
-%img{:src=>'#{big_image}'}
-"
-    end
+    visibility = i == 0 ? "display:block;z-index:2;" : "display:none;z-index:1;"
+
     gallery += "
-:javascript
-var count = #{images.length};
-"
-    gallery += ".gallery-thumbnails\n"
-  else
-    gallery = "\n\n<div class='slideshow'>\n"
-    images.each_index do |i|
-      big_image = images[i].gsub(".", "-large.")
-      if i == 0
-        visibility = "display:block;z-index:2;"
-      else
-        visibility = "display:none;z-index:1;"
-      end
-      gallery += "
 <div class='slide' id='slide-#{i}' style='#{visibility}'>
 <img src='#{big_image}'>
 </div>
 "
-    end
-    
-    gallery += "</div>\n"
-    gallery += "
+  end
+  
+  gallery += "</div>\n"
+  gallery += "
 <script type='text/javascript' charset='utf-8'>
 var count = #{images.length};
 </script>
 "
-    gallery += "<div class='gallery-thumbnails'>"
-  end
+  gallery += "<div class='gallery-thumbnails'>"
   
   images.each_index do |i|
     image = images[i]
     thumb_url = image.gsub(".", "-small.")
-    if file_type == :hamlblah
-      if (images.length+i) % 6 == 5
-        gallery += "
-.gallery-thumb.last
-%a{:href => '#', :onclick => 'slide(#{i});return false;'}
-  %img{:src => '#{thumb_url}'}
-"
-      else
-        gallery += "
-.gallery-thumb
-%a{:href => '#', :onclick => 'slide(#{i});return false;'}
-  %img{:src => '#{thumb_url}'}
-"
-      end
-    else
-      if i % 6 == 5
-        gallery += "
-<div class='gallery-thumb last'>
+    
+    klass = i % 6 == 5 ? "gallery-thumb last" : "gallery-thumb"
+    gallery += "
+<div class='#{klass}'>
 <a href='#' onclick='slide(#{i});return false;'>
 <img src='#{thumb_url}'>
 </a>
 </div>"
-      else
-        gallery += "
-<div class='gallery-thumb'>
-<a href='#' onclick='slide(#{i});return false;'>
-<img src='#{thumb_url}'>
-</a>
-</div>"
-      end
-    end
   end
   
   # Fill in the rest of the row with blank thumbnails.
@@ -90,27 +60,11 @@ var count = #{images.length};
   # when there are exactly 6 images.
   num_blanks = (6 - images.length % 6) % 6
   num_blanks.times do |i|
-    if file_type == :hamlblah
-      if (images.length+i) % 6 == 5
-        gallery += "  .gallery-thumb.last &nbsp;\n"
-      else
-        gallery += "  .gallery-thumb &nbsp;\n"
-      end
-    else
-      if (images.length+i) % 6 == 5
-        gallery += "<div class='gallery-thumb last'>&nbsp;</div>"
-      else
-        gallery += "<div class='gallery-thumb'>&nbsp;</div>"
-      end
-    end
+    klass = (images.length+i) % 6 == 5 ? 'gallery-thumb last' : "gallery-thumb"
+    gallery += "<div class='#{klass}'>&nbsp;</div>"
   end
   
-  if file_type == :hamlblah
-    gallery += "%hr\n"
-  else
-    gallery += "</div>\n\n"
-    gallery += "<hr>"
-  end
-
-  gallery.gsub("LINKROOT", link_root)
+  gallery += "</div>\n\n"
+  gallery += "<hr>"
+  gallery
 end

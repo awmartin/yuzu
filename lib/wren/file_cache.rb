@@ -414,7 +414,7 @@ TEMPLATE(_index.haml)"
     # ----------------- Extractions --------------------
     @categories, @process_contents = extract_categories process_contents
     @template, @process_contents = extract_template process_contents
-    @images, @process_contents = extract_images process_contents
+    @images, @process_contents = extract_images process_contents, @config.link_root
     @show_gallery, @process_contents = show_gallery? process_contents
     
     @post_title, @process_contents = extract_title process_contents
@@ -450,7 +450,7 @@ TEMPLATE(_index.haml)"
     # Generated content ...
     @breadcrumb = render_breadcrumb self, @categories
     @html_title = build_title @raw_path, @config.site_name, @post_title
-    @gallery = render_gallery @images, file_type, @config.link_root
+    @gallery = render_gallery @images, @config
     
     @preprocessed = true
   end
