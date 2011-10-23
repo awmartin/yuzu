@@ -13,6 +13,20 @@ require 'layout_handler'
 class FileCache
   attr_accessor :site_cache, :config, :relative_path
   attr_writer :process_contents
+  attr_reader :page
+  
+  # Define some default accessors.
+  @@preprocess_accessors = [:template, :images, :output_extension, 
+    :html_title, :post_title, :post_date, :raw_post_date, :categories, 
+    :gallery, :sidebar_contents, :breadcrumb, :description]
+  
+  @@preprocess_accessors.each do |method_name|
+    define_method(method_name) do
+      self.preprocess!
+      return self.instance_variable_get("@#{method_name}".to_sym)
+    end
+  end
+
 
   def initialize raw_path, config, page=1
     @raw_path = raw_path # Also the original path of page 1 if this is page n
@@ -93,10 +107,7 @@ TEMPLATE(_index.haml)"
   end
   
   def process_contents
-    if @process_contents.nil?
-      @process_contents = raw_contents.dup
-    end
-    @process_contents
+    @process_contents ||= raw_contents.dup
   end
 
   def rendered_path
@@ -277,74 +288,7 @@ TEMPLATE(_index.haml)"
   def text?
     [:haml, :textile, :markdown, :plaintext, :html].include?(file_type)
   end
-
-  def template
-    preprocess!
-    @template
-  end
-
-  def images
-    preprocess!
-    @images
-  end
-
-  def output_extension
-    preprocess!
-    @output_extension
-  end
-
-  def html_title
-    preprocess!
-    @html_title
-  end
-
-  def post_title
-    preprocess!
-    @post_title
-  end
-
-  # Formatted
-  def post_date
-    preprocess!
-    @post_date
-  end
-
-  # Unformatted, e.g. 2011-08-01
-  def raw_post_date
-    preprocess!
-    @raw_post_date
-  end
-
-  def categories
-    preprocess!
-    @categories
-  end
-
-  def gallery
-    preprocess!
-    @gallery
-  end
-
-  def show_gallery
-    preprocess!
-    @show_gallery
-  end
-
-  def sidebar_contents
-    preprocess!
-    @sidebar_contents
-  end
-
-  def breadcrumb
-    preprocess!
-    @breadcrumb
-  end
-
-  def description
-    preprocess!
-    @description
-  end
-
+  
   # ---------------------
   # Used for pagination. Only one catalog per file is allowed to paginate.
   # @fc_start will be -1 for pagination.
@@ -389,10 +333,6 @@ TEMPLATE(_index.haml)"
     @paginate
   end
 
-  def page
-    @page
-  end
-
   def page_links
     if @page_links.nil?
       if paginate?
@@ -423,7 +363,6 @@ TEMPLATE(_index.haml)"
     @categories, @process_contents = extract_categories process_contents
     @template, @process_contents = extract_template process_contents
     @images, @process_contents = extract_images process_contents, @config.link_root
-    @show_gallery, @process_contents = show_gallery? process_contents
     
     @post_title, @process_contents = extract_title process_contents
     if @post_title.blank?
@@ -433,6 +372,9 @@ TEMPLATE(_index.haml)"
     @raw_post_date, @process_contents = extract_date process_contents
     if @raw_post_date.blank?
       @raw_post_date = extract_date_from_filename @raw_path
+    end
+    if @raw_post_date.blank?
+      @raw_post_date = File.mtime(@raw_path).strftime("%Y-%m-%d")
     end
     @post_date = format_date @raw_post_date
     
@@ -454,6 +396,7 @@ TEMPLATE(_index.haml)"
     # TODO: Make sure CURRENTPATH is working properly.
     @process_contents = insert_currentpath process_contents, File.join(@config.link_root, path_to)
     @process_contents = insert_linkroot process_contents, @config.link_root
+    @process_contents = insert_blog_dir process_contents, @config.blog_dir
     
     # Generated content ...
     @breadcrumb = render_breadcrumb self, @categories
@@ -464,10 +407,11 @@ TEMPLATE(_index.haml)"
   end
 
   def rendered_contents
-    if @rendered_contents.nil?
-      @rendered_contents = render process_contents
-    end
-    @rendered_contents
+    @rendered_contents ||= render(process_contents)
+  end
+  
+  def rendered_contents_with_demoted_headers
+    @rendered_contents_demoted ||= render(demote_headers(process_contents, file_type))
   end
 
   def render str
@@ -559,7 +503,6 @@ TEMPLATE(_index.haml)"
         :categories => categories,
         :html_title => html_title,
         :template => template,
-        :show_gallery => show_gallery,
         :sidebar_contents => sidebar_contents,
         :images => images,
         :raw_path => @raw_path, # not paginated, always the first page "index.haml"
@@ -585,14 +528,6 @@ TEMPLATE(_index.haml)"
   end
 
   def contents
-    if @contents.nil?
-      if processable?
-        @contents = html_contents
-      else
-        @contents = nil
-      end
-    end
-    @contents
+    @contents ||= processable? ? html_contents : nil
   end
-  
 end

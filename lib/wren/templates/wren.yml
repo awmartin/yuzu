@@ -16,8 +16,12 @@ connection: filesystem
 # NOTE: This might not work so well yet, especially with links and image urls.
 
 # link_root is the root path for links when rendered in the webpage. It can be different from the
-# remote_root_path, but it's typically just '/' if you're mapping the local folder to a
-# root folder of a domain.
+# remote_root_path, but it's typically blank if you're mapping the local folder to a
+# root folder of a domain. In posts, you can specify links URLs like this:
+# LINKROOT/images/my_image.png
+# If link_root is blank, the URL defaults to the site root. This is especially
+# useful for local setups where the root path isn't localhost, for example:
+# link_root: http://localhost/~username/my_site
 
 # The preview folder is used to support local design and development before publishing 
 # to a remote server.
@@ -32,7 +36,7 @@ ftp:
   host: example.com
   username: test%example.com
   password: 123456
-  link_root: /
+  link_root: 
   remote_root_path: 
 
 # All the file system needs is the absolute path of the destination parent folder.
@@ -49,7 +53,7 @@ s3:
   bucket: mybucket
   access_key: AMAZON_ACCESS_KEY_ID
   secret_key: AMAZON_SECRET_ACCESS_KEY
-  link_root: /
+  link_root: 
   remote_root_path: 
     
 # Proxy configuration if needed. This only works for S3 right now. Not needed for filesystem.

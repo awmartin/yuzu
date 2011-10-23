@@ -261,3 +261,24 @@ def get_file_type config, file
   end
 end
 
+def demote_headers contents, file_type
+  headers = []
+  if file_type == :textile
+    headers = ["h1.", "h2.", "h3.", "h4.", "h5.", "h6."]
+  elsif file_type == :markdown
+    headers = ["\n# ", "\n## ", "\n### ", "\n#### ", "\n##### ", "\n###### "]
+  elsif file_type == :haml
+    headers = ["%h1", "%h2", "%h3", "%h4", "%h5", "%h6"]
+  end
+  
+  if headers.blank?
+    return contents
+  else
+    i = 4
+    5.times do
+      contents.gsub!(headers[i], headers[i + 1])
+      i -= 1
+    end
+  end
+  return contents
+end

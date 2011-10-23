@@ -42,7 +42,6 @@ def extract_title str
 end
 
 def extract_date str
-  # Extract the title if any.
   post_date = ""
   tr = str.gsub(/DATE\(([A-Za-z0-9\,\.\-\/_\s\:\|]*)\)/) do |s|
     post_date = s.gsub("DATE(", "").gsub(")", "").strip
@@ -71,15 +70,6 @@ def extract_images str, link_root
   end
   images = images.collect {|img| img.gsub("LINKROOT", link_root)}
   return images, tr
-end
-
-def show_gallery? str
-  show = false
-  tr = str.gsub("INSERTGALLERY") do |s|
-    show = true
-    ""
-  end
-  return show, tr
 end
 
 def insert_gallery str, images, galleries, pageinfo
@@ -156,4 +146,8 @@ def insert_linkroot str, linkroot
   return tr
 end
 
+def insert_blog_dir str, blog_dir
+  tr = str.gsub("BLOGDIR", blog_dir)
+  return tr
+end
 

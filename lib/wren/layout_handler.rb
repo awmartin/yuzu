@@ -32,6 +32,8 @@ class LayoutHandler
       :contents => @file_cache.rendered_contents, # Triggers the rendering
       :contents_without_first_paragraph => 
         @file_cache.rendered_contents.gsub(@file_cache.attributes[:raw_first_paragraph], ""),
+      :contents_with_demoted_headers =>
+        @file_cache.rendered_contents_with_demoted_headers,
       :header => @header_contents,
       :footer => @footer_contents,
       :menu => @menu_contents})).update(@file_cache.attributes)

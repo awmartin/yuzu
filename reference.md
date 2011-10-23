@@ -57,7 +57,7 @@ Contents of sidebars can be separated by using the tag below. This supports the 
 
 The format of all contents between the braces must match the contents of the file itself.
 
-# Templates
+## Templates
 
 All HAML files in the template_dir folder, specified in wren.yml, are considered templates, where several default variables are available to access and insert content.
 
@@ -67,7 +67,7 @@ Specifying which template to use for a particular file can be achieved with the 
 
 where the template is the full filename of the template file, without template_dir.
 
-# Specifying templates and partials.
+## Specifying templates and partials.
 
 "Partials" are templates that are included as part of other templates. They typically contain repeated contents and information that are context-dependent, but cannot be rendered on their own. 
 
