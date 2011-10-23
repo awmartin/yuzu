@@ -29,6 +29,16 @@ class Updater
       update_path path
     end
   end
+  
+  def update_text
+    puts "Updating text files..."
+    
+    @site_cache.cache.each_pair do |path, file_cache|
+      if file_cache.text?
+        update_path(path)
+      end
+    end
+  end
 
   def update_path relative_path
     file_cache = @site_cache.cache[relative_path]

@@ -212,6 +212,10 @@ TEMPLATE(_index.haml)"
     File.directory? @raw_path
   end
   
+  def folder?
+    directory?
+  end
+  
   def file?
     not directory?
   end
@@ -244,7 +248,7 @@ TEMPLATE(_index.haml)"
 
   def path_to
     if file?
-      relative_path.gsub(basename, "")
+      File.dirname(relative_path)
     else
       relative_path
     end
@@ -268,6 +272,10 @@ TEMPLATE(_index.haml)"
 
   def resource?
     file_type == :resource
+  end
+  
+  def text?
+    [:haml, :textile, :markdown, :plaintext, :html].include?(file_type)
   end
 
   def template
@@ -439,7 +447,7 @@ TEMPLATE(_index.haml)"
     # indentation weirdness...
     @process_contents = insert_catalogs @site_cache, process_contents, @page
     
-    @sidebar_contents, @process_contents = extract_sidebar_contents process_contents
+    @sidebar_contents, @process_contents = extract_sidebar_contents process_contents, @config
     @sidebar_contents = render @sidebar_contents
     
     # Replace LINKROOT and CURRENTPATH once all the other content has been inserted...

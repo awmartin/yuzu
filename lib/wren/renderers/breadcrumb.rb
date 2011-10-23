@@ -1,3 +1,8 @@
+require 'content_handlers'
+
+# TODO: Build a better breadcrumb. This is *much* easier of the FileCache objects
+# actually know their immediate parent. For now, this url splitting is working,
+# but multiple categories aren't working.
 
 def render_breadcrumb file_cache, blog_categories=nil
   path = file_cache.relative_path
@@ -9,7 +14,7 @@ def render_breadcrumb file_cache, blog_categories=nil
   
   add_html_to_end = false
   if file_cache.relative_path.include?("index.")
-    file_path = file_cache.relative_path.gsub(file_cache.basename, "")
+    file_path = File.dirname(file_cache.relative_path)
   elsif file_cache.file?
     file_path = file_cache.relative_path.gsub(file_cache.extension, "")
   end
@@ -21,20 +26,17 @@ def render_breadcrumb file_cache, blog_categories=nil
     file_path.sub!(config.blog_dir, "#{config.blog_dir}/#{blog_categories.first.downcase}")
   end
   
-  # Clean the path.
-  file_path = Pathname.new(file_path).cleanpath.to_s
-  
+  # Start the list of crumbs. Add "Home" first.
   crumbs = []
   if use_strict_index_links
     crumbs += [link_to( "Home", File.join(config.link_root, "/index.html") )]
   else
     crumbs += [link_to( "Home", File.join(config.link_root, "/") )]
   end
-  url = "/"
   
+  # Keep track of the url throughout the loop. Tack on a new path each loop.
   paths = file_path.to_s.split('/')
-  paths.delete_if {|p| p == "."}
-  
+  url = "/"
   paths.each do |folder|
     this_url = ""
     

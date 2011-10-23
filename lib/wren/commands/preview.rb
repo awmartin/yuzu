@@ -11,6 +11,11 @@ module Wren::Command
       updater.done
     end
     
+    def text
+      updater.update_text
+      updater.done
+    end
+    
     def single
       puts "Updating single file..."
       updater.update_these(@args)

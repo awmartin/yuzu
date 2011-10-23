@@ -107,14 +107,14 @@ def extract_template str
   return template, tr
 end
 
-def extract_sidebar_contents str
+def extract_sidebar_contents str, config
   # Find any sidebar contents.
   sidebar_contents = ""
-  tr = str.gsub(/SIDEBARCONTENTS\(([A-Za-z0-9\s\%\n\.\,\'\/\-_]*)\)/) do |s|
-    sidebar_contents = s.gsub("SIDEBARCONTENTS(", "").gsub(")", "")
+  tr = str.gsub(/SIDEBAR\{([\w\s\%\n\.\,\'\/\-\[\]\:\)\(_]*)\}/) do |s|
+    sidebar_contents = s.gsub("SIDEBAR{", "").gsub("}", "")
     ""
   end
-  return sidebar_contents, tr
+  return sidebar_contents.gsub("LINKROOT", config.link_root), tr
 end
 
 def extract_categories str

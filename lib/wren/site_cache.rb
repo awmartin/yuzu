@@ -5,13 +5,15 @@ class SiteCache
   def initialize config
     @config = config
 
+    # The actual cache is a Hashmap of path -> FileCache object.
     @cache = {}
     Dir["**/*"].each do |path|
       if not path.includes_one_of? @config.folder_blacklist
-        @cache[path] = FileCache.new path, config
+        @cache[path] = FileCache.new(path, config)
       end
     end
 
+    # Hand a reference to the entire SiteCache to every FileCache
     @cache.each_pair do |path, file_cache|
       file_cache.site_cache = self
     end
