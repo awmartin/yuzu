@@ -23,12 +23,13 @@ class SiteCache
     @cache.each_pair do |path, file_cache|
       if file_cache.paginate?
         # Calculate the number of pages.
-        # Create new file caches for each page.
+        # Create new file caches for each new page.
         num_pages = file_cache.num_pages
         
         num_pages.times do |i|
           if i > 0
-            new_fc = FileCache.new(path, config, i + 1)
+            page_num = i + 1
+            new_fc = FileCache.new(path, config, page_num)
             new_fc.site_cache = self # This is ok since nothing depends on the new page
             
             new_pages[new_fc.paginated_path] = new_fc

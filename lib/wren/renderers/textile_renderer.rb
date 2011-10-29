@@ -19,7 +19,7 @@ class TextileRenderer
     puts "Rendering textile for #{local_path}..."
     if str.blank?
       puts "... returning prematurely. No contents given to TextileRenderer.render"
-      return "", "_generic.haml", {} 
+      return "", "generic.haml", {} 
     end
     
     str, template, metadata = preprocess_keywords(str, local_path, @config, @pageinfo, @galleries)
@@ -36,7 +36,7 @@ class TextileRenderer
     puts exception.message
     puts exception.backtrace
     
-    return "", "_generic.haml", {}
+    return "", "generic.haml", {}
   end
   
   def strip_textile_styles str

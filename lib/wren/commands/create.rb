@@ -2,24 +2,37 @@ module Wren::Command
   class Create < Base
     def index
       puts `compass create . --using blueprint --syntax sass`
-      puts `mkdir _templates`
-      puts `mkdir blog`
+      
+      ['_templates', 'javascripts', 'blog'].each do |folder|
+        FileUtils.mkdir(folder)
+      end
       
       destination_dir = Dir.pwd
-      Dir["#{File.dirname(__FILE__)}/../templates/*"].each do |template|
-        file = File.basename(template)
+      
+      to_copy = {
+        "templates" => File.join(destination_dir, "_templates"),
+        "config" => destination_dir,
+        "samples" => destination_dir,
+        "javascripts" => File.join(destination_dir, "javascripts")
+      }
+      
+      to_copy.each_pair do |source_dir, destination_path|
+        all_sources = File.join(File.dirname(__FILE__), "..", source_dir, "*")
+        copy_all(all_sources, destination_path)
+      end
+      
+      puts
+      puts "Remember to edit wren.yml to set your site settings, preview path, and remote host."
+    end
+    
+    def copy_all source_path, destination_path
+      Dir[source_path].each do |source_file|
+        file = File.basename(source_file)
         
         puts "Copying #{file}..."
         
-        if file[0].chr == "_"
-          FileUtils.copy( "#{template}", "#{destination_dir}/_templates/#{file}")
-        else
-          FileUtils.copy( "#{template}", "#{destination_dir}/#{file}")
-        end
-        
+        FileUtils.copy("#{source_file}", File.join(destination_path, file))
       end
-      puts
-      puts "Remember to edit wren.yml to set your site settings, preview path, and remote host."
     end
     
     # args[1] is a string that contains the blog title

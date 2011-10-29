@@ -68,7 +68,7 @@ class FileCache
   def default_index_contents
     # TODO: Change the first 0 to PAGINATE
     "INSERTCATALOG(#{@raw_path},0,10,3,_block.haml)
-TEMPLATE(_index.haml)"
+TEMPLATE(index.haml)"
   end
 
   # Load the contents on demand.
@@ -202,25 +202,42 @@ TEMPLATE(_index.haml)"
     children.select { |path| @site_cache.cache[path].processable? }
   end
 
-  def catalog_children
+  def formatted_categories
+    categories.collect {|cat| cat.to_s.downcase.dasherize}
+  end
+
+  def filtered_children category_filter=nil
+    sorted = catalog_children
+    if category_filter.nil?
+      filtered = sorted
+    else
+      formatted_filter = category_filter.to_s.downcase.dasherize
+      filtered = sorted.select { |child| child.formatted_categories.include?(formatted_filter)}
+    end
+    return filtered
+  end
+  
+  def catalog_children category_filter=nil
     if @catalog_children.nil?
       child_file_caches = processable_children.collect {|f| @site_cache.cache[f]}
-      unsorted = child_file_caches.select {|f| f.file? and !f.index? and f.file?}
+      
+      unsorted = child_file_caches.select {|f| f.file? and !f.index?}
+      
       @catalog_children = unsorted.sort {|a, b| b.raw_post_date <=> a.raw_post_date}
     end
     @catalog_children
   end
   
   def absolute_path
-    File.join Dir.pwd, relative_path
+    File.join(Dir.pwd, relative_path)
   end
 
   def link_url
-    File.join @config.link_root, rendered_path
+    File.join(@config.link_root, rendered_path)
   end
   
   def directory?
-    File.directory? @raw_path
+    File.directory?(@raw_path)
   end
   
   def folder?
@@ -232,7 +249,7 @@ TEMPLATE(_index.haml)"
   end
   
   def basename
-    File.basename @raw_path
+    File.basename(@raw_path)
   end
 
   def relative_path
@@ -266,7 +283,10 @@ TEMPLATE(_index.haml)"
   end
   
   def index?
-    basename.include?("index.") or (directory? and not @raw_path.includes_one_of?(@config.no_index_folders))
+    is_blacklisted = @raw_path.includes_one_of?(@config.no_index_folders)
+    is_folder_index = (directory? and !is_blacklisted)
+    has_index_in_path = (basename.include?("index.") or basename.include?("index_"))
+    has_index_in_path or is_folder_index
   end
   
   def extension
@@ -289,20 +309,26 @@ TEMPLATE(_index.haml)"
     [:haml, :textile, :markdown, :plaintext, :html].include?(file_type)
   end
   
-  # ---------------------
   # Used for pagination. Only one catalog per file is allowed to paginate.
   # @fc_start will be -1 for pagination.
   # @fc_count will be 0 for "show all," which is contrary to pagination.
   def get_first_catalog_info!
-    @fc_folder, @fc_start, @fc_count, @fc_blocks, @fc_block_template = extract_first_catalog raw_contents
+    @fc_folder, @fc_start, @fc_count, @fc_blocks, @fc_block_template, @fc_category = extract_first_catalog raw_contents
   end
 
   def num_pages
-    if paginate? or @num_pages.nil?
-      num_items = @site_cache.cache[@fc_folder].catalog_children.length
-      @num_pages = (num_items.to_f / @fc_count.to_f).ceil # round up
-    else
-      @num_pages = 1
+    if @num_pages.nil?
+      if paginate?
+        source_file_cache = @site_cache.cache[@fc_folder]
+        
+        filtered_items = source_file_cache.filtered_children(@fc_category) # Attempt to filter.
+        
+        num_items = filtered_items.length
+        
+        @num_pages = (num_items.to_f / @fc_count.to_f).ceil # round up
+      else
+        @num_pages = 1
+      end
     end
     @num_pages
   end
@@ -316,19 +342,23 @@ TEMPLATE(_index.haml)"
   end
 
   def paginate?
-    if processable?
-      if @paginate.nil?
+    if @paginate.nil?
+      
+      if processable?
+        
         if @fc_start.nil?
           get_first_catalog_info!
+          
           if @fc_start == -1 # Magic number!
             @paginate = true
           else
             @paginate = false
           end
         end
+      
+      else
+        @paginate = false
       end
-    else
-      @paginate = false
     end
     @paginate
   end
@@ -336,7 +366,7 @@ TEMPLATE(_index.haml)"
   def page_links
     if @page_links.nil?
       if paginate?
-        @page_links = render_page_links num_pages, File.join(@config.link_root, @raw_path), @page
+        @page_links = render_page_links(num_pages, File.join(@config.link_root, @raw_path), @page)
       else
         @page_links = ""
       end

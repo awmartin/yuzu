@@ -4,11 +4,11 @@
 # @returns folder path(String), start position(integer), count of files(integer), 
 #   blocks per row(integer), block template(String)
 def extract_first_catalog contents
-  matches = contents.match(/INSERTCATALOG\(([A-Za-z0-9\,\.\-\/_]*)\)/)
+  matches = contents.match(/INSERTCATALOG\(([\w\s\,\.\-\/_]*)\)/)
   
   if not matches.nil?
     arg_str = matches[0].to_s.gsub("INSERTCATALOG(","").gsub(")","")
-    args = arg_str.split(",")
+    args = arg_str.split(",").collect {|a| a.strip}
     
     path_of_folder_to_insert = remove_leading_slash(args[0].to_s)
     
@@ -25,10 +25,11 @@ def extract_first_catalog contents
     count = args.length > 2 ? args[2].to_i : 10
     blocks_per_row = args.length > 3 ? args[3].to_i : 1
     block_template = args.length > 4 ? args[4].to_s : "_block.haml"
+    category = args.length > 5 ? args[5].to_s : nil
     
-    return path_of_folder_to_insert, start, count, blocks_per_row, block_template
+    return path_of_folder_to_insert, start, count, blocks_per_row, block_template, category
   else
-    return nil, nil, nil, nil, nil
+    return nil, nil, nil, nil, nil, nil
   end
 end
 

@@ -27,6 +27,6 @@ class HamlRenderer
     puts exception.message
     puts exception.backtrace
     
-    return "", "_generic.haml", {}
+    return "", "generic.haml", {}
   end
 end

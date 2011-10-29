@@ -27,7 +27,7 @@ class MarkdownRenderer
     puts "Rendering markdown for #{local_path}..."
     if str.blank?
       puts "... returning prematurely. No contents given to MarkdownRenderer.render"
-      return "", "_generic.haml", {} 
+      return "", "generic.haml", {} 
     end
     
     str, template, metadata = preprocess_keywords(str, local_path, @config, @pageinfo, @galleries)
@@ -44,7 +44,7 @@ class MarkdownRenderer
     puts exception.message
     puts exception.backtrace
     
-    return "", "_generic.haml", {}
+    return "", "generic.haml", {}
   end
 
 end

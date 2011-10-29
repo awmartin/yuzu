@@ -13,9 +13,14 @@ def render_breadcrumb file_cache, blog_categories=nil
   use_strict_index_links = config.use_strict_index_links
   
   add_html_to_end = false
-  if file_cache.relative_path.include?("index.")
+  
+  # Clean up the given path.
+  
+  if file_cache.relative_path.include?("index.") or file_cache.relative_path.include?("index_")
+    # Remove the index off the end.
     file_path = File.dirname(file_cache.relative_path)
   elsif file_cache.file?
+    # For all other files, remove the file extension off the end.
     file_path = file_cache.relative_path.gsub(file_cache.extension, "")
   end
   
@@ -35,7 +40,9 @@ def render_breadcrumb file_cache, blog_categories=nil
   # If blog_categories is not blank, insert /category/ to the path.
   # Indices are not categorizable.
   # Must have a blog_dir specified in the config.
-  if not blog_categories.blank? and not path.include?('index') and !config.blog_dir.blank?
+  has_blog = !config.blog_dir.blank?
+  is_index = path.include?('index')
+  if !blog_categories.blank? and !is_index and has_blog
     file_path.sub!(config.blog_dir, "#{config.blog_dir}/#{blog_categories.first.downcase.dasherize}")
   end
   
@@ -50,10 +57,13 @@ def render_breadcrumb file_cache, blog_categories=nil
   # Keep track of the url throughout the loop. Tack on a new path each loop.
   paths = file_path.to_s.split('/')
   url = "/"
-  paths.each do |folder|
+  paths.each_index do |i|
+    folder = paths[i]
+    is_last_folder = (paths.length == (i - 1))
+    
     this_url = ""
     
-    if add_html_to_end and paths.last == folder
+    if add_html_to_end and is_last_folder
       url += folder + ".html"
       this_url = url
     else

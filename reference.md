@@ -20,7 +20,7 @@ A catalog is a listing of posts and pages rendered in a partial form. An example
 * first post  
     Index of the firts post to show. Indexed at 0. If this field is set to PAGINATE, multiple pages will be generated.
 * number of posts  
-    Simply the number of posts to be shown in this catalog
+    Simply the number of posts to be shown in this catalog. If the PAGINATE keyword appears, this field is interpreted as the number of posts on each page. Paginated indices are generated until all posts are exhausted.
 * posts per column  
     Catalogs are grids of posts rendered with the _template_ specified in the next field. This field specifies how many columns there are in the grid. Use 1 for a straight run of typical blog posts.
 * template  
@@ -51,8 +51,8 @@ The list of categories is available in the `categories` variable in all HAML tem
 
 Contents of sidebars can be separated by using the tag below. This supports the ability to lay out the sidebar in the templates, instead of putting layout and HTML structure the posts themselves.
 
-`SIDEBAR{
-    This will show up in the sidebar.
+`SIDEBAR{  
+    This will show up in the sidebar_contents variable inside templates.  
 }`
 
 The format of all contents between the braces must match the contents of the file itself.
@@ -83,10 +83,10 @@ The default templates and partials that must be specified are as follows:
     Partial containing the HTML `<head></head>` tag for all typical pages.
 * _gallery.haml  
     Partial that renders a gallery of images. Optional.
-* _index.haml  
+* index.haml  
     The overall template for index pages.
-* _generic.haml  
-    The overall template for all other generic pages.
+* generic.haml  
+    The overall template for all other generic pages and posts.
 
 These are automatically generated with the `create` command. Partials and auto-generated templates have a leading underscore as part of their name. Your custom templates don't have to have this.
 

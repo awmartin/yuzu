@@ -1,4 +1,4 @@
-.slideshow
+.gallery-main
   - images.each_index do |i|
     - big_image = images[i].gsub(".", "-large.")
     - visibility = i == 0 ? "display:block;z-index:2;" : "display:none;z-index:1;"

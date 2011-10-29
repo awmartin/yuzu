@@ -8,15 +8,22 @@ require 'renderers/gallery'
 # This defaults to a path relative to the root of the file system,
 # which might not make sense...
 def insert_file local_path
-  file = File.open(local_path, "r")
-  return file.readlines.join
+  if File.exists?(local_path)
+    file = File.open(local_path, "r")
+    contents = file.readlines.join
+    file.close
+    return contents
+  else
+    return ""
+  end
 rescue
   return ""
 end
 
+# Raw contents insert. Does no intermediate representation or format checking.
 def insert_contents str
   str.gsub(/INSERTCONTENTS\(([A-Za-z0-9\.\-\/_]*)\)/) do |s|
-    path_of_file_to_insert = remove_leading_slash s.gsub("INSERTCONTENTS(","").gsub(")","")
+    path_of_file_to_insert = s.gsub("INSERTCONTENTS(","").gsub(")","")
     puts "Inserting contents of #{path_of_file_to_insert}"
     insert_file(path_of_file_to_insert).gsub("MULTIVIEW","")
   end
@@ -89,7 +96,7 @@ end
 
 def extract_template str
   # Look for template specification.
-  template = "_generic.haml"
+  template = "generic.haml"
   tr = str.gsub(/TEMPLATE\(([A-Za-z0-9\.\-\/_]*)\)/) do |s|
     template = s.gsub("TEMPLATE(","").gsub(")","")
     ""
