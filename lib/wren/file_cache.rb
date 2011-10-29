@@ -371,12 +371,15 @@ TEMPLATE(_index.haml)"
     
     @raw_post_date, @process_contents = extract_date process_contents
     if @raw_post_date.blank?
+      # YYYY/MM/DD/title-here.md or YYYY/MM/DD-title-here.md
       @raw_post_date = extract_date_from_folder_structure @raw_path
     end
     if @raw_post_date.blank?
+      # YYYY-MM-DD-title-here.md
       @raw_post_date = extract_date_from_filename @raw_path
     end
     if @raw_post_date.blank?
+      # Modification time.
       @raw_post_date = File.mtime(@raw_path).strftime("%Y-%m-%d")
     end
     @post_date = format_date @raw_post_date

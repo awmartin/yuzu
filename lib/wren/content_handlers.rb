@@ -42,19 +42,29 @@ def extract_first_image file
   return ""
 end
 
-def extract_title_from_filename filename
-  post_filename = File.basename(filename)
+def extract_title_from_filename raw_path
+  post_filename = File.basename(raw_path)
   
   if post_filename.include?("index")
     # If we're looking at an index, grab the folder name instead.
-    post_filename = filename.split("/")[-2]
+    post_filename = raw_path.split("/")[-2]
     if post_filename.blank?
       post_filename = "Home"
     end
   end
   
+  # Look for the YYYY/MM/DD-title-here.md pattern.
+  m = raw_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\-/)
+  if not m.nil?
+    # For now, just remove the first 3 characters.
+    post_filename = post_filename[3..-1]
+  end
+  
+  # Remove the YYYY-MM-DD- date prefix if present.
+  post_filename = post_filename.sub(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/, "")
+  
   # Regex removes the leading date for posts, e.g. 2011-05-28-
-  return titleize( post_filename.sub(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/,"") )
+  return titleize(post_filename)
 end
 
 def extract_date_from_filename filename
@@ -74,7 +84,16 @@ def extract_date_from_folder_structure raw_path
     date_parts = m.to_s.split("/")[0..2]
     return date_parts.join("-")
   else
-    return nil
+    # Look for "2011/10/19-title-here.md"
+    m = raw_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\-/)
+    if not m.nil?
+      year = m.to_s.split("/")[0]
+      month = m.to_s.split("/")[1]
+      day = m.to_s.split("/")[2].sub("-", "")
+      return [year, month, day].join("-")
+    else
+      return nil
+    end
   end
 end
 

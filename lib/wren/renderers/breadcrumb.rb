@@ -26,6 +26,12 @@ def render_breadcrumb file_cache, blog_categories=nil
     file_path.sub!(m.to_s, "")
   end
   
+  # Also remove YYYY-MM/DD-title-here.md
+  m = file_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\-/)
+  if not m.nil?
+    file_path.sub!(m.to_s, "")
+  end
+  
   # If blog_categories is not blank, insert /category/ to the path.
   # Indices are not categorizable.
   # Must have a blog_dir specified in the config.
