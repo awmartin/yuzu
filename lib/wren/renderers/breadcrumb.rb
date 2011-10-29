@@ -19,11 +19,18 @@ def render_breadcrumb file_cache, blog_categories=nil
     file_path = file_cache.relative_path.gsub(file_cache.extension, "")
   end
   
+  # Date folder structure match. We want to remove the date from the folder
+  # structure.
+  m = file_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\//)
+  if not m.nil?
+    file_path.sub!(m.to_s, "")
+  end
+  
   # If blog_categories is not blank, insert /category/ to the path.
   # Indices are not categorizable.
   # Must have a blog_dir specified in the config.
   if not blog_categories.blank? and not path.include?('index') and !config.blog_dir.blank?
-    file_path.sub!(config.blog_dir, "#{config.blog_dir}/#{blog_categories.first.downcase}")
+    file_path.sub!(config.blog_dir, "#{config.blog_dir}/#{blog_categories.first.downcase.dasherize}")
   end
   
   # Start the list of crumbs. Add "Home" first.

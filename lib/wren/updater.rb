@@ -104,7 +104,11 @@ class Updater
   def upload_all_resources
     return upload_all_files_of_types(@config.resource_extensions)
   end
-
+  
+  def upload_all_css
+    return upload_all_files_of_types([".css"])
+  end
+  
   # Update a particular list of files, presented as an array.
   def update_these array_of_files=[]
     puts "Calling Updater#update_these..."

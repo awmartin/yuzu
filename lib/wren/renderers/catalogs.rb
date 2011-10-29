@@ -98,7 +98,11 @@ class Catalog
     make_rows = (@blocks_per_row.to_i > 0)
 
     result = ""
-
+    if list_of_files.blank?
+      puts "WARNING: No posts found for catalog."
+      return result
+    end
+    
     list_of_files.each_index do |i|
       file_cache = list_of_files[i]
       actual_index = i + @start

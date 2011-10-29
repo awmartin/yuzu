@@ -53,6 +53,12 @@ module Wren::Command
       updater.done
     end
     
+    def css
+      puts `compass compile`
+      updater.upload_all_css
+      updater.done
+    end
+    
     def images
       images = updater.upload_all_images
       

@@ -204,8 +204,8 @@ TEMPLATE(_index.haml)"
 
   def catalog_children
     if @catalog_children.nil?
-      child_file_caches = children.collect {|f| @site_cache.cache[f]}
-      unsorted = child_file_caches.select {|f| f.file? and f.processable? and !f.index?}
+      child_file_caches = processable_children.collect {|f| @site_cache.cache[f]}
+      unsorted = child_file_caches.select {|f| f.file? and !f.index? and f.file?}
       @catalog_children = unsorted.sort {|a, b| b.raw_post_date <=> a.raw_post_date}
     end
     @catalog_children
@@ -370,6 +370,9 @@ TEMPLATE(_index.haml)"
     end
     
     @raw_post_date, @process_contents = extract_date process_contents
+    if @raw_post_date.blank?
+      @raw_post_date = extract_date_from_folder_structure @raw_path
+    end
     if @raw_post_date.blank?
       @raw_post_date = extract_date_from_filename @raw_path
     end

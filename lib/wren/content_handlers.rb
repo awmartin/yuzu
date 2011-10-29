@@ -59,11 +59,22 @@ end
 
 def extract_date_from_filename filename
   post_filename = filename.split("/").last
-  if not post_filename.match(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/).nil?
+  m = post_filename.match(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/)
+  if not m.nil?
     date_parts = post_filename.split("-")[0..2]
     return date_parts.join("-")
   else
-    return ""
+    return nil
+  end
+end
+
+def extract_date_from_folder_structure raw_path
+  m = raw_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\//)
+  if not m.nil?
+    date_parts = m.to_s.split("/")[0..2]
+    return date_parts.join("-")
+  else
+    return nil
   end
 end
 

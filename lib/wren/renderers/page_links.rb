@@ -24,5 +24,5 @@ def render_page_links num_pages=1, root_path="", current_page=0
     end
   end
 
-  return "<div class='page_links'>" + links.join(" ") + "</div>"
+  return "<div class='pagination-links'>" + links.join(" ") + "</div>"
 end
