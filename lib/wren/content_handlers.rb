@@ -1,6 +1,32 @@
 require 'pathname'
 require 'stringio'
 
+
+def get_file_type extension, config
+  
+  if extension.includes_one_of? config.image_extensions
+    return :image
+  elsif extension.includes_one_of? config.asset_extensions
+    return :asset
+  elsif extension.includes_one_of? config.resource_extensions
+    return :resource
+  elsif extension.includes_one_of? ["txt", "pde", "rb"]
+    return :plaintext
+  elsif extension.include? 'text'
+    return :textile
+  elsif extension.include? 'html'
+    return :html
+  elsif extension.include? 'haml'
+    return :haml
+  elsif extension.includes_one_of? ["markdown", "md", "mdown"]
+    return :markdown
+  else
+    return :unknown
+  end
+
+end
+
+
 def get_first_html_paragraph contents
   html_pattern = /<p\b[^>]*>((.|\n)*?)<\/p>/
   lines = contents.split("\n")
@@ -258,37 +284,6 @@ end
 
 def link_to text, url
   "<a href=\"#{url}\">#{text}</a>"
-end
-
-def get_file_type config, file
-  if file.is_a?(String)
-    file_ext = file.split(".").last.to_s
-    return :unknown if file_ext.blank?
-  elsif file.is_a?(File)
-    file_ext = File.extname(file.path)
-  elsif file.is_a?(StringIO)
-    return :haml # TODO: More intelligent handling of StringIO types. No type-checking?
-  else
-    return :unknown
-  end
-  
-  if file_ext.includes_one_of? config.image_extensions
-    return :image
-  elsif file_ext.includes_one_of? config.asset_extensions
-    return :asset
-  elsif file_ext.includes_one_of? ["txt","pde","rb"]
-    return :plaintext
-  elsif file_ext.include? 'text'
-    return :textile
-  elsif file_ext.include? 'html'
-    return :html
-  elsif file_ext.include? 'haml'
-    return :haml
-  elsif file_ext.includes_one_of? ["markdown", "md", "mdown"]
-    return :markdown
-  else
-    return :unknown
-  end
 end
 
 def demote_headers contents, file_type

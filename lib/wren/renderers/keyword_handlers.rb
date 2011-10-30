@@ -1,4 +1,4 @@
-require "content_handlers"
+require 'content_handlers'
 require 'renderers/gallery'
 
 

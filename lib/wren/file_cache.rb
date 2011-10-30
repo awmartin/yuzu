@@ -1,15 +1,16 @@
-require 'maruku'
-require 'haml'
-require 'RedCloth'
-
+require 'renderers/all'
 require 'renderers/keyword_handlers'
 require 'renderers/catalogs'
 require 'renderers/breadcrumb'
 require 'renderers/page_links'
-require 'content_handlers'
 
+require 'content_handlers'
 require 'layout_handler'
 
+
+# Primary abstraction for a cached and renderable file. This is a location
+# in the folder tree and has all of the logic required to render the file
+# into HTML or other format.
 class FileCache
   attr_accessor :site_cache, :config, :relative_path
   attr_writer :process_contents
@@ -42,25 +43,7 @@ class FileCache
         @file_type = false
       end
     elsif @file_type.nil?
-      if extension.includes_one_of? @config.image_extensions
-        @file_type = :image
-      elsif extension.includes_one_of? @config.asset_extensions
-        @file_type = :asset
-      elsif extension.includes_one_of? @config.resource_extensions
-        @file_type = :resource
-      elsif extension.includes_one_of? ["txt", "pde", "rb"]
-        @file_type = :plaintext
-      elsif extension.include? 'text'
-        @file_type = :textile
-      elsif extension.include? 'html'
-        @file_type = :html
-      elsif extension.include? 'haml'
-        @file_type = :haml
-      elsif extension.includes_one_of? ["markdown", "md", "mdown"]
-        @file_type = :markdown
-      else
-        @file_type = :unknown
-      end
+      @file_type = get_file_type(extension, @config)
     end
     @file_type
   end
@@ -113,7 +96,7 @@ TEMPLATE(index.haml)"
   def rendered_path
     if index? and directory?
       if paginate? and @page > 1
-        # Don't paginate generated indices just yet.
+        # Don't paginate generated indices by default just yet.
         # If auto-generated indices were paginated, this would add a digit
         # to the end of the filename.
         return File.join @raw_path, "index.html" 
@@ -290,7 +273,7 @@ TEMPLATE(index.haml)"
   end
   
   def extension
-    File.extname @raw_path
+    File.extname(@raw_path)
   end
   
   def image?
@@ -426,7 +409,7 @@ TEMPLATE(index.haml)"
     @process_contents = insert_catalogs @site_cache, process_contents, @page
     
     @sidebar_contents, @process_contents = extract_sidebar_contents process_contents, @config
-    @sidebar_contents = render @sidebar_contents
+    @sidebar_contents = render(@sidebar_contents, file_type)
     
     # Replace LINKROOT and CURRENTPATH once all the other content has been inserted...
     # TODO: Make sure CURRENTPATH is working properly.
@@ -443,28 +426,11 @@ TEMPLATE(index.haml)"
   end
 
   def rendered_contents
-    @rendered_contents ||= render(process_contents)
+    @rendered_contents ||= render_with_insertions(process_contents, file_type, @config)
   end
   
   def rendered_contents_with_demoted_headers
-    @rendered_contents_demoted ||= render(demote_headers(process_contents, file_type))
-  end
-
-  def render str
-    if file_type == :asset or file_type == :image
-      # Images and other binary files... Do nothing.
-      return nil
-    elsif file_type == :plaintext or file_type == :html
-      return str
-    elsif file_type == :textile
-      return RedCloth.new(str).to_html
-    elsif file_type == :haml
-      return Haml::Engine.new(str, {:format => :html5}).render #(Object.new, {})
-    elsif file_type == :markdown
-      return Maruku.new(str).to_html
-    else
-      return str
-    end
+    @rendered_contents_demoted ||= render_with_insertions(demote_headers(process_contents, file_type), file_type, @config)
   end
 
   def first_paragraph
