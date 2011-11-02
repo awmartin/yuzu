@@ -107,7 +107,7 @@ end
 def extract_sidebar_contents str, config
   # Find any sidebar contents.
   sidebar_contents = ""
-  tr = str.gsub(/SIDEBAR\{([\w\s\%\n\.\,\'\/\-\[\]\:\)\(_]*)\}/) do |s|
+  tr = str.gsub(/SIDEBAR\{([\w\s\n\%\.\,\'\/\-\[\]\:\)\(<>_]*)\}/) do |s|
     sidebar_contents = s.gsub("SIDEBAR{", "").gsub("}", "")
     ""
   end

@@ -518,7 +518,8 @@ TEMPLATE(index.haml)"
         :link_root => @config.link_root,
         :domain => @config.domain,
         :page_links => page_links,
-        :description => description.blank? ? first_para : description
+        :description => description.blank? ? first_para : description,
+        :preview => @config.preview?
       }.update(@config.config_dict)).update(first_image_thumbnails)
     end
     @attributes

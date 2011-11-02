@@ -29,7 +29,7 @@ module Wren::Command
       
       puts "Looking for new images to upload..."
       # Traverse images and upload if new.
-      catalog = File.open("images.yml","a+") rescue nil
+      catalog = File.open("_images.yml","a+") rescue nil
       unless catalog.nil?
         catalog.rewind
         image_paths = catalog.readlines

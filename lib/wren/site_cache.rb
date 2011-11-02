@@ -8,7 +8,7 @@ class SiteCache
     # The actual cache is a Hashmap of path -> FileCache object.
     @cache = {}
     Dir["**/*"].each do |path|
-      if not path.includes_one_of? @config.folder_blacklist
+      if not @config.is_blacklisted?(path) and not @config.is_hidden?(path)
         @cache[path] = FileCache.new(path, config)
       end
     end
@@ -45,5 +45,4 @@ class SiteCache
   def cache
     @cache
   end
-
 end

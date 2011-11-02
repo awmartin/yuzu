@@ -1,8 +1,6 @@
 require 'haml'
 require 'suppressor'
 require 'content_handlers'
-require 'renderers/breadcrumb'
-require 'renderers/gallery'
 
 class LayoutHandler
 
@@ -10,15 +8,39 @@ class LayoutHandler
     @file_cache = file_cache
     @config = file_cache.config
   end
+
+  # Loads the HAML partials for the layout. Especially _head.haml, _header.haml, 
+  # _footer.haml, _menu.haml.
+  def load_partial partial_filename, attr={}
+    partial_path = File.join(@config.template_dir, partial_filename)
+
+    partial = File.open(partial_path, 'r')
+    partial_contents = partial.readlines.join
+    partial.close
+    
+    opts = {:format => :html5}
+    locals = attr.update(@file_cache.attributes)
+    
+    result = Haml::Engine.new(partial_contents, opts).render(Object.new, locals)
+    
+    return result
+  end
   
   def load_page_partials!
     @html_head = load_partial "_head.haml"
     @header_contents = load_partial "_header.haml"
     @menu_contents = load_partial "_menu.haml"
     
-    recents = [] #get_recent_blog_posts(@config)
-    titles = recents.collect {|entry| extract_title_from_filename entry}
-    @footer_contents = load_partial "_footer.haml", {:recents => recents, :titles => titles}
+    # Get recent blog posts.
+    recents = []
+    site_cache = @file_cache.site_cache
+    # Look for the blog in the site cache.
+    if site_cache.cache.has_key?(@config.blog_dir)
+      blog = site_cache.cache[@config.blog_dir]
+      recents = blog.catalog_children[0..10]
+    end
+    
+    @footer_contents = load_partial("_footer.haml", {:recents => recents})
   end
   
   def load_template template_filename, options={}
@@ -40,26 +62,9 @@ class LayoutHandler
     
     Haml::Engine.new(template_contents, {:format => :html5}).render(Object.new, attr)
   end
-
-  # Loads the HAML partials for the layout. Especially _head.haml, _header.haml, 
-  # _footer.haml, _menu.haml.
-  def load_partial partial_filename, attr={}
-    partial_path = File.join @config.template_dir, partial_filename
-
-    partial = File.open(partial_path, 'r')
-    partial_contents = partial.readlines.join
-    partial.close
-    
-    result = Haml::Engine.new(partial_contents, 
-                              {:format => :html5}).render(Object.new, 
-                                                          attr.update(@file_cache.attributes))
-    
-    return result
-  end
-    
+  
   # Puts the header and footer in place.
   def wrap_with_layout
-    
     load_page_partials!
     
     return load_template @file_cache.template

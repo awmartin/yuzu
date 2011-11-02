@@ -85,4 +85,30 @@ class WrenConfig
   def indices
     processable_extensions.collect {|e| "index.#{e.gsub('.','')}"}
   end
+  
+  def preview?
+    @service == 'preview'
+  end
+  
+  # Checks to see whether file should be considered hidden. By default, all
+  # filenames and folders starting with an underscore are hidden.
+  def is_hidden?(path)
+    parts = path.split(File::SEPARATOR)
+    hidden = parts.collect do |f|
+      f[0].chr == "_"
+    end
+    hidden.any?
+  end
+  
+  def is_blacklisted?(path)
+    #parts = path.split(File::SEPARATOR)
+    #blacklisted = parts.collect do |f|
+    #  @config.folder_blacklist.include?(f)
+    #end
+    #blacklisted.any?
+    
+    # This is better since it requires the user to specify the exact path,
+    # like blog/drafts, instead of just drafts, which may appear elsewhere.
+    path.includes_one_of?(folder_blacklist)
+  end
 end

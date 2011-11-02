@@ -62,7 +62,7 @@ module Wren::Command
     def images
       images = updater.upload_all_images
       
-      catalog = File.open("images.yml","w")
+      catalog = File.open("_images.yml","w")
       catalog.puts(images.join("\n"))
       catalog.close
       

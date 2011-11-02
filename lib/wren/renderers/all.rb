@@ -3,17 +3,25 @@ require 'haml'
 require 'RedCloth'
 
 # General rendering method for all supported file types.
-def render str, file_type
+def render str, file_type, scope=nil
   if file_type == :asset or file_type == :image
     return nil
+    
   elsif file_type == :plaintext or file_type == :html
     return str
+    
   elsif file_type == :textile
     return RedCloth.new(str).to_html
+    
   elsif file_type == :haml
-    return Haml::Engine.new(str, {:format => :html5}).render #(Object.new, {})
+    if scope.nil?
+      scope = Object.new
+    end
+    return Haml::Engine.new(str, {:format => :html5}).render(scope)
+  
   elsif file_type == :markdown
     return Maruku.new(str).to_html
+  
   else
     return str
   end
@@ -23,7 +31,8 @@ end
 # currently only work for partials without any variables or dependencies, 
 # or raw files with no tags.
 #
-# TODO: use the site_cache to insert rendered contents.
+# TODO: use the site_cache to insert rendered contents of already cached
+# files, but not files outside of the site folder. Watch for circular references.
 def insert_rendered_contents str, config
   str.gsub(/INSERT\(([\w\.\-\/_]*)\)/) do |s|
     path_of_file_to_insert = s.gsub("INSERT(","").gsub(")","")
@@ -38,6 +47,7 @@ def insert_rendered_contents str, config
 end
 
 # Renders the raw string and adds all INSERT(...) contents as HTML.
+# Called after the rendered contents of a file_cache are produced.
 def render_with_insertions str, file_type, config
   rendered_contents = render(str, file_type)
   final = insert_rendered_contents(rendered_contents, config)
