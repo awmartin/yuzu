@@ -4,15 +4,7 @@ require 'stringio'
 
 def get_file_type extension, config
   
-  if extension.includes_one_of? config.image_extensions
-    return :image
-  elsif extension.includes_one_of? config.asset_extensions
-    return :asset
-  elsif extension.includes_one_of? config.resource_extensions
-    return :resource
-  elsif extension.includes_one_of? ["txt", "pde", "rb"]
-    return :plaintext
-  elsif extension.include? 'text'
+  if extension.include? 'text'
     return :textile
   elsif extension.include? 'html'
     return :html
@@ -20,6 +12,14 @@ def get_file_type extension, config
     return :haml
   elsif extension.includes_one_of? ["markdown", "md", "mdown"]
     return :markdown
+  elsif extension.includes_one_of? config.image_extensions
+    return :image
+  elsif extension.includes_one_of? config.asset_extensions
+    return :asset
+  elsif extension.includes_one_of? config.resource_extensions
+    return :resource
+  elsif extension.includes_one_of? ["txt", "pde", "rb"]
+    return :plaintext
   else
     return :unknown
   end

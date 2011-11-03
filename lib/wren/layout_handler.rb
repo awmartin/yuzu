@@ -1,6 +1,55 @@
 require 'haml'
 require 'suppressor'
 require 'content_handlers'
+require 'renderers/all'
+require 'renderers/keyword_handlers'
+
+class LayoutMethods
+  def initialize config
+    @config = config
+  end
+  
+  def insert_raw_file filename
+    if File.exists?(filename)
+      f = File.open(filename, "r")
+      contents = f.readlines.join
+      f.close
+      return contents
+    end
+    return ""
+  end
+  
+  def get_file_type filename
+    extension = File.extname(filename)
+    if extension.include? 'text'
+      return :textile
+    elsif extension.include? 'html'
+      return :html
+    elsif extension.include? 'haml'
+      return :haml
+    elsif extension.includes_one_of? ["markdown", "md", "mdown"]
+      return :markdown
+    else
+      return :unknown
+    end
+  end
+  
+  def insert_rendered_contents filename
+    if File.exists?(filename)
+      f = File.open(filename, "r")
+      contents = f.readlines.join
+      f.close
+      
+      file_type = get_file_type(filename)
+      rendered_contents = render(contents, file_type)
+      
+      tags_replaced = insert_linkroot(insert_blog_dir(rendered_contents, @config.blog_dir), @config.link_root)
+      
+      return tags_replaced
+    end
+  end
+end
+
 
 class LayoutHandler
 
@@ -21,7 +70,7 @@ class LayoutHandler
     opts = {:format => :html5}
     locals = attr.update(@file_cache.attributes)
     
-    result = Haml::Engine.new(partial_contents, opts).render(Object.new, locals)
+    result = Haml::Engine.new(partial_contents, opts).render(LayoutMethods.new(@config), locals)
     
     return result
   end
@@ -60,7 +109,7 @@ class LayoutHandler
       :footer => @footer_contents,
       :menu => @menu_contents})).update(@file_cache.attributes)
     
-    Haml::Engine.new(template_contents, {:format => :html5}).render(Object.new, attr)
+    Haml::Engine.new(template_contents, {:format => :html5}).render(LayoutMethods.new(@config), attr)
   end
   
   # Puts the header and footer in place.
