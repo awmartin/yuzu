@@ -22,7 +22,7 @@ end
 
 # Raw contents insert. Does no intermediate representation or format checking.
 def insert_contents str
-  str.gsub(/INSERTCONTENTS\(([A-Za-z0-9\.\-\/_]*)\)/) do |s|
+  str.gsub(/INSERTCONTENTS\(([\w\s\.\-\/]*)\)/) do |s|
     path_of_file_to_insert = s.gsub("INSERTCONTENTS(","").gsub(")","")
     puts "Inserting contents of #{path_of_file_to_insert}"
     insert_file(path_of_file_to_insert).gsub("MULTIVIEW","")
@@ -31,7 +31,7 @@ end
 
 def extract_extension str
   file_extension = ".html"
-  tr = str.gsub(/EXTENSION\(\.([A-Za-z0-9\.]*)\)/) do |s|
+  tr = str.gsub(/EXTENSION\(\.([\w\.]*)\)/) do |s|
     file_extension = s.gsub("EXTENSION(","").gsub(")","")
     ""
   end
@@ -41,7 +41,7 @@ end
 def extract_title str
   # Extract the title if any.
   post_title = ""
-  tr = str.gsub(/TITLE\(([A-Za-z0-9\,\.\-\/_\s\:\|]*)\)/) do |s|
+  tr = str.gsub(/TITLE\(([\w\s\,\.\-\/\:\|]*)\)/) do |s|
     post_title = s.gsub("TITLE(", "").gsub(")", "").strip
     ""
   end
@@ -149,12 +149,12 @@ def insert_currentpath str, current_relative_path
 end
 
 def insert_linkroot str, linkroot
-  tr = str.gsub("LINKROOT", linkroot)
+  tr = str.gsub("LINKROOT", linkroot.to_s)
   return tr
 end
 
 def insert_blog_dir str, blog_dir
-  tr = str.gsub("BLOGDIR", blog_dir)
+  tr = str.gsub("BLOGDIR", blog_dir.to_s)
   return tr
 end
 

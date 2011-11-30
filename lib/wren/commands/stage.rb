@@ -1,14 +1,14 @@
 module Wren::Command
-  class Publish < Base
+  class Stage < Base
     
     def initialize(args, config_dict)
       @args = args
       @config_dict = config_dict
-      @config = WrenConfig.new(config_dict, config_dict['connection'])
+      @config = WrenConfig.new(config_dict, 'stage')
     end
     
     def index
-      updater.update_these @args
+      updater.update_these(@args)
       updater.done
     end
     
@@ -36,11 +36,11 @@ module Wren::Command
       puts "Found changes to these files:\n" + updatable_files.join("\n").to_s
       puts
       
-      updater.update_these updatable_files
+      updater.update_these(updatable_files)
       
       puts "Looking for new images to upload..."
       # Traverse images and upload if new.
-      catalog = File.open("_images.yml","a+") rescue nil
+      catalog = File.open("images-stage.yml","a+") rescue nil
       unless catalog.nil?
         catalog.rewind
         image_paths = catalog.readlines
@@ -66,7 +66,12 @@ module Wren::Command
     end
     
     def images
-      updater.upload_all_images
+      images = updater.upload_all_images
+      
+      catalog = File.open("_images.yml","w")
+      catalog.puts(images.join("\n"))
+      catalog.close
+      
       updater.done
     end
     
@@ -75,12 +80,23 @@ module Wren::Command
       updater.done
     end
     
+    def usage
+    end
+    
+    def help
+    
+    end
+    
+    def uploader
+      @uploader ||= Uploader.new( 'stage', @config_dict )
+    end
+    
     def self.help method
       case method
       when :default
-        "Updates files on the remote server."
+        "Updates files in the staging folder."
       when :all
-        "Updates all files on remote server. A fresh start."
+        "Updates all files in the staging folder. A fresh start."
       when :changed
       when :resources
       when :images

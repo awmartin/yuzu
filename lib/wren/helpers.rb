@@ -27,6 +27,10 @@ unless String.method_defined?(:titlecase)
       self.downcase.split(" ").collect {|str| str.capitalize}.join(" ")
     end
     
+    def titleize
+      titlecase
+    end
+    
     def dasherize
       self.gsub(" ", "-").gsub("_", "-")
     end

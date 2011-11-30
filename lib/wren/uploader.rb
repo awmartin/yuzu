@@ -67,7 +67,7 @@ class Uploader
       @s3_bucket = AWS::S3::Bucket.find(@bucket_name)
       @remote_root_path = @config_dict['s3']['remote_root_path'].to_s
       
-    elsif @service == 'filesystem' or @service == 'preview'
+    elsif @service == 'filesystem' or @service == 'preview' or @service == 'stage'
       
       @remote_root_path = @config_dict[@service]['destination'].to_s
       
@@ -104,7 +104,7 @@ class Uploader
       elsif contents.is_a? String
         upload_contents_to_s3 local_path, contents
       end
-    elsif @service == 'filesystem' or @service == 'preview'
+    elsif @service == 'filesystem' or @service == 'preview' or @service == 'stage'
       if contents.is_a? File
         copy_contents_to_file_system local_path, contents.read, true
       elsif contents.is_a? String

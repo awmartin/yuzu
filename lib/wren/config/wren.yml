@@ -79,6 +79,9 @@ no_index_folders:
   - stylesheets
   - images
 
+no_render:
+  - robots.txt
+
 # Files with these extensions will be ignored.
 extension_blacklist:
   - .rb

@@ -19,13 +19,16 @@ module Wren
         config_path = File.join(Dir.pwd, "wren.yml")
         
         if not File.exists?(config_path) and command != "create"
-          puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
+          puts "Please run this from the directory with your configuration \
+file (wren.yml), typically your root project folder. Or use 'create' to \
+make a new project."
           Process.exit!(true)
         end
         
         config = {}
         begin
-         if command.include?("publish") or command.include?("preview") or command.include?("create:post") or command.include?("watch")
+          load_config_on = ["publish", "preview", "create:post", "watch", "stage"]
+          if command.includes_one_of?(load_config_on)
             config = YAML.load_file(config_path)
           end
         rescue => exception

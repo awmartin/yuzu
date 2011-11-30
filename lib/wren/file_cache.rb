@@ -17,7 +17,7 @@ class FileCache
   attr_reader :page
   
   # Define some default accessors.
-  @@preprocess_accessors = [:template, :images, :output_extension, 
+  @@preprocess_accessors = [:template, :images, 
     :html_title, :post_title, :post_date, :raw_post_date, :categories, 
     :gallery, :sidebar_contents, :breadcrumb, :description]
   
@@ -265,15 +265,33 @@ TEMPLATE(index.haml)"
     end
   end
   
-  def index?
+  def is_folder_index?
     is_blacklisted = @raw_path.includes_one_of?(@config.no_index_folders)
-    is_folder_index = (directory? and !is_blacklisted)
+    directory? and !is_blacklisted
+  end
+  
+  def index?
     has_index_in_path = (basename.include?("index.") or basename.include?("index_"))
-    has_index_in_path or is_folder_index
+    has_index_in_path or is_folder_index?
   end
   
   def extension
     File.extname(@raw_path)
+  end
+  
+  def output_extension
+    if no_render?
+      return extension
+    else
+      if @output_extension.nil?
+        preprocess!
+      end
+    end
+    @output_extension
+  end
+  
+  def no_render?
+    @config.no_render.include?(@raw_path)
   end
   
   def image?
@@ -437,8 +455,10 @@ TEMPLATE(index.haml)"
     if @first_paragraph.nil? or @raw_first_paragraph.nil?
       @raw_first_paragraph = ""
       @first_paragraph = ""
-          
-      if processable?
+      
+      # Wren controls the content of auto-generated indices, and so we don't
+      # want to hoist the first paragraph here.
+      if processable? and not is_folder_index?
         html_pattern = /<p\b[^>]*>((.|\n)*?)<\/p>/
         lines = rendered_contents.split("\n")
         lines.each do |line|

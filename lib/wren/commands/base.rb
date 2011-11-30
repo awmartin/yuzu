@@ -12,7 +12,8 @@ module Wren::Command
     def initialize(args, config_dict)
       @args = args
       @config_dict = config_dict
-      @config = WrenConfig.new(config_dict, 'preview') # Assume preview for safety. Subclass can override.
+      # Assume preview for safety. Subclass can override.
+      @config = WrenConfig.new(config_dict, 'preview')
     end
     
     def shell(cmd)

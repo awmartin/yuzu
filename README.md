@@ -1,4 +1,6 @@
-Wren (the "Website RENderer") is a blog-aware static website generator and publisher that converts a folder structure with text files and images into an HTML5 website and other formats. It can publish the rendered HTML output to an FTP server, local or remote file system, or Amazon S3.
+Wren (the "Website RENderer") is a blog-aware static website generator and publisher that converts a folder structure of text files and images into an HTML5 website.
+
+It can publish the rendered output to an FTP server, local or remote file system, or Amazon S3.
 
 Wren is unique among other static generators in that:  
 

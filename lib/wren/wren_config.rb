@@ -58,6 +58,10 @@ class WrenConfig
     @config_dict['blog_dir']
   end
   
+  def no_render
+    @config_dict.has_key?('no_render') ? @config_dict['no_render'] : []
+  end
+  
   def link_root_for_service service
     @config_dict[service]['link_root'].to_s
   end
