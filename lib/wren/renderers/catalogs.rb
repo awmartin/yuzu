@@ -118,11 +118,15 @@ class Catalog
             result += "<hr>\n"
           end
         end
-
+        
         css_class = ""
         if make_rows
+          # In a 24-column grid. TODO: make this configurable.
+          num_columns_24 = 24 / @blocks_per_row
+          css_class = "column-#{num_columns_24}"
+          
           if ((j % @blocks_per_row) == (@blocks_per_row - 1))
-            css_class = "last"
+            css_class += " last"
           end
         end
 

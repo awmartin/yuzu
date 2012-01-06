@@ -18,29 +18,35 @@ module Wren::Command
     end
     
     # TODO: Put this in its own class and integrate with the rest of the app.
-    # Generates small, medium, and large thumbnail images from a given path.
     def thumbnails
       path = args.first
       maxHeight = 500
       web_image_types = [".png", ".jpg", ".gif"]
       
+      ## Get all the original images requested...
       if File.directory?(path)
         all_files = Dir[File.join(path, "**/*")]
-        images = all_files.select {|f| web_image_types.include?(File.extname(f))}
+        images = all_files.select { |f| 
+                    web_image_types.include?(File.extname(f))
+                  }.reject { |f| 
+                    f[0].chr == "_" or f.include?("#{File::SEPARATOR}_")
+                  }
       else
         images = [path]
       end
       
+      thumbnail_types = @config.thumbnails.keys
+      
       images.each do |image_path|
         ext = File.extname(image_path)
         
-        image_path_small = image_path.gsub(ext, "-small#{ext}")
-        image_path_medium = image_path.gsub(ext, "-medium#{ext}")
-        image_path_large = image_path.gsub(ext, "-large#{ext}")
+        # Loop through the configured thumbnail types ("small", "medium", etc.)
+        thumbnail_types.each do |thumbnail_type|
+          thumbnail_path = image_path.gsub(ext, "-#{thumbnail_type}#{ext}")
+          thumbnail_size = @config.thumbnails[thumbnail_type]
 
-        puts `cp #{image_path} #{image_path_small}; sips --resampleWidth 320 #{image_path_small}`
-        puts `cp #{image_path} #{image_path_medium}; sips --resampleWidth 640 #{image_path_medium}`
-        puts `cp #{image_path} #{image_path_large}; sips --resampleWidth 960 #{image_path_large}`
+          puts `cp #{image_path} #{thumbnail_path}; sips --resampleWidth #{thumbnail_size} #{thumbnail_path}`
+        end
       end
     end
     

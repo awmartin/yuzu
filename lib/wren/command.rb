@@ -25,30 +25,30 @@ make a new project."
           Process.exit!(true)
         end
         
-        config = {}
+        config_dict = {}
         begin
-          load_config_on = ["publish", "preview", "create:post", "watch", "stage"]
+          load_config_on = ["publish", "preview", "create:post", "watch", "stage", "generate:thumbnails"]
           if command.includes_one_of?(load_config_on)
-            config = YAML.load_file(config_path)
+            config_dict = YAML.load_file(config_path)
           end
         rescue => exception
           puts "Error in parsing wren.yaml"
           puts exception.message
           puts exception.description
-          config = nil
+          config_dict = nil
         end
         
-        if config.nil?
+        if config_dict.nil?
           puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
           Process.exit!(true)
         end
         
-        run_internal(command, args.dup, config.dup)
+        run_internal(command, args.dup, config_dict.dup)
       end
       
-      def run_internal(command, args, config)
+      def run_internal(command, args, config_dict)
         klass, method = parse(command)
-        runner = klass.new(args, config)
+        runner = klass.new(args, config_dict)
         raise InvalidCommand unless runner.respond_to?(method)
         runner.send(method)
       end

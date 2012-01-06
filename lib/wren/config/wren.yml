@@ -4,9 +4,6 @@ site_name: My Site
 blog_dir: blog
 template_dir: _templates
 
-# Which connection to use. This should be set to s3, ftp, or filesystem.
-# 'preview' is reserved for a local filesystem preview.
-connection: filesystem
 
 # Connection Configurations
 
@@ -23,12 +20,32 @@ connection: filesystem
 # useful for local setups where the root path isn't localhost, for example:
 # link_root: http://localhost/~username/my_site
 
-# The preview folder is used to support local design and development before publishing 
-# to a remote server.
+# The preview folder is used to support local design and development before
+# publishing to a remote server.
+#
+# e.g. wren preview:all
 preview:
   domain: localhost/preview/mysite
   destination: /Users/username/Sites/preview/mysite
   link_root: /preview/mysite
+
+# The stage is used to produce a copy of the actual site on the file system
+# for manual FTP-ing to a web server. This gives you the opportunity to get
+# all the paths right for the server.
+#
+# e.g. wren stage:all
+stage:
+  domain: localhost
+  destination: /Users/username/Sites
+  link_root: .
+
+# For publishing a site...
+#
+# e.g. wren publish:all
+
+# Which connection to use for publication. This should be set to s3, ftp, or 
+# filesystem.
+connection: filesystem
 
 # For FTP service to a web server or file server.
 ftp:
@@ -79,6 +96,7 @@ no_index_folders:
   - stylesheets
   - images
 
+# These files will not be rendered, even if they have a processable extension.
 no_render:
   - robots.txt
 
@@ -115,23 +133,36 @@ asset_extensions:
   - .java
   - .html
 
-# Resources are files like CSS and Javascript that still may change when adding functionality
-# and changing the styling of the site. These aren't put through the markup processors and are
-# just uploaded when asked to.
+# Resources are files like CSS and Javascript that still may change when 
+# adding functionality or changing the styling of the site. These aren't put 
+# through the markup processors and are just uploaded when asked to.
 resource_extensions:
   - .css
   - .js
 
-# strict_index_links decides whether to keep generated links as pointing to the folder or to the
-# actual index.html file. It depends on how strict your host is. Dropbox and S3 will not automatically
-# reference an index.html file when using urls like http://dl.dropbox/u/000000/mysite, you have to use
-# http://dl.dropbox/u/000000/mysite/index.html. For links that are generated, like the breadcrumb, 
-# saying 'yes' below ensures the index.html is added to all folder links. For 'no', it ignores them.
-# If you're always using this behind Apache, you *should* be able to set this to 'no' without problems.
-# This does not automatically add index.html to links in the content, textile, or haml files. You have 
-# to do those links yourself.
+# strict_index_links decides whether to keep generated links as pointing to 
+# the folder or to the actual index.html file. It depends on how strict your 
+# host is. Dropbox and S3 will not automatically reference an index.html file 
+# when using urls like http://dl.dropbox/u/000000/mysite, you have to use
+# http://dl.dropbox/u/000000/mysite/index.html. For links that are generated, 
+# like the breadcrumb, saying 'yes' below ensures the index.html is added to 
+# all folder links. For 'no', it ignores them. If you're always using this 
+# behind Apache, you *should* be able to set this to 'no' without problems.
+# This does not automatically add index.html to links in the content, textile, 
+# markdown, or haml files. You have to do those links yourself.
 use_strict_index_links: yes
 
 breadcrumb_omit_current_page: false
 breadcrumb_separator: "&middot;"
+
+# Thumbnails designations and widths.
+# Every entry here will cause the generate:thumbnails command to produce a
+# resized image with the key appended to the name. For example, an entry of
+# small: 320 will cause the command to take "my-photo.png" and produce a new
+# image, "my-photo-small.png" with a width of 320 pixels. "medium: 600" will 
+# produce "my-photo-medium.png" with a width of 600 pixels.
+thumbnails:
+  small: 320
+  medium: 640
+  large: 960
 

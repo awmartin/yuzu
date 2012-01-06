@@ -13,6 +13,10 @@ class WrenConfig
     return (ext.includes_one_of?(processable_extensions) and !ext.includes_one_of?(extension_blacklist))
   end
   
+  def thumbnails
+    @config_dict['thumbnails']
+  end
+  
   def site_name
     @config_dict['site_name']
   end
