@@ -13,7 +13,7 @@ require 'layout_handler'
 # into HTML or other format.
 class FileCache
   attr_accessor :site_cache, :config, :relative_path
-  attr_writer :process_contents
+  attr_writer :process_contents, :raw_contents
   attr_reader :page
   
   # Define some default accessors.
@@ -411,7 +411,12 @@ TEMPLATE(index.haml)"
     end
     if @raw_post_date.blank?
       # Modification time.
-      @raw_post_date = File.mtime(@raw_path).strftime("%Y-%m-%d")
+      if File.exists?(@raw_path) # This may be generated, not an on-disk file.
+        @raw_post_date = File.mtime(@raw_path).strftime("%Y-%m-%d")
+      end
+    end
+    if @raw_post_date.blank?
+      @raw_post_date = Time.now.strftime("%Y-%m-%d")
     end
     @post_date = format_date @raw_post_date
     
