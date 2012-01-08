@@ -1,4 +1,5 @@
 require 'file_cache'
+require 'renderers/slideshow'
 
 class SiteCache
 
@@ -19,8 +20,8 @@ class SiteCache
     end
     
     create_category_folders
+    create_slideshows
     
-    # Do this last...
     create_paginated_pages
   end
   
@@ -85,10 +86,48 @@ class SiteCache
   
   def category_page_contents category="uncategorized"
     category_template_path = File.join(@config.template_dir, "category.txt")
-    f = File.open(category_template_path, "r")
-    tr = f.readlines.join
-    f.close
+    
+    if File.exists?(category_template_path)
+      f = File.open(category_template_path, "r")
+      tr = f.readlines.join
+      f.close
+    else
+      tr = "INSERTCONTENTS(#{@config.blog_dir}, 0, 5, 1, #{@config.template_dir}/_list_item.md, CATEGORY)"
+    end
     
     return tr.gsub("CATEGORY", category)
+  end
+  
+  def create_slideshows
+    have_slideshows = []
+    
+    @cache.each_pair do |path, file_cache|
+      if file_cache.processable?
+        if file_cache.render_slideshow
+          have_slideshows += [file_cache]
+        end
+      end
+    end
+    
+    # Get current filenames, create slideshow filenames
+    # Specify renderer.
+    tr = {}
+    have_slideshows.each do |file_cache|
+      path = file_cache.raw_path.dup
+      path.sub!(file_cache.extension, "-slideshow#{file_cache.extension}")
+      
+      new_fc = FileCache.new(path, @config)
+      new_fc.site_cache = self
+      
+      contents = file_cache.preprocessed_contents
+      slideshow_contents = SlideshowRenderer.new(contents, file_cache.file_type).render
+      new_fc.raw_contents = "<div class='slideshow'>#{slideshow_contents}</div>\n"
+      
+      new_fc.add_javascript_path("javascripts/slideshow.js")
+      
+      tr[path] = new_fc
+    end
+    
+    @cache.update(tr)
   end
 end

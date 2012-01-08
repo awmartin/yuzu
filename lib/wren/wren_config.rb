@@ -90,8 +90,8 @@ class WrenConfig
     @config_dict['breadcrumb_separator']
   end
 
-  def indices
-    processable_extensions.collect {|e| "index.#{e.gsub('.','')}"}
+  def possible_indices
+    @processable_indices ||= processable_extensions.collect {|e| "index.#{e}"}
   end
   
   def preview?

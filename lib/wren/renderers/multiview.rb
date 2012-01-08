@@ -22,7 +22,30 @@ class MultiviewRenderer
     puts "Done with slideshow."
     puts "--"
   end
-
+  
+  # Slides are not recursive. Then are arranged linearly, one after another.
+  def wrap_slides str="", after_tag=false
+    return "" if str.blank?
+    # Split by all headers first.
+    headers = /h1\.\s|h2\.\s|h3\.\s|h4\.\s/
+    slides = str.to_s.split(headers)
+    
+    first = slides.delete_at(0)
+    
+    if after_tag
+      slides = slides.collect { |slide| 
+        lines = slide.split("\n")
+        title = lines.delete_at(0)
+        slide = lines.join("\n")
+        "h2. #{title}\n\n<div class=\"slide\">\n#{slide}\n\n</div>\n\n"
+      }
+    else
+      slides = slides.collect { |slide| "<div class=\"slide\">\n\nh2. #{slide}</div>\n"}
+    end
+    
+    return first + slides.join
+  end
+  
   def make_accordion original_contents, local_path
     puts "--"
     puts "Generating the accordion."

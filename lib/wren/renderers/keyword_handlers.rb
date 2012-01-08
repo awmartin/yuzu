@@ -21,11 +21,17 @@ rescue
 end
 
 # Raw contents insert. Does no intermediate representation or format checking.
-def insert_contents str
+def insert_contents str, site_cache
   str.gsub(/INSERTCONTENTS\(([\w\s\.\-\/]*)\)/) do |s|
     path_of_file_to_insert = s.gsub("INSERTCONTENTS(","").gsub(")","")
+    
     puts "Inserting contents of #{path_of_file_to_insert}"
-    insert_file(path_of_file_to_insert).gsub("MULTIVIEW","")
+    
+    begin
+      site_cache.cache[path_of_file_to_insert].raw_contents
+    rescue => detail
+      insert_file(path_of_file_to_insert)
+    end
   end
 end
 
@@ -107,7 +113,7 @@ end
 def extract_sidebar_contents str, config
   # Find any sidebar contents.
   sidebar_contents = ""
-  tr = str.gsub(/SIDEBAR\{([\w\s\n\%\.\,\'\/\-\[\]\:\)\(<>_]*)\}/) do |s|
+  tr = str.gsub(/SIDEBAR\{([\w\s\n\*\#\%\.\,\'\/\-\[\]\:\)\(<>_]*)\}/) do |s|
     sidebar_contents = s.gsub("SIDEBAR{", "").gsub("}", "")
     ""
   end
@@ -156,5 +162,11 @@ end
 def insert_blog_dir str, blog_dir
   tr = str.gsub("BLOGDIR", blog_dir.to_s)
   return tr
+end
+
+def should_render_slideshow? str
+  tr = str.include?("+SLIDESHOW")
+  str.gsub!("+SLIDESHOW", "")
+  return tr, str
 end
 

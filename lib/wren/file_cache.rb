@@ -12,14 +12,15 @@ require 'layout_handler'
 # in the folder tree and has all of the logic required to render the file
 # into HTML or other format.
 class FileCache
-  attr_accessor :site_cache, :config, :relative_path
+  attr_accessor :site_cache, :config, :relative_path, :javascript_paths
   attr_writer :process_contents, :raw_contents
-  attr_reader :page
+  attr_reader :page, :raw_path
   
   # Define some default accessors.
   @@preprocess_accessors = [:template, :images, 
     :html_title, :post_title, :post_date, :raw_post_date, :categories, 
-    :gallery, :sidebar_contents, :breadcrumb, :description]
+    :gallery, :sidebar_contents, :breadcrumb, :description,
+    :render_slideshow]
   
   @@preprocess_accessors.each do |method_name|
     define_method(method_name) do
@@ -27,12 +28,18 @@ class FileCache
       return self.instance_variable_get("@#{method_name}".to_sym)
     end
   end
-
-
+  
   def initialize raw_path, config, page=1
     @raw_path = raw_path # Also the original path of page 1 if this is page n
     @config = config
     @page = page
+    @javascript_paths = []
+  end
+  
+  # Without the link root, including the full path
+  # e.g. javascripts/slideshow.js
+  def add_javascript_path path
+    @javascript_paths += [File.join(@config.link_root, path)]
   end
   
   def file_type
@@ -60,6 +67,7 @@ TEMPLATE(index.haml)"
       if File.exists? @raw_path
 
         if file?
+          
           if processable?
             # Open the file and grab its contents
             f = File.open @raw_path, "r"
@@ -71,7 +79,9 @@ TEMPLATE(index.haml)"
             # Either blacklisted or a binary file. Open later.
             @raw_contents = nil
           end
+          
         else
+          
           if index_exists?
             # Return the contents of the actual index, since an index file exists.
             @raw_contents = @site_cache.cache[index_path].raw_contents
@@ -79,8 +89,19 @@ TEMPLATE(index.haml)"
             # Just make up some contents. TODO: Make defaults configurable.
             @raw_contents = default_index_contents
           end
+          
         end
-
+        
+        # Replace CURRENTPATH
+        
+        current_path = File.join(@config.link_root, File.dirname(@raw_path))
+        puts "Replacing CURRENTPATH in #{@raw_path}"
+        if @raw_contents.include?("CURRENTPATH")
+          puts "FOUND!"
+        end
+        
+        @raw_contents.gsub!("CURRENTPATH", current_path)
+        
       else # file doesn't exist.
         @raw_contents = ""
       end
@@ -117,7 +138,12 @@ TEMPLATE(index.haml)"
   end
 
   def processable?
-    extension.includes_one_of?(@config.processable_extensions) or (index? and not (directory? and index_exists?))
+    if directory?
+      return false
+    else
+      return extension.includes_one_of?(@config.processable_extensions)
+    end
+    #extension.includes_one_of?(@config.processable_extensions) or (index? and not (directory? and index_exists?))
   end
 
   def blacklisted?
@@ -150,7 +176,7 @@ TEMPLATE(index.haml)"
       @index_path = ""
     elsif @index_exists.nil?
       
-      @config.indices.each do |index|
+      @config.possible_indices.each do |index|
         path = File.join @raw_path, index
 
         if File.exists? path
@@ -272,7 +298,8 @@ TEMPLATE(index.haml)"
   
   def index?
     has_index_in_path = (basename.include?("index.") or basename.include?("index_"))
-    has_index_in_path or is_folder_index?
+    has_processable_extension = extension.includes_one_of?(@config.processable_extensions)
+    (has_index_in_path and has_processable_extension) or is_folder_index?
   end
   
   def extension
@@ -388,9 +415,10 @@ TEMPLATE(index.haml)"
 
     # Insert contents before extracting the categories, template, and images...
     # This inserts the raw contents of a file. The format must be the same as the parent.
-    @process_contents = insert_contents process_contents
+    @process_contents = insert_contents process_contents, site_cache
     
     # ----------------- Extractions --------------------
+    @render_slideshow, @process_contents = should_render_slideshow? process_contents
     @categories, @process_contents = extract_categories process_contents
     @template, @process_contents = extract_template process_contents
     @images, @process_contents = extract_images process_contents, @config.link_root
@@ -436,7 +464,8 @@ TEMPLATE(index.haml)"
     
     # Replace LINKROOT and CURRENTPATH once all the other content has been inserted...
     # TODO: Make sure CURRENTPATH is working properly.
-    @process_contents = insert_currentpath process_contents, File.join(@config.link_root, path_to)
+    #@process_contents = insert_currentpath process_contents, File.join(@config.link_root, path_to)
+    
     @process_contents = insert_linkroot process_contents, @config.link_root
     @process_contents = insert_blog_dir process_contents, @config.blog_dir
     
@@ -446,6 +475,11 @@ TEMPLATE(index.haml)"
     @gallery = render_gallery @images, @config
     
     @preprocessed = true
+  end
+  
+  def preprocessed_contents
+    preprocess!
+    @process_contents
   end
 
   def rendered_contents
@@ -497,7 +531,9 @@ TEMPLATE(index.haml)"
       ""
     end
   end
-
+  
+  # TODO: update with new configurable image sizes.
+  # @config.thumbnails.keys
   def first_image_thumbnails
     if first_image.blank?
       {
@@ -544,7 +580,8 @@ TEMPLATE(index.haml)"
         :domain => @config.domain,
         :page_links => page_links,
         :description => description.blank? ? first_para : description,
-        :preview => @config.preview?
+        :preview => @config.preview?,
+        :javascript_paths => javascript_paths
       }.update(@config.config_dict)).update(first_image_thumbnails)
     end
     @attributes
