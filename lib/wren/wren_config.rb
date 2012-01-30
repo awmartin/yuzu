@@ -59,7 +59,7 @@ class WrenConfig
   end
   
   def blog_dir
-    @config_dict['blog_dir']
+    @config_dict.has_key?('blog_dir') ? @config_dict['blog_dir'] : nil
   end
   
   def no_render

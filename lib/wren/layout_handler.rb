@@ -109,7 +109,12 @@ class LayoutHandler
       :footer => @footer_contents,
       :menu => @menu_contents})).update(@file_cache.attributes)
     
-    Haml::Engine.new(template_contents, {:format => :html5}).render(LayoutMethods.new(@config), attr)
+    rendered_contents = Haml::Engine.new(template_contents, {:format => :html5}).render(LayoutMethods.new(@config), attr)
+    
+    # TODO: This is a hack fix, assuming that we're 5 levels indented... Find a way
+    # to get around HAML's insistence on indenting the HTML but while preserving the desired
+    # indentation inside <pre> tags.
+    return rendered_contents.gsub(/\n\s{0,10}/, "\n") # remove Haml's auto-indentation bullshit
   end
   
   # Puts the header and footer in place.

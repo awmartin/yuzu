@@ -36,3 +36,12 @@ unless String.method_defined?(:titlecase)
     end
   end
 end
+
+# Handles file path joins. Eliminates "." from the first arg, for consistency of Dir[...] results.
+def file_join(*paths)
+  if paths.first == "."
+    File.join(paths[1, paths.length])
+  else
+    File.join(paths)
+  end
+end

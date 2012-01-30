@@ -26,8 +26,9 @@ def extract_first_catalog contents
     blocks_per_row = args.length > 3 ? args[3].to_i : 1
     block_template = args.length > 4 ? args[4].to_s : "_block.haml"
     category = args.length > 5 ? args[5].to_s : nil
+    sort_by = args.length > 6 ? args[6].to_s : :date
     
-    return path_of_folder_to_insert, start, count, blocks_per_row, block_template, category
+    return path_of_folder_to_insert, start, count, blocks_per_row, block_template, category, sort_by
   else
     return nil, nil, nil, nil, nil, nil
   end
@@ -35,7 +36,7 @@ end
 
 
 def insert_catalogs site_cache, process_contents, page=1
-  tr = process_contents.gsub(/INSERTCATALOG\(([A-Za-z0-9\,\.\-\/_\s]*)\)/) do |s|
+  tr = process_contents.gsub(/INSERTCATALOG\(([\w\s\,\.\-\/_]*)\)/) do |s|
     arg_str = s.gsub("INSERTCATALOG(","").gsub(")","")
     Catalog.new(site_cache, arg_str, page).html_contents
   end
@@ -46,7 +47,7 @@ end
 class Catalog
   def initialize site_cache, str, page=1
     @site_cache = site_cache.cache
-
+    
     args = str.split(",").collect {|a| a.strip}
     
     # Extract the arguments.
@@ -66,6 +67,12 @@ class Catalog
     @blocks_per_row = args.length > 3 ? args[3].to_i : 1
     @block_template = args.length > 4 ? args[4].to_s : "_block.haml"
     @category = args.length > 5 ? args[5].to_s : nil
+    if not @category.nil? 
+      if @category.strip.blank?
+        @category = nil
+      end
+    end
+    @sort_by = args.length > 6 ? args[6].to_s.to_sym : :date
     
     @file_cache = @site_cache[@folder_to_insert]
   end
@@ -74,11 +81,11 @@ class Catalog
     
     if @list_of_files.nil?
       return [] if @file_cache.nil?
-    
+      
       if @category.nil?
-        files = @file_cache.catalog_children
+        files = @file_cache.catalog_children nil, @sort_by
       else
-        files = @file_cache.catalog_children.select {|f| f.categories.include?(@category)}
+        files = @file_cache.catalog_children(nil, @sort_by).select {|f| f.categories.include?(@category)}
       end
 
       if files.length == 0

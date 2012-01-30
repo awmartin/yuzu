@@ -13,7 +13,10 @@ class SiteCache
         @cache[path] = FileCache.new(path, config)
       end
     end
-
+    
+    # Include the top-level folder
+    @cache["."] = FileCache.new(".", config)
+    
     # Hand a reference to the entire SiteCache to every FileCache
     @cache.each_pair do |path, file_cache|
       file_cache.site_cache = self
@@ -69,6 +72,10 @@ class SiteCache
   end
   
   def create_category_folders
+    if @config.blog_dir.blank?
+      return
+    end
+    
     uncat_dir = File.join(@config.blog_dir, "uncategorized/index.md")
     uncat_file_cache = FileCache.new(uncat_dir, @config)
     uncat_file_cache.raw_contents = category_page_contents("uncategorized")

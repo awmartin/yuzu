@@ -6,7 +6,7 @@ require 'renderers/page_links'
 
 require 'content_handlers'
 require 'layout_handler'
-
+require 'helpers'
 
 # Primary abstraction for a cached and renderable file. This is a location
 # in the folder tree and has all of the logic required to render the file
@@ -39,7 +39,7 @@ class FileCache
   # Without the link root, including the full path
   # e.g. javascripts/slideshow.js
   def add_javascript_path path
-    @javascript_paths += [File.join(@config.link_root, path)]
+    @javascript_paths += [file_join(@config.link_root, path)]
   end
   
   def file_type
@@ -94,8 +94,7 @@ TEMPLATE(index.haml)"
         
         # Replace CURRENTPATH
         
-        current_path = File.join(@config.link_root, File.dirname(@raw_path))
-        puts "Replacing CURRENTPATH in #{@raw_path}"
+        current_path = file_join(@config.link_root, File.dirname(@raw_path))
         if @raw_contents.include?("CURRENTPATH")
           puts "FOUND!"
         end
@@ -120,9 +119,9 @@ TEMPLATE(index.haml)"
         # Don't paginate generated indices by default just yet.
         # If auto-generated indices were paginated, this would add a digit
         # to the end of the filename.
-        return File.join @raw_path, "index.html" 
+        return file_join @raw_path, "index.html" 
       else
-        return File.join @raw_path, "index.html"
+        return file_join @raw_path, "index.html"
       end
     end
     
@@ -177,7 +176,7 @@ TEMPLATE(index.haml)"
     elsif @index_exists.nil?
       
       @config.possible_indices.each do |index|
-        path = File.join @raw_path, index
+        path = file_join @raw_path, index
 
         if File.exists? path
           @index_exists = true
@@ -200,7 +199,7 @@ TEMPLATE(index.haml)"
       if @children.nil?
         # traverse
         @children = []
-        search_path = File.join @raw_path, "**/*"
+        search_path = file_join(@raw_path, "**/*")
         @children = Dir[search_path]
       end
     end
@@ -208,15 +207,15 @@ TEMPLATE(index.haml)"
   end
   
   def processable_children
-    children.select { |path| @site_cache.cache[path].processable? }
+    @processable_children ||= children.reject {|path| @site_cache.cache[path].nil?}.select { |path| @site_cache.cache[path].processable? }
   end
 
   def formatted_categories
     categories.collect {|cat| cat.to_s.downcase.dasherize}
   end
 
-  def filtered_children category_filter=nil
-    sorted = catalog_children
+  def filtered_children category_filter=nil, sort_by=:date
+    sorted = catalog_children nil, sort_by
     if category_filter.nil?
       filtered = sorted
     else
@@ -226,23 +225,30 @@ TEMPLATE(index.haml)"
     return filtered
   end
   
-  def catalog_children category_filter=nil
+  def catalog_children category_filter=nil, sort_by=:date
     if @catalog_children.nil?
       child_file_caches = processable_children.collect {|f| @site_cache.cache[f]}
       
       unsorted = child_file_caches.select {|f| f.file? and !f.index?}
       
-      @catalog_children = unsorted.sort {|a, b| b.raw_post_date <=> a.raw_post_date}
+      # Sort by date by default...
+      if sort_by == :date
+        @catalog_children = unsorted.sort {|a, b| b.raw_post_date <=> a.raw_post_date}
+      elsif sort_by == :title
+        @catalog_children = unsorted.sort {|a, b| a.post_title <=> b.post_title}
+      else
+        @catalog_children = unsorted.sort {|a, b| b.raw_post_date <=> a.raw_post_date}
+      end
     end
     @catalog_children
   end
   
   def absolute_path
-    File.join(Dir.pwd, relative_path)
+    file_join(Dir.pwd, relative_path)
   end
 
   def link_url
-    File.join(@config.link_root, rendered_path)
+    file_join(@config.link_root, rendered_path)
   end
   
   def directory?
@@ -341,7 +347,7 @@ TEMPLATE(index.haml)"
   # @fc_start will be -1 for pagination.
   # @fc_count will be 0 for "show all," which is contrary to pagination.
   def get_first_catalog_info!
-    @fc_folder, @fc_start, @fc_count, @fc_blocks, @fc_block_template, @fc_category = extract_first_catalog raw_contents
+    @fc_folder, @fc_start, @fc_count, @fc_blocks, @fc_block_template, @fc_category, @fc_sort_by = extract_first_catalog raw_contents
   end
 
   def num_pages
@@ -394,7 +400,7 @@ TEMPLATE(index.haml)"
   def page_links
     if @page_links.nil?
       if paginate?
-        @page_links = render_page_links(num_pages, File.join(@config.link_root, @raw_path), @page)
+        @page_links = render_page_links(num_pages, file_join(@config.link_root, @raw_path), @page)
       else
         @page_links = ""
       end
@@ -464,7 +470,7 @@ TEMPLATE(index.haml)"
     
     # Replace LINKROOT and CURRENTPATH once all the other content has been inserted...
     # TODO: Make sure CURRENTPATH is working properly.
-    #@process_contents = insert_currentpath process_contents, File.join(@config.link_root, path_to)
+    #@process_contents = insert_currentpath process_contents, file_join(@config.link_root, path_to)
     
     @process_contents = insert_linkroot process_contents, @config.link_root
     @process_contents = insert_blog_dir process_contents, @config.blog_dir

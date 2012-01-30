@@ -15,8 +15,6 @@ end
 
 # Fallback in case the _gallery.haml file is no where to be found.
 def render_gallery_fallback images
-  puts "Gallery fallback..."
-  
   if images.length == 0
     return ""
   end
