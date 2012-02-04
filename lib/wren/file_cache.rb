@@ -191,49 +191,59 @@ TEMPLATE(index.haml)"
     end
     return @index_exists, @index_path
   end
-
-  def children
+  
+  # Contains all the children of this folder.
+  def children(deep=true)
     if file?
       @children = []
     else
       if @children.nil?
         # traverse
         @children = []
-        search_path = file_join(@raw_path, "**/*")
+        if deep
+          search_path = file_join(@raw_path, "**/*")
+        else
+          search_path = file_join(@raw_path, "*")
+        end
         @children = Dir[search_path]
       end
     end
     @children
   end
   
-  def processable_children
-    @processable_children ||= children.reject {|path| @site_cache.cache[path].nil?}.select { |path| @site_cache.cache[path].processable? }
+  # Returns a list of child paths that contain processable, renderable files.
+  def processable_children(deep=true)
+    @processable_children ||= children(deep).reject { |path| 
+        @site_cache.cache[path].nil?}.select { |path| 
+          @site_cache.cache[path].processable? }
   end
-
+  
   def formatted_categories
     categories.collect {|cat| cat.to_s.downcase.dasherize}
   end
-
-  def filtered_children category_filter=nil, sort_by=:date
-    sorted = catalog_children nil, sort_by
+  
+  def filtered_children category_filter=nil, sort_by=:date_reversed, deep=true
+    sorted = catalog_children(nil, sort_by, deep)
     if category_filter.nil?
       filtered = sorted
     else
       formatted_filter = category_filter.to_s.downcase.dasherize
-      filtered = sorted.select { |child| child.formatted_categories.include?(formatted_filter)}
+      filtered = sorted.select { |child| child.formatted_categories.include?(formatted_filter) }
     end
     return filtered
   end
   
-  def catalog_children category_filter=nil, sort_by=:date
+  def catalog_children category_filter=nil, sort_by=:date_reversed, deep=true
     if @catalog_children.nil?
-      child_file_caches = processable_children.collect {|f| @site_cache.cache[f]}
+      child_file_caches = processable_children(deep).collect {|f| @site_cache.cache[f]}
       
       unsorted = child_file_caches.select {|f| f.file? and !f.index?}
       
       # Sort by date by default...
-      if sort_by == :date
+      if sort_by == :date_reversed
         @catalog_children = unsorted.sort {|a, b| b.raw_post_date <=> a.raw_post_date}
+      elsif sort_by == :date
+        @catalog_children = unsorted.sort {|a, b| a.raw_post_date <=> b.raw_post_date}
       elsif sort_by == :title
         @catalog_children = unsorted.sort {|a, b| a.post_title <=> b.post_title}
       else
@@ -347,7 +357,7 @@ TEMPLATE(index.haml)"
   # @fc_start will be -1 for pagination.
   # @fc_count will be 0 for "show all," which is contrary to pagination.
   def get_first_catalog_info!
-    @fc_folder, @fc_start, @fc_count, @fc_blocks, @fc_block_template, @fc_category, @fc_sort_by = extract_first_catalog raw_contents
+    @fc_folder, @fc_start, @fc_count, @fc_blocks, @fc_block_template, @fc_category, @fc_sort_by, @fc_deep = extract_first_catalog raw_contents
   end
 
   def num_pages

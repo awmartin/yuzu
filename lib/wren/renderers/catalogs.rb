@@ -26,9 +26,10 @@ def extract_first_catalog contents
     blocks_per_row = args.length > 3 ? args[3].to_i : 1
     block_template = args.length > 4 ? args[4].to_s : "_block.haml"
     category = args.length > 5 ? args[5].to_s : nil
-    sort_by = args.length > 6 ? args[6].to_s : :date
+    sort_by = args.length > 6 ? args[6].to_s : :date_reversed
+    deep = args.length > 7 ? (args[7] == "DEEP" ? true : false) : true
     
-    return path_of_folder_to_insert, start, count, blocks_per_row, block_template, category, sort_by
+    return path_of_folder_to_insert, start, count, blocks_per_row, block_template, category, sort_by, deep
   else
     return nil, nil, nil, nil, nil, nil
   end
@@ -72,7 +73,9 @@ class Catalog
         @category = nil
       end
     end
-    @sort_by = args.length > 6 ? args[6].to_s.to_sym : :date
+    @sort_by = args.length > 6 ? args[6].to_s.to_sym : :date_reversed
+    # DEEP or FLAT
+    @deep = args.length > 7 ? (args[7] == "DEEP" ? true : false) : true
     
     @file_cache = @site_cache[@folder_to_insert]
   end
@@ -83,9 +86,10 @@ class Catalog
       return [] if @file_cache.nil?
       
       if @category.nil?
-        files = @file_cache.catalog_children nil, @sort_by
+        files = @file_cache.catalog_children nil, @sort_by, @deep
       else
-        files = @file_cache.catalog_children(nil, @sort_by).select {|f| f.categories.include?(@category)}
+        files = @file_cache.catalog_children(nil, @sort_by, @deep).select { |f| 
+                    f.categories.include?(@category)}
       end
 
       if files.length == 0
