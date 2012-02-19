@@ -514,19 +514,18 @@ TEMPLATE(index.haml)"
       # Wren controls the content of auto-generated indices, and so we don't
       # want to hoist the first paragraph here.
       if processable? and not is_folder_index?
-        html_pattern = /<p\b[^>]*>((.|\n)*?)<\/p>/
-        lines = rendered_contents.split("\n")
-        lines.each do |line|
-          m = line.match(html_pattern)
-          if not m.nil?
-            @raw_first_paragraph = m[0]
-            @first_paragraph = m[1]
-            break
-          else
-            @raw_first_paragraph = ""
-            @first_paragraph = ""
-          end
+        html_pattern = /<p\b[^>]*>([.\w\s\n\.\"\/\(\)'&;:<>,-_!]+?)<\/p>/
+        
+        m = rendered_contents.match(html_pattern)
+        
+        if not m.nil?
+          @raw_first_paragraph = m[0]
+          @first_paragraph = m[1]
+        else
+          @raw_first_paragraph = ""
+          @first_paragraph = ""
         end
+        
       else
         @raw_first_paragraph = ""
         @first_paragraph = ""

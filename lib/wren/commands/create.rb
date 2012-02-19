@@ -14,6 +14,7 @@ module Wren::Command
         "config" => destination_dir,
         "samples" => destination_dir,
         "javascripts" => File.join(destination_dir, "javascripts")
+        #{}"css" => File.join(destination_dir, "stylesheets")
       }
       
       to_copy.each_pair do |source_dir, destination_path|

@@ -7,6 +7,8 @@ class WrenConfig
     @service = service
   end
   
+  define_method(:author) { @config_dict.has_key?(:author) ? @config_dict['author'] : "" }
+  
   def processable? local_path=""
     return false if local_path.blank?
     ext = File.extname(local_path.to_s).to_s

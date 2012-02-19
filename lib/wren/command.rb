@@ -18,6 +18,7 @@ module Wren
         
         config_path = File.join(Dir.pwd, "wren.yml")
         
+        # TODO: Find a better way to distinguish commands that require a config.
         if not File.exists?(config_path) and command != "create"
           puts "Please run this from the directory with your configuration \
 file (wren.yml), typically your root project folder. Or use 'create' to \
@@ -28,20 +29,23 @@ make a new project."
         config_dict = {}
         begin
           load_config_on = ["publish", "preview", "create:post", "watch", "stage", "generate:thumbnails"]
+          
           if command.includes_one_of?(load_config_on)
             config_dict = YAML.load_file(config_path)
           end
+          
         rescue => exception
           puts "Error in parsing wren.yaml"
           puts exception.message
           puts exception.description
           config_dict = nil
-        end
-        
-        if config_dict.nil?
-          puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
           Process.exit!(true)
         end
+        
+        # if config_dict.nil?
+        #   puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
+        #   Process.exit!(true)
+        # end
         
         run_internal(command, args.dup, config_dict.dup)
       end
