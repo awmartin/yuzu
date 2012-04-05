@@ -1,5 +1,6 @@
 # Title to be displayed on the site.
 site_name: My Site
+author: First Last
 
 blog_dir: blog
 template_dir: _templates
@@ -47,6 +48,12 @@ stage:
 # filesystem.
 connection: filesystem
 
+# All the file system needs is the absolute path of the destination parent folder.
+filesystem:
+  domain: localhost/preview/mysite
+  destination: /Users/username/Sites/preview/mysite
+  link_root: /preview/mysite
+
 # For FTP service to a web server or file server.
 ftp:
   domain: site.example.com
@@ -55,12 +62,6 @@ ftp:
   password: 123456
   link_root: 
   remote_root_path: 
-
-# All the file system needs is the absolute path of the destination parent folder.
-filesystem:
-  domain: localhost/preview/mysite
-  destination: /Users/username/Sites/preview/mysite
-  link_root: /preview/mysite
 
 # For service at Amazon S3. By default, this is configured to get the access_key and 
 # secret_key from environment variables, like ENV['AMAZON_ACCESS_KEY_ID']. Just put 
@@ -85,16 +86,17 @@ proxy:
 # This is a list of the local folders to ignore completely, so the recursive updates
 # won't traverse them. The SASS 'src' folder is a good one to exclude.
 folder_blacklist:
-  - src
+  - _sass
+  - _templates
   - .sass-cache
 
 # Some folders have to be traversed to update resources, but we don't want to create
 # auto-generated index.html files for them. This is the list of such folders.
 no_index_folders:
-  - javascripts
+  - js
   - sass
-  - stylesheets
-  - images
+  - css
+  - img
 
 # These files will not be rendered, even if they have a processable extension.
 no_render:
@@ -165,4 +167,6 @@ thumbnails:
   small: 320
   medium: 640
   large: 960
+
+remove_h1_tags: false
 

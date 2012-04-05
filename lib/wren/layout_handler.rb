@@ -5,18 +5,27 @@ require 'renderers/all'
 require 'renderers/keyword_handlers'
 
 class LayoutMethods
-  def initialize config
+  def initialize config, site_cache
     @config = config
+    @site_cache = site_cache
   end
   
   def insert_raw_file filename
     if File.exists?(filename)
+      
       f = File.open(filename, "r")
       contents = f.readlines.join
       f.close
       return contents
+      
+    elsif @site_cache.file_exists?(filename)
+      
+      file_cache = @site_cache.get_file(filename)
+      return file_cache.raw_contents
+      
+    else
+      return ""
     end
-    return ""
   end
   
   def get_file_type filename
@@ -36,6 +45,7 @@ class LayoutMethods
   
   def insert_rendered_contents filename
     if File.exists?(filename)
+      
       f = File.open(filename, "r")
       contents = f.readlines.join
       f.close
@@ -46,6 +56,21 @@ class LayoutMethods
       tags_replaced = insert_linkroot(insert_blog_dir(rendered_contents, @config.blog_dir), @config.link_root)
       
       return tags_replaced
+      
+    elsif @site_cache.file_exists?(filename)
+      file_cache = @site_cache.get_file(filename)
+      
+      rendered_contents = render(file_cache.raw_contents, file_cache.file_type)
+      
+      tags_replaced = insert_linkroot(
+                        insert_blog_dir(rendered_contents, @config.blog_dir), 
+                        @config.link_root
+                        )
+      puts tags_replaced
+      return tags_replaced
+      
+    else
+      return ""
     end
   end
 end
@@ -55,6 +80,7 @@ class LayoutHandler
 
   def initialize file_cache
     @file_cache = file_cache
+    @site_cache = file_cache.site_cache
     @config = file_cache.config
   end
 
@@ -70,7 +96,10 @@ class LayoutHandler
     opts = {:format => :html5}
     locals = attr.update(@file_cache.attributes)
     
-    result = Haml::Engine.new(partial_contents, opts).render(LayoutMethods.new(@config), locals)
+    result = Haml::Engine.new(partial_contents, opts).render(
+                  LayoutMethods.new(@config, @site_cache), 
+                  locals
+                )
     
     return result
   end
@@ -98,18 +127,26 @@ class LayoutHandler
     template_contents = template.readlines.join
     template.close
     
-    attr = (options.update({
-      :head => @html_head,
-      :contents => @file_cache.rendered_contents, # Triggers the rendering
-      :contents_without_first_paragraph => 
-        @file_cache.rendered_contents.gsub(@file_cache.attributes[:raw_first_paragraph], ""),
-      :contents_with_demoted_headers =>
-        @file_cache.rendered_contents_with_demoted_headers,
-      :header => @header_contents,
-      :footer => @footer_contents,
-      :menu => @menu_contents})).update(@file_cache.attributes)
+    attr = options.update(
+        {
+          :head => @html_head,
+          :contents => @file_cache.rendered_contents, # Triggers the rendering
+          :contents_without_first_paragraph => 
+            @file_cache.rendered_contents.gsub(
+              @file_cache.attributes[:raw_first_paragraph], ""
+              ),
+          :contents_with_demoted_headers =>
+            @file_cache.rendered_contents_with_demoted_headers,
+          :header => @header_contents,
+          :footer => @footer_contents,
+          :menu => @menu_contents
+        }
+      ).update(@file_cache.attributes)
     
-    rendered_contents = Haml::Engine.new(template_contents, {:format => :html5}).render(LayoutMethods.new(@config), attr)
+    rendered_contents = Haml::Engine.new(
+          template_contents, 
+          {:format => :html5}
+        ).render(LayoutMethods.new(@config, @site_cache), attr)
     
     # TODO: This is a hack fix, assuming that we're 5 levels indented... Find a way
     # to get around HAML's insistence on indenting the HTML but while preserving the desired

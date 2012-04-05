@@ -7,7 +7,10 @@ class WrenConfig
     @service = service
   end
   
-  define_method(:author) { @config_dict.has_key?(:author) ? @config_dict['author'] : "" }
+  define_method(:author) { @config_dict.has_key?("author") ? @config_dict['author'] : "" }
+  define_method(:remove_h1_tags) {
+    @config_dict.has_key?("remove_h1_tags") ? @config_dict['remove_h1_tags'] : false
+    }
   
   def processable? local_path=""
     return false if local_path.blank?
@@ -93,7 +96,7 @@ class WrenConfig
   end
 
   def possible_indices
-    @processable_indices ||= processable_extensions.collect {|e| "index.#{e}"}
+    @processable_indices ||= processable_extensions.collect {|e| "index#{e}"}
   end
   
   def preview?

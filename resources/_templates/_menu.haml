@@ -1,0 +1,17 @@
+.menu.navbar.navbar-fixed-top
+  .navbar-inner
+    .container
+      %a.btn.btn-navbar(data-toggle="collapse" data-target=".nav-collapse")
+        %span.icon-bar
+        %span.icon-bar
+        %span.icon-bar
+      
+      %a.brand(href="#{link_root}/index.html")= site_name
+      
+      .nav-collapse
+        %ul.nav
+          %li{:class => ""}
+            %a{:href => "#{link_root}/index.html"} Home
+          %li{:class => ""}
+            %a{:href => "#{link_root}/about.html"} About
+

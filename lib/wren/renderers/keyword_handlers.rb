@@ -22,13 +22,11 @@ end
 
 # Raw contents insert. Does no intermediate representation or format checking.
 def insert_contents str, site_cache
-  str.gsub(/INSERTCONTENTS\(([\w\s\.\-\/]*)\)/) do |s|
+  str.gsub(/INSERTCONTENTS\(([\w\s\.\-\/_]*)\)/) do |s|
     path_of_file_to_insert = s.gsub("INSERTCONTENTS(","").gsub(")","")
     
-    puts "Inserting contents of #{path_of_file_to_insert}"
-    
     begin
-      site_cache.cache[path_of_file_to_insert].raw_contents
+      site_cache.get(path_of_file_to_insert).raw_contents
     rescue => detail
       insert_file(path_of_file_to_insert)
     end
@@ -44,13 +42,29 @@ def extract_extension str
   return file_extension, tr
 end
 
-def extract_title str
+def extract_title str, file_type, config
   # Extract the title if any.
+  
   post_title = ""
-  tr = str.gsub(/TITLE\(([\w\s\,\.\-\/\:\|]*)\)/) do |s|
-    post_title = s.gsub("TITLE(", "").gsub(")", "").strip
-    ""
+  
+  if file_type == :markdown
+    tr = str.gsub(/^#\s+.*\n/) do |s|
+      post_title = s.gsub("#","").strip
+      if @config.remove_h1_tags
+        ""
+      else
+        s
+      end
+    end
   end
+  
+  if post_title.blank?
+    tr = str.gsub(/TITLE\(([\w\s\,\.\-\/\:\|]*)\)/) do |s|
+      post_title = s.gsub("TITLE(", "").gsub(")", "").strip
+      ""
+    end
+  end
+  
   return post_title, tr
 end
 
@@ -113,7 +127,7 @@ end
 def extract_sidebar_contents str, config
   # Find any sidebar contents.
   sidebar_contents = ""
-  tr = str.gsub(/SIDEBAR\{([\w\s\n\*\#\%\.\,\'\/\-\[\]\:\)\(<>_]*)\}/) do |s|
+  tr = str.gsub(/SIDEBAR\{([\w\s\n\*\#\%\.\,\"\'\/\-\[\]\:\)\(<>_=]*)\}/) do |s|
     sidebar_contents = s.gsub("SIDEBAR{", "").gsub("}", "")
     ""
   end

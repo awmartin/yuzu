@@ -2,18 +2,21 @@
 %html
   = head
 
-  %body.post
+  %body.generic
+    = menu
+    
     .container
       %header.header
         = header
-        = menu
       
       %article.content{:role => 'main'}
-        .content-header
-          %h2= post_title
-        
+        %header
+          
         .content-body
           = contents
+        
+        %footer
+      
       
       %footer.footer
         = footer

@@ -1,4 +1,4 @@
-# My New Site
+# New Site
 
 Wren is a website generator and publisher that starts with a text-based file system (txt, textile, haml, sass) and publishes it in HTML and CSS on an FTP server, file system, or S3. 
 

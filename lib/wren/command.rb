@@ -46,12 +46,40 @@ make a new project."
         #   puts "Please run this from the directory with your configuration file (wren.yml), typically your root project folder."
         #   Process.exit!(true)
         # end
+        process_options(args)
         
         run_internal(command, args.dup, config_dict.dup)
       end
       
+      def process_options args
+        if args.include?("--ignore"):
+          @folders_to_ignore = []
+          pos = args.index("--ignore")
+          pos = pos + 1
+          while pos < args.length and args[pos][0..1] != "--" and args[pos][0...1] != "-"
+            @folders_to_ignore += [args[pos]]
+            pos = pos + 1
+          end
+        end
+      end
+      
+      def add_options_to_config(config_dict)
+        if !config_dict.has_key?("folder_blacklist")
+          config_dict["folder_blacklist"] = []
+        end
+        
+        if not @folders_to_ignore.nil?
+          config_dict["folder_blacklist"] = config_dict["folder_blacklist"] + @folders_to_ignore
+        end
+        
+        return config_dict
+      end
+      
       def run_internal(command, args, config_dict)
         klass, method = parse(command)
+        
+        config_dict = add_options_to_config(config_dict)
+        
         runner = klass.new(args, config_dict)
         raise InvalidCommand unless runner.respond_to?(method)
         runner.send(method)

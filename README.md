@@ -2,17 +2,27 @@ Wren (the "Website RENderer") is a blog-aware static website generator and publi
 
 It can publish the rendered output to an FTP server, local or remote file system, or Amazon S3.
 
-Wren is unique among other static generators in that:  
+Wren has a number of nifty features like:  
 
-1. any file or folder contents can be mixed and inserted into other files,  
-2. content can be published in various forms (regular HTML, jQuery slideshow, PDF, etc.). 
+1. content mixing: any single file or folder contents can be inserted and rendered into other files (all content is "dynamic" content),
+2. multiple publication formats (regular HTML, jQuery slideshow, PDF, etc.),
+3. simple website generation from existing text content without adding additional configuration,
+4. integration with website tools like Bootstrap and HTML5 Boilerplate,
+5. site themes for quick website creation,
+6. understanding of layouts like multi-column grids, sidebars, etc.,
+7. embedded publishing support (FTP, S3, Dropbox via Public folder, local Apache),
+8. widget-like components like photo galleries and breadcrumbs,
+9. blogging features like auto-generated category permalinks, Disqus integration (eventually), and RSS feeds,
+10. "catalogs", lists of pages or posts scraped from any directory.
 
 Wren supports many features of CMS systems but without having to install resource-intensive publishing software like Wordpress, Drupal, Mephisto, Typo, or Expression Engine, but wren is best for small sites that need fast deployment.
+
+Wren first came from a need to publish lecture material for online courses in multiple formats, specifically a single webpage, javascript-enabled slideshow, and PDF. The content-mixing functionality was critical for this application. It it intended to support these multiple rendering points easily so the content only has to be written once. The need expanded into building small project-specific websites quickly.
 
 
 ## Key Features
 
-A major design goal was to make the setup and metadata overhead as low as possible for users. Other website generators require you to specify metadata for every page, such a YAML header. Wren chooses "wise defaults" and derives some properties without having to explicitly specify them. For example, page and post titles are extracted from the file name, unless explicitly declared in the source with a TITLE tag. This enables you to make a complete website without typing any metadata at all if you need to work quickly. Just type the content and publish.
+A major design goal was to make the setup and metadata overhead as low as possible for users. Other website generators require you to specify metadata for every page, such a YAML header. Wren chooses "smart defaults" and derives some properties without having to explicitly specify them. For example, page and post titles are extracted from the file name, unless explicitly declared in the source with a TITLE tag. This enables you to make a complete website without typing any metadata at all if you need to work quickly. Just type the content and publish.
 
 Wren distinguishes between local preview and remote publication. Previews allow you to use a local Apache instance (like Web Sharing on a Mac) or Dropbox Public folder to view the polished, rendered website before publishing it on the web.
 
@@ -25,7 +35,7 @@ Also, with content mixing, a user can structure raw content irrespective of the 
 With the proper gems installed, Wren will also build PDF and slideshow versions of webpages. It has a set of rules that translate headers and other structural tags into slides, for example, or into multi-page PDF files. If you structure your pages a particular way, you can create presentations with a printed and web version in one go.
 
 
-## Sample Workflow
+## Sample Workflow (Mac)
 
 1. Edit files
 2. Open Terminal.app
@@ -69,5 +79,5 @@ With the proper gems installed, Wren will also build PDF and slideshow versions 
 
 ## Copyright
 
-Copyright (c) 2011 William Martin. See LICENSE.txt for further details.
+Copyright (c) 2011-2012 William Martin. See LICENSE.txt for further details.
 

@@ -24,7 +24,7 @@ class Uploader
       @username = @config_dict['ftp']['username'].to_s
       @password = @config_dict['ftp']['password'].to_s
       
-      puts "Opening a persistent FTP connection to #{@server_name}..."
+      puts "Opening a persistent FTP connection to #{@server_name}"
       
       @ftp = Net::FTP.new
       @ftp.passive = true
@@ -132,9 +132,9 @@ class Uploader
     destination = prepend_remote_root local_path
     
     if @service == 'preview'
-      puts "Copying #{local_path} to the file system (preview mode) at #{destination}..."
+      puts "Copying #{local_path} to the file system (preview mode) at #{destination}"
     else
-      puts "Copying #{local_path} to the file system at #{destination}..."
+      puts "Copying #{local_path} to the file system at #{destination}"
     end
     
     begin
@@ -157,7 +157,7 @@ class Uploader
   end
   
   def upload_contents_to_s3 local_path="", contents="", mime_type=""
-    puts "Attempting to upload #{local_path} to S3..."
+    puts "Attempting to upload #{local_path} to S3"
     
     remote_path = prepend_remote_root local_path
     
@@ -195,7 +195,7 @@ class Uploader
       puts "Something went wrong uploading #{local_path} to S3."
     end
   rescue => detail
-    puts "Uploader#upload_contents_to_s3 exception..."
+    puts "Uploader#upload_contents_to_s3 exception."
     puts detail.message
   end
   
@@ -247,7 +247,7 @@ class Uploader
     #if path_to_file.to_s[0].chr == "/"
     #  path_to_file = path_to_file.sub("/","")
     #end
-    puts "Opening an FTP connection for #{local_path}..."
+    puts "Opening an FTP connection for #{local_path}"
     
     begin
       if binary

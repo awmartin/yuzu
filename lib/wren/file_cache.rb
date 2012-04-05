@@ -37,7 +37,7 @@ class FileCache
   end
   
   # Without the link root, including the full path
-  # e.g. javascripts/slideshow.js
+  # e.g. js/slideshow.js
   def add_javascript_path path
     @javascript_paths += [file_join(@config.link_root, path)]
   end
@@ -85,23 +85,21 @@ TEMPLATE(index.haml)"
           if index_exists?
             # Return the contents of the actual index, since an index file exists.
             @raw_contents = @site_cache.cache[index_path].raw_contents
-          else
+          elsif is_folder_index?
             # Just make up some contents. TODO: Make defaults configurable.
             @raw_contents = default_index_contents
+          else
+            @raw_contents = false
           end
           
         end
         
         # Replace CURRENTPATH
-        
         current_path = file_join(@config.link_root, File.dirname(@raw_path))
-        if @raw_contents.include?("CURRENTPATH")
-          puts "FOUND!"
-        end
-        
         @raw_contents.gsub!("CURRENTPATH", current_path)
         
-      else # file doesn't exist.
+      else 
+        # file doesn't exist.
         @raw_contents = ""
       end
     end
@@ -139,6 +137,15 @@ TEMPLATE(index.haml)"
   def processable?
     if directory?
       return false
+      # if index_exists?
+      #   return false
+      # else
+      #   if is_folder_index?
+      #     return true
+      #   else
+      #     return false
+      #   end
+      # end
     else
       return extension.includes_one_of?(@config.processable_extensions)
     end
@@ -174,19 +181,17 @@ TEMPLATE(index.haml)"
       @index_exists = false
       @index_path = ""
     elsif @index_exists.nil?
+      @index_exists = false
+      @index_path = ""
       
       @config.possible_indices.each do |index|
         path = file_join @raw_path, index
-
+        
         if File.exists? path
           @index_exists = true
           @index_path = path
-          break
-        else
-          @index_exists = false
-          @index_path = ""
         end
-
+        
       end
     end
     return @index_exists, @index_path
@@ -214,8 +219,10 @@ TEMPLATE(index.haml)"
   # Returns a list of child paths that contain processable, renderable files.
   def processable_children(deep=true)
     @processable_children ||= children(deep).reject { |path| 
-        @site_cache.cache[path].nil?}.select { |path| 
-          @site_cache.cache[path].processable? }
+          @site_cache.cache[path].nil?
+        }.select { |path| 
+          @site_cache.cache[path].processable? 
+        }
   end
   
   def formatted_categories
@@ -308,7 +315,7 @@ TEMPLATE(index.haml)"
   end
   
   def is_folder_index?
-    is_blacklisted = @raw_path.includes_one_of?(@config.no_index_folders)
+    is_blacklisted = @raw_path.includes_one_of?(@config.no_index_folders) or blacklisted?
     directory? and !is_blacklisted
   end
   
@@ -350,7 +357,7 @@ TEMPLATE(index.haml)"
   end
   
   def text?
-    [:haml, :textile, :markdown, :plaintext, :html].include?(file_type)
+    [:haml, :textile, :markdown, :plaintext].include?(file_type) # :html as well?
   end
   
   # Used for pagination. Only one catalog per file is allowed to paginate.
@@ -418,8 +425,6 @@ TEMPLATE(index.haml)"
     @page_links
   end
 
-  # ----------------------
-
   def preprocess!
     return if @preprocessed
     
@@ -439,7 +444,7 @@ TEMPLATE(index.haml)"
     @template, @process_contents = extract_template process_contents
     @images, @process_contents = extract_images process_contents, @config.link_root
     
-    @post_title, @process_contents = extract_title process_contents
+    @post_title, @process_contents = extract_title(process_contents, file_type, @config)
     if @post_title.blank?
       @post_title = extract_title_from_filename @raw_path
     end
@@ -514,7 +519,7 @@ TEMPLATE(index.haml)"
       # Wren controls the content of auto-generated indices, and so we don't
       # want to hoist the first paragraph here.
       if processable? and not is_folder_index?
-        html_pattern = /<p\b[^>]*>([.\w\s\n\.\"\/\(\)'&;:<>,-_!]+?)<\/p>/
+        html_pattern = /<p\b[^>]*>([.\w\s\n\.\"\/\(\)\*'&;:<>,-_!]+?)<\/p>/
         
         m = rendered_contents.match(html_pattern)
         

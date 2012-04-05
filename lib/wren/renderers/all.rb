@@ -1,5 +1,6 @@
 #require 'maruku'
-require 'rdiscount'
+require 'kramdown'
+#require 'rdiscount'
 require 'haml'
 require 'RedCloth'
 
@@ -21,8 +22,9 @@ def render str, file_type, scope=nil
     return Haml::Engine.new(str, {:format => :html5}).render(scope)
   
   elsif file_type == :markdown
-    return RDiscount.new(str).to_html
-  
+    rendered = Kramdown::Document.new(str, :parse_block_html => true).to_html
+    return rendered.gsub(/\n\s*<\/code>/, "</code>").gsub(/<code>(?!\s)/, "<code>  ")
+    #return RDiscount.new(str).to_html
   else
     return str
   end

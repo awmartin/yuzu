@@ -83,7 +83,9 @@ class Catalog
   def list_of_files
     
     if @list_of_files.nil?
-      return [] if @file_cache.nil?
+      if @file_cache.nil?
+        return []
+      end
       
       if @category.nil?
         files = @file_cache.catalog_children nil, @sort_by, @deep
@@ -108,12 +110,17 @@ class Catalog
 
   def html_contents
     make_rows = (@blocks_per_row.to_i > 0)
-
+    
+    start_row = "\n\n<div class='row'>\n\n"
+    end_row = "\n\n</div>\n\n"
+    
     result = ""
     if list_of_files.blank?
-      puts "WARNING: No posts found for catalog."
+      puts "WARNING: No posts found for catalog: #{@folder_to_insert}"
       return result
     end
+    
+    result += start_row
     
     list_of_files.each_index do |i|
       file_cache = list_of_files[i]
@@ -126,35 +133,41 @@ class Catalog
         
         if make_rows
           if j % @blocks_per_row == 0 and i != 0
-            result += "<hr>\n"
+            result += end_row
+            result += "\n\n<hr>\n\n"
+            result += start_row
           end
         end
         
         css_class = ""
         if make_rows
-          # In a 24-column grid. TODO: make this configurable.
-          num_columns_24 = 24 / @blocks_per_row
-          css_class = "column-#{num_columns_24}"
+          # In a 12-column grid. TODO: make this configurable.
+          num_columns_12 = 12 / @blocks_per_row
+          css_class = "span#{num_columns_12}"
           
           if ((j % @blocks_per_row) == (@blocks_per_row - 1))
             css_class += " last"
           end
         end
-
+        
         lyt = LayoutHandler.new(file_cache)
         opts = {
           :klass => css_class
         }.update(file_cache.attributes)
-
-        str = lyt.load_template @block_template, opts
         
-        # Remove space-indentations.
-        str = str.gsub(/\n\s*/,"")
+        str = lyt.load_template(@block_template, opts)
+        
+        # Attempt to remove space-indentations. This was a dumb attempt to fix the stupid HAML
+        # indentation which fucks up <pre> tags.
+        #str = str.gsub(/\n\s*/,"")
         
         result += str + "\n"
       end
     end
-
+    
+    result += end_row
+    result += "\n\n<hr>\n\n"
+    
     result
   end
 end

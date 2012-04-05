@@ -1,39 +1,28 @@
 module Wren::Command
   class Create < Base
     def index
-      puts `compass create . --using blueprint --syntax sass`
+      #puts `compass create . --using blueprint --syntax sass`
+      puts "Creating a new wren project in this directory."
       
-      ['_templates', 'javascripts', 'blog'].each do |folder|
-        FileUtils.mkdir(folder)
-      end
+      #['_templates', 'js', 'css', 'blog', 'img'].each do |folder|
+      #  FileUtils.mkdir(folder)
+      #end
       
+      # The directory the user is running wren in.
       destination_dir = Dir.pwd
       
-      to_copy = {
-        "templates" => File.join(destination_dir, "_templates"),
-        "config" => destination_dir,
-        "samples" => destination_dir,
-        "javascripts" => File.join(destination_dir, "javascripts")
-        #{}"css" => File.join(destination_dir, "stylesheets")
-      }
+      ["_templates", "js", "css", "img", "_sass"].each do |source_dir|
+        all_sources = File.join(File.dirname(__FILE__), "..", "..", "..", "resources", source_dir)
+        FileUtils.cp_r(all_sources, destination_dir)
+      end
       
-      to_copy.each_pair do |source_dir, destination_path|
-        all_sources = File.join(File.dirname(__FILE__), "..", source_dir, "*")
-        copy_all(all_sources, destination_path)
+      ["config", "samples"].each do |folder|
+        rel_path = File.join(File.dirname(__FILE__), "..", "..", "..", "resources", folder, "*")
+        FileUtils.cp_r(Dir[rel_path], destination_dir)
       end
       
       puts
       puts "Remember to edit wren.yml to set your site settings, preview path, and remote host."
-    end
-    
-    def copy_all source_path, destination_path
-      Dir[source_path].each do |source_file|
-        file = File.basename(source_file)
-        
-        puts "Copying #{file}..."
-        
-        FileUtils.copy("#{source_file}", File.join(destination_path, file))
-      end
     end
     
     # args[1] is a string that contains the blog title
