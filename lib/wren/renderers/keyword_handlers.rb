@@ -2,7 +2,6 @@ require 'content_handlers'
 require 'renderers/gallery'
 
 
-
 # Simple helper for grabbing the contents of a text file.
 # Used for the direct insertion of content with INSERTCONTENTS(...)
 # This defaults to a path relative to the root of the file system,
@@ -68,7 +67,7 @@ def extract_title str, file_type, config
   return post_title, tr
 end
 
-def extract_date str
+def extract_date(str)
   post_date = ""
   tr = str.gsub(/DATE\(([A-Za-z0-9\,\.\-\/_\s\:\|]*)\)/) do |s|
     post_date = s.gsub("DATE(", "").gsub(")", "").strip
@@ -77,7 +76,7 @@ def extract_date str
   return post_date, tr
 end
 
-def extract_description_meta str
+def extract_description_meta(str)
   # Extract the text for the description meta tag, if any.
   description = ""
   tr = str.gsub(/DESCRIPTION\(([\w\,\.\-\/\s\:\|\n]*)\)/) do |s|
@@ -87,7 +86,7 @@ def extract_description_meta str
   return description, tr
 end
 
-def extract_images str, link_root
+def extract_images(str)
   # Look for images.
   images = []
   tr = str.gsub(/IMAGES\(([\w\,\.\-\/$\s]*)\)/) do |s|
@@ -95,26 +94,26 @@ def extract_images str, link_root
     images += images_str.split(",").collect {|im| im.strip}
     ""
   end
-  images = images.collect {|img| img.gsub("LINKROOT", link_root)}
   return images, tr
 end
 
-def insert_gallery str, images, galleries, pageinfo
+def insert_thumbnails(str) #, link_root, current_path
   # Look for galleries and insert images.
   # TODO: Add javascript integration
-  
-  tr = str.gsub("INSERTGALLERY") do |s|
-    if galleries
-      render_gallery(images, pageinfo)
-    else
-      ""
-    end
+
+  tr = str.gsub(/THUMBNAILS\(([\w\,\.\-\/$\s]*)\)/) do |s|
+    images_str = s.gsub("THUMBNAILS(","").gsub(")","")
+    images = images_str.split(",").collect {|im| im.strip}
+    group_name = images[0]
+    images = images[1..images.length]
+    #images = images.collect {|img| img.gsub("linkroot", link_root)}
+    #images = images.collect {|img| img.gsub("linkroot", link_root)}
+    thumbnail_gallery(images, group_name)
   end
-  
   return tr
 end
 
-def extract_template str
+def extract_template(str)
   # Look for template specification.
   template = "generic.haml"
   tr = str.gsub(/TEMPLATE\(([A-Za-z0-9\.\-\/_]*)\)/) do |s|

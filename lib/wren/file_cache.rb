@@ -55,6 +55,10 @@ class FileCache
     @file_type
   end
 
+  def filename
+    File.basename(@raw_path)
+  end
+
   def default_index_contents
     # TODO: Change the first 0 to PAGINATE
     "INSERTCATALOG(#{@raw_path},0,10,3,_block.haml)
@@ -241,7 +245,9 @@ TEMPLATE(index.haml)"
   end
   
   def catalog_children category_filter=nil, sort_by=:date_reversed, deep=true
-    if @catalog_children.nil?
+    # This shouldn't really be cached because we may be rendering this multiple
+    # times.
+    #if @catalog_children.nil?
       child_file_caches = processable_children(deep).collect {|f| @site_cache.cache[f]}
       
       unsorted = child_file_caches.select {|f| f.file? and !f.index?}
@@ -253,10 +259,12 @@ TEMPLATE(index.haml)"
         @catalog_children = unsorted.sort {|a, b| a.raw_post_date <=> b.raw_post_date}
       elsif sort_by == :title
         @catalog_children = unsorted.sort {|a, b| a.post_title <=> b.post_title}
+      elsif sort_by == :filename
+        @catalog_children = unsorted.sort {|a, b| a.filename <=> b.filename}
       else
         @catalog_children = unsorted.sort {|a, b| b.raw_post_date <=> a.raw_post_date}
       end
-    end
+    #end
     @catalog_children
   end
   
@@ -438,11 +446,15 @@ TEMPLATE(index.haml)"
     # This inserts the raw contents of a file. The format must be the same as the parent.
     @process_contents = insert_contents process_contents, site_cache
     
+    @process_contents = insert_linkroot process_contents, @config.link_root
+    @process_contents = insert_blog_dir process_contents, @config.blog_dir
+
     # ----------------- Extractions --------------------
     @render_slideshow, @process_contents = should_render_slideshow? process_contents
     @categories, @process_contents = extract_categories process_contents
     @template, @process_contents = extract_template process_contents
-    @images, @process_contents = extract_images process_contents, @config.link_root
+    @images, @process_contents = extract_images process_contents
+    @process_contents = insert_thumbnails(process_contents)
     
     @post_title, @process_contents = extract_title(process_contents, file_type, @config)
     if @post_title.blank?
@@ -486,7 +498,7 @@ TEMPLATE(index.haml)"
     # Replace LINKROOT and CURRENTPATH once all the other content has been inserted...
     # TODO: Make sure CURRENTPATH is working properly.
     #@process_contents = insert_currentpath process_contents, file_join(@config.link_root, path_to)
-    
+
     @process_contents = insert_linkroot process_contents, @config.link_root
     @process_contents = insert_blog_dir process_contents, @config.blog_dir
     

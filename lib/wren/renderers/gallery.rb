@@ -13,6 +13,34 @@ def render_gallery images, config
   end
 end
 
+def thumbnail_gallery(images, group_name)
+    
+  if images.length == 0
+    return ""
+  end
+  
+  gallery = "<div class='gallery'>"
+  gallery += "<div class='gallery-thumbnails'>"
+  
+  images.each_index do |i|
+    image = images[i]
+    thumb_url = image.gsub(".", "-small.")
+    
+    klass = i % 6 == 5 ? "thumbnail last" : "thumbnail"
+    gallery += "
+<div class='#{klass}'>
+<a href='#{image}' class='fancybox' rel='#{group_name}'>
+<img src='#{thumb_url}'>
+</a>
+</div>"
+  end
+
+  gallery += "</div>"
+  gallery += "</div>"
+
+  return gallery
+end
+
 # Fallback in case the _gallery.haml file is no where to be found.
 def render_gallery_fallback images
   if images.length == 0
@@ -38,6 +66,7 @@ def render_gallery_fallback images
 var count = #{images.length};
 </script>
 "
+
   gallery += "<div class='gallery-thumbnails'>"
   
   images.each_index do |i|

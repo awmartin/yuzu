@@ -88,7 +88,7 @@ class Catalog
       end
       
       if @category.nil?
-        files = @file_cache.catalog_children nil, @sort_by, @deep
+        files = @file_cache.catalog_children(nil, @sort_by, @deep)
       else
         files = @file_cache.catalog_children(nil, @sort_by, @deep).select { |f| 
                     f.categories.include?(@category)}
@@ -159,7 +159,7 @@ class Catalog
         
         # Attempt to remove space-indentations. This was a dumb attempt to fix the stupid HAML
         # indentation which fucks up <pre> tags.
-        #str = str.gsub(/\n\s*/,"")
+        str = str.gsub(/\n\s*/,"")
         
         result += str + "\n"
       end
