@@ -23,7 +23,10 @@ def render str, file_type, scope=nil
   
   elsif file_type == :markdown
     #rendered = Kramdown::Document.new(str, :parse_block_html => true).to_html
-    rendered = RDiscount.new(str).to_html
+    rendered = Kramdown::Document.new(str).to_html
+
+    #rendered = RDiscount.new(str).to_html
+    rendered = rendered.gsub("<p><noscript></p>", "<noscript>").gsub("<p></noscript></p>", "</noscript>")
     return rendered.gsub(/\n\s*<\/code>/, "</code>").gsub(/<code>(?!\s)/, "<code>  ")
   else
     return str

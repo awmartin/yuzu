@@ -139,7 +139,9 @@ class LayoutHandler
             @file_cache.rendered_contents_with_demoted_headers,
           :header => @header_contents,
           :footer => @footer_contents,
-          :menu => @menu_contents
+          :menu => @menu_contents,
+          :excerpt_contents => @file_cache.excerpt_contents,
+          :excerpt_contents_demoted => @file_cache.excerpt_contents_demoted
         }
       ).update(@file_cache.attributes)
     

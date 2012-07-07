@@ -25,7 +25,8 @@ class SiteCache
 
 &nbsp;
 
-INSERTCATALOG(#{path},0,10,3,_block.haml)"
+INSERTCATALOG(#{path},0,10,3,_block.haml)
+<!--wren:generated-->"
         folder_indices[index_path] = generated_index
       end
     end

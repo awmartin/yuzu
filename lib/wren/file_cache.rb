@@ -62,7 +62,8 @@ class FileCache
   def default_index_contents
     # TODO: Change the first 0 to PAGINATE
     "INSERTCATALOG(#{@raw_path},0,10,3,_block.haml)
-TEMPLATE(index.haml)"
+TEMPLATE(index.haml)
+<!--wren:generated-->"
   end
 
   # Load the contents on demand.
@@ -141,19 +142,9 @@ TEMPLATE(index.haml)"
   def processable?
     if directory?
       return false
-      # if index_exists?
-      #   return false
-      # else
-      #   if is_folder_index?
-      #     return true
-      #   else
-      #     return false
-      #   end
-      # end
     else
       return extension.includes_one_of?(@config.processable_extensions)
     end
-    #extension.includes_one_of?(@config.processable_extensions) or (index? and not (directory? and index_exists?))
   end
 
   def blacklisted?
@@ -444,31 +435,31 @@ TEMPLATE(index.haml)"
 
     # Insert contents before extracting the categories, template, and images...
     # This inserts the raw contents of a file. The format must be the same as the parent.
-    @process_contents = insert_contents process_contents, site_cache
+    @process_contents = insert_contents(process_contents, site_cache)
     
-    @process_contents = insert_linkroot process_contents, @config.link_root
-    @process_contents = insert_blog_dir process_contents, @config.blog_dir
+    @process_contents = insert_linkroot(process_contents, @config.link_root)
+    @process_contents = insert_blog_dir(process_contents, @config.blog_dir)
 
     # ----------------- Extractions --------------------
-    @render_slideshow, @process_contents = should_render_slideshow? process_contents
-    @categories, @process_contents = extract_categories process_contents
-    @template, @process_contents = extract_template process_contents
-    @images, @process_contents = extract_images process_contents
+    @render_slideshow, @process_contents = should_render_slideshow?(process_contents)
+    @categories, @process_contents = extract_categories(process_contents)
+    @template, @process_contents = extract_template(process_contents)
+    @images, @process_contents = extract_images(process_contents)
     @process_contents = insert_thumbnails(process_contents)
     
     @post_title, @process_contents = extract_title(process_contents, file_type, @config)
     if @post_title.blank?
-      @post_title = extract_title_from_filename @raw_path
+      @post_title = extract_title_from_filename(@raw_path)
     end
     
-    @raw_post_date, @process_contents = extract_date process_contents
+    @raw_post_date, @process_contents = extract_date(process_contents)
     if @raw_post_date.blank?
       # YYYY/MM/DD/title-here.md or YYYY/MM/DD-title-here.md
-      @raw_post_date = extract_date_from_folder_structure @raw_path
+      @raw_post_date = extract_date_from_folder_structure(@raw_path)
     end
     if @raw_post_date.blank?
       # YYYY-MM-DD-title-here.md
-      @raw_post_date = extract_date_from_filename @raw_path
+      @raw_post_date = extract_date_from_filename(@raw_path)
     end
     if @raw_post_date.blank?
       # Modification time.
@@ -520,7 +511,29 @@ TEMPLATE(index.haml)"
   end
   
   def rendered_contents_with_demoted_headers
-    @rendered_contents_demoted ||= render_with_insertions(demote_headers(process_contents, file_type), file_type, @config)
+    @rendered_contents_demoted ||= render_with_insertions(
+      demote_headers(process_contents, file_type), file_type, @config
+    )
+  end
+
+  def excerpt_contents
+    return calculate_excerpt(rendered_contents)
+  end
+
+  def excerpt_contents_demoted
+    return calculate_excerpt(rendered_contents_with_demoted_headers)
+  end
+
+  def calculate_excerpt(str, num_paragraphs=4)
+    positions = str.enum_for(:scan, /<p[^>]*>.*<\/p>/).map { Regexp.last_match.begin(0) }
+    if positions.length > num_paragraphs
+      end_pos = positions[num_paragraphs]
+      tr = str[0...end_pos]
+      tr = tr.gsub(/<aside>.*<\/aside>/m, "").strip()
+      return tr
+    else
+      return str
+    end
   end
 
   def first_paragraph
