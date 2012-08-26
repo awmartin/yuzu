@@ -58,7 +58,7 @@ def extract_first_image file
   lines = contents.split("\n")
   
   lines.each do |line|
-    matches = line.match(/IMAGES\(([A-Za-z0-9\,\.\-\/_]*)\)/)
+    matches = line.match(/IMAGES\(([\w\:\,\.\-\/_]*)\)/)
     if not matches.nil?
       m = matches[0].gsub("IMAGES(","").gsub(")","")
       image = m.split(",")[0]
@@ -195,7 +195,7 @@ def concat_path prepath="", postpath=""
 end
 
 def replace_image_urls content, url
-  return str.gsub(/((!+)((\(+)([A-Za-z0-9\-_]*)(\)+))([A-Za-z0-9.\/\-_%]*)(!+))|((!+)([A-Za-z0-9.\/\-_%]*)(!+))/) do |s| 
+  return str.gsub(/((!+)((\(+)([\w\-_]*)(\)+))([\w.\/\-_%]*)(!+))|((!+)([\w.\/\-_%]*)(!+))/) do |s| 
     if s.include?('http://')
       # External image. Just return the match.
       s

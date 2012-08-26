@@ -24,7 +24,8 @@ def thumbnail_gallery(images, group_name)
   
   images.each_index do |i|
     image = images[i]
-    thumb_url = image.gsub(".", "-small.")
+    extension = File.extname(image)
+    thumb_url = image.gsub(extension, "-small#{extension}")
     
     klass = i % 6 == 5 ? "thumbnail last" : "thumbnail"
     gallery += "
@@ -49,7 +50,9 @@ def render_gallery_fallback images
   
   gallery = "\n\n<div class='slideshow'>\n"
   images.each_index do |i|
-    big_image = images[i].gsub(".", "-large.")
+    image = images[i]
+    extension = File.extname(image)
+    big_image = images[i].gsub(extension, "-large#{extension}")
 
     visibility = i == 0 ? "display:block;z-index:2;" : "display:none;z-index:1;"
 
@@ -71,7 +74,8 @@ var count = #{images.length};
   
   images.each_index do |i|
     image = images[i]
-    thumb_url = image.gsub(".", "-small.")
+    extension = File.extname(image)
+    thumb_url = image.gsub(extension, "-small#{extension}")
     
     klass = i % 6 == 5 ? "gallery-thumb last" : "gallery-thumb"
     gallery += "
@@ -87,7 +91,7 @@ var count = #{images.length};
   # when there are exactly 6 images.
   num_blanks = (6 - images.length % 6) % 6
   num_blanks.times do |i|
-    klass = (images.length+i) % 6 == 5 ? 'gallery-thumb last' : "gallery-thumb"
+    klass = (images.length + i) % 6 == 5 ? 'gallery-thumb last' : "gallery-thumb"
     gallery += "<div class='#{klass}'>&nbsp;</div>"
   end
   
@@ -95,3 +99,4 @@ var count = #{images.length};
   gallery += "<hr>"
   gallery
 end
+

@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby -wKU
+
+#
+# An example hook script that is called after a successful
+# commit is made.
+#
+# To enable this hook, rename this file to "post-commit".
+
+puts "Updating changed files..."
+
+diff = `git diff --name-only HEAD HEAD^`
+
+ignore_extensions = [".rb",".sass",".yml"]
+
+files_to_change = []
+
+# If the diff includes a .sass file that's been updated, make sure
+# to compile it with compass, then get the new diff to catch the
+# updated css files as well.
+if diff.include?(".sass")
+  puts "SASS file change detected. Making sure the CSS is updated as well..."
+  puts `compass compile`
+  diff = `git diff --name-only HEAD HEAD^`
+end
+
+changed_files = diff.split("\n")
+
+changed_files.each do |file|
+  ext = File.extname(file)
+  if not ignore_extensions.include?( ext ) and file[0].chr != "." and file[0].chr != "_"
+    files_to_change << file.to_s
+  end
+end
+
+if files_to_change.length > 0
+  file_list = files_to_change.join(" ")
+  output = `./update.rb #{file_list}`
+  puts output
+  puts "Done updating!"
+else
+  puts "No files to update."
+end

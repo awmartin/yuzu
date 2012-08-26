@@ -79,7 +79,7 @@ end
 def extract_description_meta(str)
   # Extract the text for the description meta tag, if any.
   description = ""
-  tr = str.gsub(/DESCRIPTION\(([\w\,\.\-\/\s\:\|\n]*)\)/) do |s|
+  tr = str.gsub(/DESCRIPTION\(([\w\'\"\,\.\-\/\s\:\|\n]*)\)/) do |s|
     description = s.gsub("DESCRIPTION(", "").gsub(")", "").strip
     ""
   end
@@ -89,7 +89,7 @@ end
 def extract_images(str)
   # Look for images.
   images = []
-  tr = str.gsub(/IMAGES\(([\w\,\.\-\/$\s]*)\)/) do |s|
+  tr = str.gsub(/IMAGES\(([\w\,\.\-\/$\s\:]*)\)/) do |s|
     images_str = s.gsub("IMAGES(","").gsub(")","")
     images += images_str.split(",").collect {|im| im.strip}
     ""
