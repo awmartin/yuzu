@@ -63,7 +63,7 @@ class FileCache
     # TODO: Change the first 0 to PAGINATE
     "INSERTCATALOG(#{@raw_path},0,10,3,_block.haml)
 TEMPLATE(index.haml)
-<!--wren:generated-->"
+<!--wren:nosearch-->"
   end
 
   # Load the contents on demand.
