@@ -148,34 +148,25 @@ TEMPLATE(index.haml)
   end
 
   def blacklisted?
-    extension.includes_one_of? @config.extension_blacklist or relative_path.includes_one_of? @config.folder_blacklist
+    extension.includes_one_of? @config.extension_blacklist or \
+      relative_path.includes_one_of? @config.folder_blacklist
   end
 
   def index_exists?
-    if file?
-      @index_exists = false
-      @index_path = ""
-    elsif @index_exists.nil? or @index_path.nil?
-      @index_exists, @index_path = get_index_info
-    end
-    @index_exists
+    get_index_info!
+    return @index_exists
   end
 
   def index_path
+    get_index_info!
+    return @index_path
+  end
+
+  def get_index_info!
     if file?
       @index_exists = false
       @index_path = ""
     elsif @index_exists.nil? or @index_path.nil?
-      @index_exists, @index_path = get_index_info
-    end
-    @index_path
-  end
-
-  def get_index_info
-    if file?
-      @index_exists = false
-      @index_path = ""
-    elsif @index_exists.nil?
       @index_exists = false
       @index_path = ""
       
@@ -189,7 +180,6 @@ TEMPLATE(index.haml)
         
       end
     end
-    return @index_exists, @index_path
   end
   
   # Contains all the children of this folder.
