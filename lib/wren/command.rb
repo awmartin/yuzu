@@ -1,3 +1,5 @@
+# This file comes from an old version of the Heroku command-line utility.
+
 require 'helpers'
 require 'commands/base'
 require 'yaml'

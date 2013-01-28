@@ -4,6 +4,15 @@ require 'net/ftp'
 require 'aws/s3'
 require 'fileutils'
 
+BOLD = "\033[1m"
+PURPLE = "\033[95m"
+BLUE = "\033[94m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+RED = "\033[91m"
+WHITE = "\033[37m"
+ENDC = "\033[0m"
+
 class Uploader
   
   attr_accessor :service
@@ -126,51 +135,51 @@ class Uploader
       ".js" => "text/javascript"
     }
   end
-  
+
   def copy_contents_to_file_system local_path="", contents="", binary=true
-    
+
     destination = prepend_remote_root local_path
-    
+
     if @service == 'preview'
-      puts "Copying #{local_path} to the file system (preview mode) at #{destination}"
+      puts "Copying " + WHITE + BOLD + "#{local_path}" + ENDC + ENDC + " to the file system (preview mode)\n    ---> #{destination}"
     else
-      puts "Copying #{local_path} to the file system at #{destination}"
+      puts "Copying " + BOLD + "#{local_path}" + ENDC + " to the file system\n    ---> #{destination}"
     end
-    
+
     begin
       dest = File.open(destination, "w+")
     rescue => detail
       puts "Error..."
       puts detail.message
       puts "Attempting to create the path."
-      
+
       # Assume the directories leading to the file don't exist. Create them.
       FileUtils::mkdir_p( path_to(destination) )
       dest = File.open(destination, "w+")
     end
-    
+
     unless dest.nil?
       dest.syswrite contents
       dest.close
       puts "Done with #{local_path}."
     end
   end
-  
+
   def upload_contents_to_s3 local_path="", contents="", mime_type=""
     puts "Attempting to upload #{local_path} to S3"
-    
+
     remote_path = prepend_remote_root local_path
-    
+
     @suppressor.shutup!
-    
+
     # Prepare the object.
     object = @s3_bucket.new_object
     object.key = remote_path
     object.value = contents
-    
+
     # Store the object first...
     object.store
-    
+
     if not mime_type.blank?
       #object.content_type = mime_type
       #object.store

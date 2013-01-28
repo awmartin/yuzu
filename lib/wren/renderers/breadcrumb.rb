@@ -7,6 +7,7 @@ require 'content_handlers'
 def render_breadcrumb file_cache, blog_categories=nil
   path = file_cache.relative_path
   config = file_cache.config
+  site_name = config.site_name
 
   omit_current_page = config.breadcrumb_omit_current_page rescue false
   file_path = path.dup
@@ -31,6 +32,11 @@ def render_breadcrumb file_cache, blog_categories=nil
     file_path.sub!(m.to_s, "")
   end
   
+  m = file_path.match(/[0-9]{4}\/[0-9]{2}\//)
+  if not m.nil?
+    file_path.sub!(m.to_s, "")
+  end
+
   # Also remove YYYY-MM/DD-title-here.md
   m = file_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\-/)
   if not m.nil?
@@ -49,9 +55,9 @@ def render_breadcrumb file_cache, blog_categories=nil
   # Start the list of crumbs. Add "Home" first.
   crumbs = []
   if use_strict_index_links
-    crumbs += [link_to( "Home", File.join(config.link_root, "/index.html") )]
+    crumbs += [link_to( site_name, File.join(config.link_root, "/index.html") )]
   else
-    crumbs += [link_to( "Home", File.join(config.link_root, "/") )]
+    crumbs += [link_to( site_name, File.join(config.link_root, "/") )]
   end
   
   # Keep track of the url throughout the loop. Tack on a new path each loop.

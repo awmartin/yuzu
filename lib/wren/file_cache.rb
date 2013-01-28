@@ -29,7 +29,7 @@ class FileCache
     end
   end
   
-  def initialize raw_path, config, page=1
+  def initialize(raw_path, config, page=1)
     @raw_path = raw_path # Also the original path of page 1 if this is page n
     @config = config
     @page = page
@@ -42,6 +42,8 @@ class FileCache
     @javascript_paths += [file_join(@config.link_root, path)]
   end
   
+  # Returns the file type of the target file. It is a symbol of type: :haml, :markdown, :plaintext,
+  # etc.
   def file_type
     if directory?
       if not index_exists?
@@ -72,7 +74,7 @@ TEMPLATE(index.haml)
       if File.exists? @raw_path
 
         if file?
-          
+
           if processable?
             # Open the file and grab its contents
             f = File.open @raw_path, "r"
@@ -84,9 +86,9 @@ TEMPLATE(index.haml)
             # Either blacklisted or a binary file. Open later.
             @raw_contents = nil
           end
-          
+
         else
-          
+
           if index_exists?
             # Return the contents of the actual index, since an index file exists.
             @raw_contents = @site_cache.cache[index_path].raw_contents
@@ -96,20 +98,23 @@ TEMPLATE(index.haml)
           else
             @raw_contents = false
           end
-          
+
         end
-        
+
         # Replace CURRENTPATH
-        current_path = file_join(@config.link_root, File.dirname(@raw_path))
         @raw_contents.gsub!("CURRENTPATH", current_path)
-        
+
       else 
         # file doesn't exist.
         @raw_contents = ""
       end
     end
 
-    @raw_contents
+    return @raw_contents
+  end
+
+  def current_path
+    return file_join(@config.link_root, File.dirname(@raw_path))
   end
   
   def process_contents
@@ -214,7 +219,7 @@ TEMPLATE(index.haml)
     categories.collect {|cat| cat.to_s.downcase.dasherize}
   end
   
-  def filtered_children category_filter=nil, sort_by=:date_reversed, deep=true
+  def filtered_children(category_filter=nil, sort_by=:date_reversed, deep=true)
     sorted = catalog_children(nil, sort_by, deep)
     if category_filter.nil?
       filtered = sorted
@@ -225,12 +230,12 @@ TEMPLATE(index.haml)
     return filtered
   end
   
-  def catalog_children category_filter=nil, sort_by=:date_reversed, deep=true
+  def catalog_children(category_filter=nil, sort_by=:date_reversed, deep=true)
     # This shouldn't really be cached because we may be rendering this multiple
     # times.
     #if @catalog_children.nil?
       child_file_caches = processable_children(deep).collect {|f| @site_cache.cache[f]}
-      
+
       unsorted = child_file_caches.select {|f| f.file? and !f.index?}
       
       # Sort by date by default...
@@ -313,7 +318,7 @@ TEMPLATE(index.haml)
     has_processable_extension = extension.includes_one_of?(@config.processable_extensions)
     (has_index_in_path and has_processable_extension) or is_folder_index?
   end
-  
+
   def extension
     File.extname(@raw_path)
   end
@@ -425,7 +430,7 @@ TEMPLATE(index.haml)
 
     # Insert contents before extracting the categories, template, and images...
     # This inserts the raw contents of a file. The format must be the same as the parent.
-    @process_contents = insert_contents(process_contents, site_cache)
+    @process_contents = insert_contents(process_contents, site_cache, current_path)
     
     @process_contents = insert_linkroot(process_contents, @config.link_root)
     @process_contents = insert_blog_dir(process_contents, @config.blog_dir)
@@ -515,11 +520,11 @@ TEMPLATE(index.haml)
   end
 
   def calculate_excerpt(str, num_paragraphs=4)
+    str = str.gsub(/<aside>.*?<\/aside>/m, "").strip()
     positions = str.enum_for(:scan, /<p[^>]*>.*<\/p>/).map { Regexp.last_match.begin(0) }
     if positions.length > num_paragraphs
       end_pos = positions[num_paragraphs]
       tr = str[0...end_pos]
-      tr = tr.gsub(/<aside>.*<\/aside>/m, "").strip()
       return tr
     else
       return str
@@ -591,10 +596,10 @@ TEMPLATE(index.haml)
   # Used for blocks in catalogs
   def attributes
     preprocess!
-    
+
     if @attibutes.nil?
       raw_para, first_para = first_paragraph
-      
+
       @attributes = ({
         :post_title => post_title,
         :post_date => post_date,
@@ -602,6 +607,7 @@ TEMPLATE(index.haml)
         :html_title => html_title,
         :template => template,
         :sidebar_contents => sidebar_contents,
+        :sidebar => sidebar_contents,
         :images => images,
         :raw_path => @raw_path, # not paginated, always the first page "index.haml"
         :relative_path => relative_path, # paginated, like "index_2.haml"

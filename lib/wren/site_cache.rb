@@ -1,6 +1,15 @@
 require 'file_cache'
 require 'renderers/slideshow'
 
+def generated_index_template(path)
+  return "TEMPLATE(index.haml)
+
+&nbsp;
+
+INSERTCATALOG(#{path},0,10,3,_block.haml)
+<!--wren:nosearch-->"
+end
+
 class SiteCache
 
   def initialize config
@@ -21,12 +30,7 @@ class SiteCache
         index_path = file_join(path, "index.md")
         
         generated_index = FileCache.new(index_path, config)
-        generated_index.raw_contents = "TEMPLATE(index.haml)
-
-&nbsp;
-
-INSERTCATALOG(#{path},0,10,3,_block.haml)
-<!--wren:nosearch-->"
+        generated_index.raw_contents = generated_index_template(path)
         folder_indices[index_path] = generated_index
       end
     end

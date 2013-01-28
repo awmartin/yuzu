@@ -6,7 +6,7 @@ require 'renderers/gallery'
 # Used for the direct insertion of content with INSERTCONTENTS(...)
 # This defaults to a path relative to the root of the file system,
 # which might not make sense...
-def insert_file local_path
+def insert_file(local_path)
   if File.exists?(local_path)
     file = File.open(local_path, "r")
     contents = file.readlines.join
@@ -19,29 +19,32 @@ rescue
   return ""
 end
 
-# Raw contents insert. Does no intermediate representation or format checking.
-def insert_contents str, site_cache
-  str.gsub(/INSERTCONTENTS\(([\w\s\.\-\/_]*)\)/) do |s|
-    path_of_file_to_insert = s.gsub("INSERTCONTENTS(","").gsub(")","")
-    
-    begin
-      site_cache.get(path_of_file_to_insert).raw_contents
-    rescue => detail
-      insert_file(path_of_file_to_insert)
+# Raw contents insert. Does no intermediate representation or format checking, but it does
+# replace some path-dependent keywords relative to the file being inserted.
+def insert_contents(str, site_cache, current_path)
+  str.gsub(/^[\s]*INSERTCONTENTS\([\w\s\.\-\/]*?\)/) do |s|
+    path_of_file_to_insert = s.gsub("INSERTCONTENTS(", "").gsub(")", "").strip()
+
+    file_to_insert = site_cache.get_file(path_of_file_to_insert)
+    if not file_to_insert.nil?
+      # The raw_contents method takes care of CURRENTPATH
+      file_to_insert.raw_contents()
+    else
+      insert_currentpath(insert_file(path_of_file_to_insert), current_path)
     end
   end
 end
 
-def extract_extension str
+def extract_extension(str)
   file_extension = ".html"
-  tr = str.gsub(/EXTENSION\(\.([\w\.]*)\)/) do |s|
+  tr = str.gsub(/EXTENSION\(\.([\w\.]*?)\)/) do |s|
     file_extension = s.gsub("EXTENSION(","").gsub(")","")
     ""
   end
   return file_extension, tr
 end
 
-def extract_title str, file_type, config
+def extract_title(str, file_type, config)
   # Extract the title if any.
   
   post_title = ""
@@ -58,7 +61,7 @@ def extract_title str, file_type, config
   end
   
   if post_title.blank?
-    tr = str.gsub(/TITLE\(([\w\s\,\.\-\/\:\|]*)\)/) do |s|
+    tr = str.gsub(/TITLE\(([\w\s\,\.\-\/\:\|]*?)\)/) do |s|
       post_title = s.gsub("TITLE(", "").gsub(")", "").strip
       ""
     end
@@ -69,7 +72,7 @@ end
 
 def extract_date(str)
   post_date = ""
-  tr = str.gsub(/DATE\(([A-Za-z0-9\,\.\-\/_\s\:\|]*)\)/) do |s|
+  tr = str.gsub(/DATE\(([A-Za-z0-9\,\.\-\/_\s\:\|]*?)\)/) do |s|
     post_date = s.gsub("DATE(", "").gsub(")", "").strip
     ""
   end
@@ -79,7 +82,7 @@ end
 def extract_description_meta(str)
   # Extract the text for the description meta tag, if any.
   description = ""
-  tr = str.gsub(/DESCRIPTION\(([\w\'\"\,\.\-\/\s\:\|\n]*)\)/) do |s|
+  tr = str.gsub(/DESCRIPTION\(([\w\'\"\,\.\-\/\s\:\|\n]*?)\)/) do |s|
     description = s.gsub("DESCRIPTION(", "").gsub(")", "").strip
     ""
   end
@@ -89,9 +92,9 @@ end
 def extract_images(str)
   # Look for images.
   images = []
-  tr = str.gsub(/IMAGES\(([\w\,\.\-\/$\s\:]*)\)/) do |s|
+  tr = str.gsub(/IMAGES\(([\w\,\.\-\/$\s\:]*?)\)/) do |s|
     images_str = s.gsub("IMAGES(","").gsub(")","")
-    images += images_str.split(",").collect {|im| im.strip}
+    images += images_str.split(",").collect {|im| im.strip}.reject {|im| im.empty?}
     ""
   end
   return images, tr
@@ -101,7 +104,7 @@ def insert_thumbnails(str) #, link_root, current_path
   # Look for galleries and insert images.
   # TODO: Add javascript integration
 
-  tr = str.gsub(/THUMBNAILS\(([\w\,\.\-\/$\s]*)\)/) do |s|
+  tr = str.gsub(/THUMBNAILS\(([\w\,\.\-\/$\s]*?)\)/) do |s|
     images_str = s.gsub("THUMBNAILS(","").gsub(")","")
     images = images_str.split(",").collect {|im| im.strip}
     group_name = images[0]
@@ -136,7 +139,7 @@ end
 def extract_categories str
   # Find any sidebar contents.
   categories = []
-  tr = str.gsub(/CATEGORIES\([\w\s\.\,\'\"\/\-]*\)/) do |s|
+  tr = str.gsub(/CATEGORIES\([\w\s\.\,\'\"\/\-]*?\)/) do |s|
     categories = s.gsub("CATEGORIES(","").gsub(")","").split(",")
     categories = categories.collect {|str| str.strip.downcase}
     ""
