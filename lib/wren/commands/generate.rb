@@ -16,30 +16,40 @@ module Wren::Command
         puts "File load error."
       end
     end
-    
+
     # TODO: Put this in its own class and integrate with the rest of the app.
     def thumbnails
       path = args.first
-      maxHeight = 500
       web_image_types = [".png", ".jpg", ".gif"]
-      
-      ## Get all the original images requested...
+      thumbnail_types = @config.thumbnails.keys
+
+      thumbnail_endings = []
+      thumbnail_types.each do |type|
+        web_image_types.each do |ext|
+          thumbnail_endings += ["-#{type}#{ext}"]
+        end
+      end
+
       if File.directory?(path)
+        # Get all the original images requested.
         all_files = Dir[File.join(path, "**/*")]
-        images = all_files.select { |f| 
+
+        images = all_files.select { |f|
                     web_image_types.include?(File.extname(f))
-                  }.reject { |f| 
-                    f[0].chr == "_" or f.include?("#{File::SEPARATOR}_")
+                  }.reject { |f|
+                    f[0].chr == "_" or 
+                    f.include?("#{File::SEPARATOR}_") or
+                    f.includes_one_of?(thumbnail_endings)
                   }
       else
+        # A single image.
         images = [path]
       end
-      
-      thumbnail_types = @config.thumbnails.keys
-      
+
+
       images.each do |image_path|
         ext = File.extname(image_path)
-        
+
         # Loop through the configured thumbnail types ("small", "medium", etc.)
         thumbnail_types.each do |thumbnail_type|
           thumbnail_path = image_path.gsub(ext, "-#{thumbnail_type}#{ext}")
@@ -49,7 +59,7 @@ module Wren::Command
         end
       end
     end
-    
+
     def config
       if not File.exists?("wren.yml")
         FileUtils.copy( "#{File.dirname(__FILE__)}/../templates/wren.yml", "#{Dir.pwd}/wren.yml")
@@ -58,7 +68,7 @@ module Wren::Command
         puts "Config file wren.yml already exists. Rename or erase it to generate a new one."
       end
     end
-    
+
     def self.help method
       case method
       when :default
