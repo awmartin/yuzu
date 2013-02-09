@@ -1,34 +1,49 @@
-module Wren::Filers
-  class CategoriesFilter < Base
-    def init
+require 'helpers/url'
+require 'helpers/path'
+
+module Wren::Filters
+  class CategoriesFilter < Filter
+    def initialize
+      @name = :categories
+      @directive = "CATEGORIES"
     end
 
-    def name
-      :categories
+    def default(website_file)
+      [Category.new("uncategorized", website_file)]
     end
 
-    def directive
-      "CATEGORIES"
+    def get_value(website_file)
+      m = match(website_file.raw_contents)
+      return default(website_file) if m.nil?
+
+      category_list = m.split(",")
+      category_list.collect! {|cat| cat.strip.downcase}
+      category_list.reject! {|cat| cat.empty?}
+      category_list.collect {|cat| Category.new(cat, website_file)}
+    end
+  end
+  Filter.register(:categories => CategoriesFilter)
+
+
+  class Category
+    attr_reader :name
+
+    def initialize(name, website_file)
+      @name = name.dasherize.downcase
+      @website_file = website_file
     end
 
-    def value(match)
-      list = match.split(",")
-      return list.collect {|cat| cat.strip}
+    def link
+      Html::Link.new(:href => url) << @name.titlecase
     end
 
-  #categories = []
-  #tr = str.gsub(/CATEGORIES\([\w\s\.\,\'\"\/\-]*\)/) do |s|
-  #  categories = s.gsub("CATEGORIES(","").gsub(")","").split(",")
-  #  categories = categories.collect {|str| str.strip.downcase}
-  #  ""
-  #end
-  
-  #if categories.blank?
-  #  categories = ["uncategorized"] # TODO: config var for default category
-  #end
+    def url
+      @website_file.blog_folder.link_url + "/" + @name
+    end
 
-    def alternative_value(file_cache)
-      nil
+    def <=>(other)
+      @name <=> other.name
     end
   end
 end
+

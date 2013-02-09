@@ -1,102 +1,162 @@
-require 'content_handlers'
+require 'helpers/path'
+require 'html/base'
 
-# TODO: Build a better breadcrumb. This is *much* easier of the FileCache objects
-# actually know their immediate parent. For now, this url splitting is working,
-# but multiple categories aren't working.
+module Wren::Renderers
+  class BreadcrumbRenderer < Renderer
+    def render(website_file)
+      Breadcrumb.new(website_file).to_s
+    end
+  end
+  Renderer.register(:breadcrumb => BreadcrumbRenderer)
 
-def render_breadcrumb file_cache, blog_categories=nil
-  path = file_cache.relative_path
-  config = file_cache.config
-  site_name = config.site_name
+  class Breadcrumb
+    def initialize(website_obj, level=0)
+      @website_obj = website_obj
+      @level = level
+    end
 
-  omit_current_page = config.breadcrumb_omit_current_page rescue false
-  file_path = path.dup
-  use_strict_index_links = config.use_strict_index_links
-  
-  add_html_to_end = false
-  
-  # Clean up the given path.
-  
-  if file_cache.relative_path.include?("index.") or file_cache.relative_path.include?("index_")
-    # Remove the index off the end.
-    file_path = File.dirname(file_cache.relative_path)
-  elsif file_cache.file?
-    # For all other files, remove the file extension off the end.
-    file_path = file_cache.relative_path.gsub(file_cache.extension, "")
-  end
-  
-  # Date folder structure match. We want to remove the date from the folder
-  # structure.
-  m = file_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\//)
-  if not m.nil?
-    file_path.sub!(m.to_s, "")
-  end
-  
-  m = file_path.match(/[0-9]{4}\/[0-9]{2}\//)
-  if not m.nil?
-    file_path.sub!(m.to_s, "")
-  end
+    def to_s
+      @website_obj.nil? ? "" : crumbs_to_s
+    end
 
-  # Also remove YYYY-MM/DD-title-here.md
-  m = file_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\-/)
-  if not m.nil?
-    file_path.sub!(m.to_s, "")
-  end
-  
-  # If blog_categories is not blank, insert /category/ to the path.
-  # Indices are not categorizable.
-  # Must have a blog_dir specified in the config.
-  has_blog = !config.blog_dir.blank?
-  is_index = path.include?('index')
-  if !blog_categories.blank? and !is_index and has_blog
-    file_path.sub!(config.blog_dir, "#{config.blog_dir}/#{blog_categories.first.downcase.dasherize}")
-  end
-  
-  # Start the list of crumbs. Add "Home" first.
-  crumbs = []
-  if use_strict_index_links
-    crumbs += [link_to( site_name, File.join(config.link_root, "/index.html") )]
-  else
-    crumbs += [link_to( site_name, File.join(config.link_root, "/") )]
-  end
-  
-  # Keep track of the url throughout the loop. Tack on a new path each loop.
-  paths = file_path.to_s.split('/')
-  url = "/"
-  paths.each_index do |i|
-    folder = paths[i]
-    is_last_folder = (paths.length == (i - 1))
-    
-    this_url = ""
-    
-    if add_html_to_end and is_last_folder
-      url += folder + ".html"
-      this_url = url
-    else
-      url += folder + "/"
-      
-      if use_strict_index_links
-        this_url = url + "index.html"
+    def crumbs_to_s
+      ordered_crumbs.collect {|crumb| crumb.to_s}.join(separator)
+    end
+
+    def separator
+      "&nbsp;#{config.breadcrumb_separator}&nbsp;"
+    end
+
+    def reverse?
+      true        # TODO make configurable
+    end
+
+    def ordered_crumbs
+      crumbs
+      #reverse? ? crumbs.reverse : crumbs
+    end
+
+    def crumbs
+      tr = []
+      level_correct = 0
+      ordered_structure.each_index do |i|
+        crumb_tag = ordered_structure[i]
+        crumb = crumb_for(crumb_tag, @level + i + level_correct)
+        if crumb.nil?
+          level_correct -= 1
+        end
+        tr.push(crumb)
+      end
+      tr.reject {|el| el.nil?}
+    end
+
+    def crumb_for(crumb_tag, level)
+      case crumb_tag
+      when :home
+        Crumb.new(@website_obj.root, level)
+
+      when :blog
+        Crumb.new(@website_obj.blog_folder, level)
+
+      when :category
+        folder? ? nil : CategoryCrumb.new(@website_obj, level)
+
+      when :post
+        if index?
+          # Defer to parent.
+          nil
+        else
+          Crumb.new(@website_obj, level)
+        end
+
+      when :parent
+        @website_obj.parent.nil? ? nil : Breadcrumb.new(@website_obj.parent, level)
+
       else
-        this_url = url
+        nil
+
       end
     end
-    
-    str = titleize(folder)
-    crumbs += [link_to( str, File.join(config.link_root, this_url) )]
-  end
-  
-  crumbs.reverse!
-  
-  sep = config.breadcrumb_separator
-  
-  if crumbs.length == 1
-    return crumbs.first
-  else
-    if omit_current_page
-      return "&nbsp;#{sep} " + crumbs[1..(crumbs.length-1)].join(" #{sep} ")
-    else
-      return crumbs.join(" #{sep} ")
+
+    def ordered_structure
+      reverse? ? structure.reverse : structure
+    end
+
+    def structure
+      if in_blog? and not is_blog?
+        [:home, :blog, :category, :post]
+
+      else
+        [:parent, :post]
+
+      end
+    end
+
+    def in_blog?
+      @website_obj.in_blog?
+    end
+
+    def is_blog?
+      @website_obj.is_blog?
+    end
+
+    def config
+      @website_obj.config
+    end
+
+    def index?
+      @website_obj.index?
+    end
+
+    def folder?
+      @website_obj.folder?
+    end
+
+    def file?
+      @website_obj.file?
     end
   end
+
+
+  class Crumb
+    def initialize(website_obj, level=0)
+      @website_obj = website_obj
+      @level = level
+    end
+
+    def to_s
+      Html::Link.new(
+        :href => @website_obj.link_url,
+        :class => "breadcrumb_#{@level}"
+      ) << @website_obj.name
+    end
+  end
+
+
+  # A crumb for blog categories. For multiple categories, this currently adds links for all of them,
+  # separated by a slash.
+  class CategoryCrumb < Crumb
+    include Helpers
+
+    def initialize(website_file, level=0)
+      @website_file = website_file
+      @categories = website_file.categories
+      @level = level
+    end
+
+    def to_s
+      Html::Span.new(:class => "breadcrumb_#{@level}") << links.join(separator)
+    end
+
+    def links
+      @categories.collect {|cat| cat.link}
+    end
+
+    def separator
+      "&nbsp;/&nbsp;"
+    end
+  end
+
 end
+
+

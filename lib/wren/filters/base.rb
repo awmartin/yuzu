@@ -1,58 +1,82 @@
+require 'core/registrar'
 
-# Behaviors to support
+module Wren::Filters
+  include Wren::Registrar
 
-# 1. Erase the directive or replace with new contents
-# 2. Return the contents of the directive, if any
-# 3. Defer to another method of finding the contents, if needed (e.g. from the filename)
+  # Filters are the primary means to derive information from a given source file and place new
+  # contents into it before it is placed in a layout.
+  # 
+  # There are 3 stages of filtering that happen to each file.
+  #
+  # 1. prefilter -- replacing LINKROOT and CURRENTPATH, so the next phase has the proper paths
+  # 2. filter -- transforming contents
+  # 3. postfilter -- replacing LINKROOT and CURRENTPATH again
+  class Filter < Register
+    def self.registry
+      :filters
+    end
+    cattr_reader :filters
 
+    attr_reader :name, :directive
 
-module Wren
-  module Filters
-    class Base
-      def init
+    def initialize
+      @name = :directive
+      @directive = "DIRECTIVE"
+    end
+
+    def filter_type
+      [:filter]
+    end
+
+    def default(website_file=nil)
+      nil
+    end
+
+    def value(website_file)
+      get_value(website_file) || default(website_file)
+    end
+
+    def get_value(website_file)
+      match(website_file.raw_contents)
+    end
+
+    def match(contents)
+      get_match(contents)
+    end
+
+    def get_match(contents)
+      m = contents.match(regex)
+      m.nil? ? nil : m[1]
+    end
+
+    # Returns the contents to replace the directive with as written.
+    #
+    # @param [WebsiteFile] website_file The page in which the directive appears
+    # @param [String, nil] processing_contents The contents of the given WebsiteFile as they are
+    #   being transformed by processing.
+    # @return [String] What to replace the directive with.
+    def replacement(website_file, processing_contents=nil)
+      ""
+    end
+
+    def regex
+      Regexp.new('^\s*' + @directive.to_s + '\(([\w\s\.\,\'\"\/\-:]*?)\)')
+    end
+
+    def process(website_file, processing_contents)
+      m = processing_contents.match(regex)
+
+      while not m.nil?
+        repl = replacement(website_file, processing_contents)
+
+        # Remove the next match.
+        processing_contents = processing_contents.sub(regex, repl.to_s)
+
+        # Find any others...
+        m = processing_contents.match(regex)
       end
-      
-      def directive_name
-        "DIRECTIVE"
-      end
 
-      def name
-        :directive
-      end
-
-      def value(match)
-        nil
-      end
-
-      def replacement_contents
-        ""
-      end
-
-      def alternative_value(file_cache)
-        nil
-      end
-
-      def regex
-        return /#{directive_name}\([\w\s\.\,\'\"\/\-]*)/
-      end
-
-      def process(processed_contents)
-        contents = processed_contents.match(regex)
-        @value = value(m[0])
-        return contents
-      end
-
-  #categories = []
-  #tr = str.gsub(/CATEGORIES\([\w\s\.\,\'\"\/\-]*\)/) do |s|
-  #  categories = s.gsub("CATEGORIES(","").gsub(")","").split(",")
-  #  categories = categories.collect {|str| str.strip.downcase}
-  #  ""
-  #end
-  
-  #if categories.blank?
-  #  categories = ["uncategorized"] # TODO: config var for default category
-  #end
-
+      processing_contents
     end
   end
 end

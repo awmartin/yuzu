@@ -1,102 +1,23 @@
-require 'haml'
+require 'html/base'
 
-def render_gallery images, config
-  gallery_path = File.join(config.template_dir, "_gallery.haml")
-  
-  if File.exists?(gallery_path)
-    f = File.open(gallery_path, "r")
-    contents = f.readlines.join
-    f.close
-    return Haml::Engine.new(contents, {:format => :html5}).render(Object.new, {:images => images})
-  else
-    return render_gallery_fallback(images)
+module Wren::Renderers
+  class GalleryRenderer < Renderer
+    def template_name
+      "_gallery.haml"
+    end
+
+    def gallery_template
+      @template ||= Wren::Core::HamlTemplate.new(template_name)
+    end
+
+    def render(website_file)
+      if gallery_template.exists?
+        gallery_template.render(website_file, {:images => website_file.images})
+      else
+        Html::Comment.new << "Couldn't find gallery template #{gallery_template.path.absolute}"
+      end
+    end
   end
-end
-
-def thumbnail_gallery(images, group_name)
-    
-  if images.length == 0
-    return ""
-  end
-  
-  gallery = "<div class='gallery'>"
-  gallery += "<div class='gallery-thumbnails'>"
-  
-  images.each_index do |i|
-    image = images[i]
-    extension = File.extname(image)
-    thumb_url = image.gsub(extension, "-small#{extension}")
-    
-    klass = i % 6 == 5 ? "thumbnail last" : "thumbnail"
-    gallery += "
-<div class='#{klass}'>
-<a href='#{image}' class='fancybox' rel='#{group_name}'>
-<img src='#{thumb_url}'>
-</a>
-</div>"
-  end
-
-  gallery += "</div>"
-  gallery += "</div>"
-
-  return gallery
-end
-
-# Fallback in case the _gallery.haml file is no where to be found.
-def render_gallery_fallback images
-  if images.length == 0
-    return ""
-  end
-  
-  gallery = "\n\n<div class='slideshow'>\n"
-  images.each_index do |i|
-    image = images[i]
-    extension = File.extname(image)
-    big_image = images[i].gsub(extension, "-large#{extension}")
-
-    visibility = i == 0 ? "display:block;z-index:2;" : "display:none;z-index:1;"
-
-    gallery += "
-<div class='slide' id='slide-#{i}' style='#{visibility}'>
-<img src='#{big_image}'>
-</div>
-"
-  end
-  
-  gallery += "</div>\n"
-  gallery += "
-<script type='text/javascript' charset='utf-8'>
-var count = #{images.length};
-</script>
-"
-
-  gallery += "<div class='gallery-thumbnails'>"
-  
-  images.each_index do |i|
-    image = images[i]
-    extension = File.extname(image)
-    thumb_url = image.gsub(extension, "-small#{extension}")
-    
-    klass = i % 6 == 5 ? "gallery-thumb last" : "gallery-thumb"
-    gallery += "
-<div class='#{klass}'>
-<a href='#' onclick='slide(#{i});return false;'>
-<img src='#{thumb_url}'>
-</a>
-</div>"
-  end
-  
-  # Fill in the rest of the row with blank thumbnails.
-  # The second "% 6" ensures there isn't an extra blank row added
-  # when there are exactly 6 images.
-  num_blanks = (6 - images.length % 6) % 6
-  num_blanks.times do |i|
-    klass = (images.length + i) % 6 == 5 ? 'gallery-thumb last' : "gallery-thumb"
-    gallery += "<div class='#{klass}'>&nbsp;</div>"
-  end
-  
-  gallery += "</div>\n\n"
-  gallery += "<hr>"
-  gallery
+  Renderer.register(:gallery => GalleryRenderer)
 end
 

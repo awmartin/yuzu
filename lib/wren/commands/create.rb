@@ -1,30 +1,36 @@
+
 module Wren::Command
-  class Create < Base
+
+  # Create produces a new content such as a new wren website project or new blog post.
+  class Create < ConfiglessCommand
+    def initialize(args)
+      @args = args
+    end
+
     def index
-      #puts `compass create . --using blueprint --syntax sass`
       puts "Creating a new wren project in this directory."
-      
+
       #['_templates', 'js', 'css', 'blog', 'img'].each do |folder|
       #  FileUtils.mkdir(folder)
       #end
-      
+
       # The directory the user is running wren in.
       destination_dir = Dir.pwd
-      
+
       ["_templates", "js", "css", "img", "_sass"].each do |source_dir|
         all_sources = File.join(File.dirname(__FILE__), "..", "..", "..", "resources", source_dir)
         FileUtils.cp_r(all_sources, destination_dir)
       end
-      
+
       ["config", "samples"].each do |folder|
         rel_path = File.join(File.dirname(__FILE__), "..", "..", "..", "resources", folder, "*")
-        FileUtils.cp_r(Dir[rel_path], destination_dir)
+        FileUtils.cp_r(Dir[rel_path], File.join(destination_dir, "config"))
       end
-      
+
       puts
       puts "Remember to edit wren.yml to set your site settings, preview path, and remote host."
     end
-    
+
     # args[1] is a string that contains the blog title
     # Creates a new post with the lower-case title, TITLE() directive, and prefix publication date.
     def post
@@ -33,10 +39,10 @@ module Wren::Command
       mon_str = sprintf "%02d", t.month
       year_str = sprintf "%04d", t.year
       base_filename = @args.first.gsub(" ", "-").downcase
-      
+
       full_filename = "#{year_str}-#{mon_str}-#{day_str}-#{base_filename}.md"
       file_path = File.join(@config.blog_dir, full_filename)
-      
+
       post_title = @args.first
       first_sentence = "The title of this post is #{post_title}."
       filler_sentence = %Q(
@@ -50,7 +56,7 @@ est laborum.).gsub("\n", "")
       contents = ["TITLE(#{post_title})", 
                   first_sentence, 
                   filler_sentence].join("\n\n")
-      
+
       if File.exists?(full_filename)
         puts "Warning: File #{full_filename} already exists!"
       else
@@ -59,9 +65,9 @@ est laborum.).gsub("\n", "")
         f.puts(contents)
         f.close()
       end
-      
+
     end
-    
+
     def self.help method
       case method
       when :default
@@ -72,4 +78,5 @@ est laborum.).gsub("\n", "")
       end
     end
   end
+
 end

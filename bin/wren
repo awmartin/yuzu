@@ -9,7 +9,7 @@ require 'wren/command'
 
 args = ARGV.dup
 ARGV.clear
-command = args.shift.strip rescue 'help'
+command_str = args.shift.strip rescue 'help'
 
-Wren::Command.run(command, args)
+Wren::Command.run(command_str, args)
 

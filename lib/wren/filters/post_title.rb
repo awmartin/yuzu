@@ -1,48 +1,65 @@
+
 module Wren::Filters
-  class PostTitleFilter < Base
-    def init
+  class PostTitleFilter < Filter
+    def initialize
+      @directive = "TITLE"
+      @name = :post_title
     end
 
-    def directive
-      "TITLE"
+    def default(website_file)
+      extract_title_from_filename(website_file.path)
     end
 
-    def name
-      :post_title
+    def get_value(website_file)
+      contents = website_file.raw_contents
+
+      title = match(contents)
+
+      if title.nil? and website_file.markdown?
+        m = contents.match(/^#\s+.*?\n/)
+        title = m.nil? ? nil : m[0].sub("#", "").strip
+      end
+      return title
     end
 
-    def value(match)
-      titleize(match.to_s)
-    end
+    def extract_title_from_filename(path)
+      post_filename = nil
+      name = path.rootname
+      raw_path = path.relative
 
-    def alternative_value(file_cache)
-      extract_title_from_filename(file_cache.raw_path)
-    end
-
-    def extract_title_from_filename(raw_path)
-      post_filename = File.basename(raw_path)
-    
-      if post_filename.include?("index")
+      if name.include?("index")
         # If we're looking at an index, grab the folder name instead.
-        post_filename = raw_path.split("/")[-2]
-        if post_filename.blank?
-          post_filename = "Home"
+        post_filename = path.parent.rootname
+        return post_filename.blank? ? "Home" : post_filename.titlecase
+      end
+
+      if post_filename.nil?
+        # Look for the YYYY/MM/DD-title-here.md pattern.
+        m = raw_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\-/)
+        if not m.nil?
+          post_filename = name[3..-1]
+        end
+      end
+
+      if post_filename.nil?
+        # Look for the YYYY/MM/title-here.md pattern.
+        m = raw_path.match(/[0-9]{4}\/[0-9]{2}\//)
+        if not m.nil?
+          post_filename = name
         end
       end
     
-      # Look for the YYYY/MM/DD-title-here.md pattern.
-      m = raw_path.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\-/)
-      if not m.nil?
-        # For now, just remove the first 3 characters.
-        post_filename = post_filename[3..-1]
+      if post_filename.nil?
+        post_filename = name
       end
-    
+
       # Remove the YYYY-MM-DD- date prefix if present.
       post_filename = post_filename.sub(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-/, "")
     
-      return titleize(post_filename)
+      return post_filename.titlecase
     end
 
   end
+  Filter.register(:post_title => PostTitleFilter)
 end
 

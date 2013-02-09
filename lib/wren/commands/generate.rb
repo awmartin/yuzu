@@ -1,21 +1,23 @@
 require 'fileutils'
 
 module Wren::Command
-  class Generate < Base
+
+  # Generate handles some cross-media production (e.g. pdf) and handling of the creation of files
+  # (e.g. thumbnails).
+  class Generate < ConfiglessCommand
     def index
-      
     end
-    
-    def pdf
-      f = File.open( @args.first, "r" )
-      unless f.nil?
-        contents = f.readlines.join
-        updater.render_pdf contents, @args.first
-        updater.done
-      else
-        puts "File load error."
-      end
-    end
+
+    #def pdf
+    #  f = File.open(@args.first, "r")
+    #  unless f.nil?
+    #    contents = f.readlines.join
+    #    updater.render_pdf contents, @args.first
+    #    updater.done
+    #  else
+    #    puts "File load error."
+    #  end
+    #end
 
     # TODO: Put this in its own class and integrate with the rest of the app.
     def thumbnails
@@ -46,7 +48,6 @@ module Wren::Command
         images = [path]
       end
 
-
       images.each do |image_path|
         ext = File.extname(image_path)
 
@@ -62,7 +63,7 @@ module Wren::Command
 
     def config
       if not File.exists?("wren.yml")
-        FileUtils.copy( "#{File.dirname(__FILE__)}/../templates/wren.yml", "#{Dir.pwd}/wren.yml")
+        FileUtils.copy( "#{File.dirname(__FILE__)}/../templates/wren.yml", "#{Dir.pwd}/config/wren.yml")
         puts "Copied a sample config file into the current folder. Update it with your remote server information."
       else
         puts "Config file wren.yml already exists. Rename or erase it to generate a new one."

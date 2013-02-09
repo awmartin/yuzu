@@ -1,5 +1,10 @@
 module Wren::Command
-  class Help < Base
+
+  class Help < ConfiglessCommand
+    def initialize(args)
+      @args = args
+    end
+
     def index
       if @args.first.nil?
         puts <<-eos
@@ -62,31 +67,11 @@ repo should be set to ignore binary assets like images and pdfs.
 
       eos
       else
-        klass, method = parse @args.first
-        help_str = klass.help(method).to_s
-        puts help_str
-      end
-    end
-    
-    def parse(command)
-      parts = command.split(':')
-      case parts.size
-        when 1
-          begin
-            return eval("Wren::Command::#{command.capitalize}"), :default
-          rescue NameError, NoMethodError
-            return Wren::Command::App, command
-          end
-        when 2
-          begin
-            # This isn't working...
-            return eval("Wren::Command::#{parts[0].capitalize}"), parts[1].to_sym
-          rescue NameError
-            raise InvalidCommand
-          end
-        else
-          raise InvalidCommand
+        command_class, method = Wren::Command.parse(@args.first)
+        puts command_class.help(method)
       end
     end
   end
+
 end
+

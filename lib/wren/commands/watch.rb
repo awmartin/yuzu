@@ -1,14 +1,14 @@
 require 'fssm'
 
 def rebuild_site(base, relative_path, config)
-  puts ">>> Change Detected to: #{relative_path} <<<"
+  $stderr.puts ">>> Change Detected to: #{relative_path} <<<"
 
   if File.directory?(relative_path)
     if relative_path.includes_one_of?(config.folder_blacklist)
-      puts ">>> Blacklisted folder found. No update."
+      $stderr.puts ">>> Blacklisted folder found. No update."
       return
     elsif relative_path.include?(config.template_dir)
-      puts ">>> Change in a template found. No update (yet)."
+      $stderr.puts ">>> Change in a template found. No update (yet)."
       return
     end
   else
@@ -18,29 +18,30 @@ def rebuild_site(base, relative_path, config)
     #  return
     #els
     if file_ext.includes_one_of?(config.extension_blacklist)
-      puts ">>> Blacklisted extension found. No update."
+      $stderr.puts ">>> Blacklisted extension found. No update."
       return
     elsif relative_path.include?(config.template_dir)
-      puts ">>> Change in a template found. No update (yet)."
+      $stderr.puts ">>> Change in a template found. No update (yet)."
       return
     end
   end
 
   IO.popen("wren preview #{relative_path}") do |io|
-    print( io.readpartial(512) ) until io.eof?
+    $stderr.print( io.readpartial(512) ) until io.eof?
   end
 
-  puts '>>> Update Complete <<<'
+  $stderr.puts '>>> Update Complete <<<'
 end
 
 
 module Wren::Command
+
   class Watch < Base
     # Method to start the watcher.
     def index
-      
-      puts ">>> Wren is watching for changes <<<"
-      
+
+      $stderr.puts ">>> Wren is watching for changes <<<"
+
       # The block below doesn't have the current Watch object in its scope,
       # so we can't pass in @config directly. Pass it into the *args parameter
       # and the hash becomes part of the @options instance variable in the
@@ -54,7 +55,6 @@ module Wren::Command
 
     end
 
-    
     def self.help method
       case method
       when :default
@@ -63,4 +63,6 @@ module Wren::Command
       end
     end
   end
+
 end
+
