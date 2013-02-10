@@ -1,4 +1,4 @@
-require 'kramdown'
+require 'translators/base'
 
 module Yuzu::Filters
   class SidebarFilter < Filter
@@ -17,7 +17,7 @@ module Yuzu::Filters
 
     def get_value(website_file)
       sidebar = match(website_file.raw_contents).to_s
-      Kramdown::Document.new(sidebar).to_html
+      Yuzu::Translators::Translator.translate(sidebar, website_file.path.extension)
     end
   end
   Filter.register(:sidebar => SidebarFilter)
