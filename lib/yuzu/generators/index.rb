@@ -63,14 +63,6 @@ module Yuzu::Generators
       "GeneratedIndex(#{@path.relative})"
     end
 
-    def file?
-      true
-    end
-
-    def folder?
-      false
-    end
-
     def default_index_filename
       "index.md"
     end
@@ -106,9 +98,9 @@ INSERTCATALOG(path:#{relative_contents_path}, page:1, per_page:10, per_col:1, te
   module_function :default_index_template
 
   def category_index_template(relative_contents_path, category_name)
-      "TEMPLATE(index.haml)
+      "TEMPLATE(blog.haml)
 
-INSERTCATALOG(path:#{relative_contents_path}, page:1, per_page:10, per_col:1, template:_block.haml, category:#{category_name})"
+INSERTCATALOG(path:#{relative_contents_path}, page:1, per_page:10, per_col:1, template:_blog.haml, category:#{category_name})"
   end
   module_function :category_index_template
 

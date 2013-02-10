@@ -17,22 +17,41 @@ module Yuzu::Core
       @@template_dir + @template_name
     end
 
-    def contents
-      @contents ||= get_contents
-    end
-
     def exists?
       path.exists?
     end
 
+    def fallback_path
+      # TODO Configure fallbacks in a more general way.
+      if @template_name[0].chr == "_"
+        @@template_dir + "_block.haml"
+      else
+        @@template_dir + "generic.haml"
+      end
+    end
+
+    def fallback_exists?
+      fallback_path.exists?
+    end
+
+    def contents
+      @contents ||= get_contents
+    end
+
     def get_contents
-      if exists?
-        f = File.open(path.absolute, 'r')
+      tr = get_template_contents(path)
+      tr.nil? ? get_template_contents(fallback_path) : tr
+    end
+
+    def get_template_contents(file_path)
+      if file_path.exists?
+        f = File.open(file_path.absolute, 'r')
         contents = f.read
         f.close
-        return contents
+        contents
       else
-        ""
+        $stderr.puts "WARNING: Couldn't find template #{file_path}"
+        nil
       end
     end
 
@@ -131,7 +150,7 @@ module Yuzu::Core
       year, month, day = date.split("-")[0..2]
       month = months[month]
 
-      return "#{year} #{month} #{day}"
+      "#{year} #{month} #{day}"
     end
 
   end

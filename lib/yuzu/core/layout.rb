@@ -6,15 +6,17 @@ module Yuzu::Core
   # In the future, this will be generalized.
   class Layout < Yuzu::Core::HamlTemplate
     # The standard page partials.
-    def self.partial_names
-      %w(head header footer menu)
-    end
+    #def self.partial_names
+    #  #%w(head header footer menu)
+    #end
 
     # A hash of partial name to filename.
     #
     # @return [Hash]
     def self.partial_filenames
-      Hash[self.partial_names.collect {|name| [name, "_#{name}.haml"]}]
+      relative_paths = Dir[(@@template_dir + "*").to_s]
+      files = relative_paths.collect {|p| File.basename(p)}
+      files.select {|filename| filename[0].chr == "_"}
     end
 
     # A hash of partial name to the corresponding HamlTemplate object for that partial.
@@ -27,8 +29,9 @@ module Yuzu::Core
     # Calculates the Hash for self.partials.
     def self.get_partials
       tr = {}
-      partial_filenames.each_pair do |name, filename|
-        tr[name] = HamlTemplate.new(filename)
+      partial_filenames.each do |filename|
+        partial_name = filename[1...-5]
+        tr[partial_name] = HamlTemplate.new(filename)
       end
       tr
     end
@@ -58,7 +61,6 @@ module Yuzu::Core
       )
     end
   end
-
 
 
   # A class that encapsulates the variables in the `layout` namespace in the Haml layout. This means
