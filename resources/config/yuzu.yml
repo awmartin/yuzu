@@ -48,40 +48,41 @@ stage:
 # filesystem.
 connection: filesystem
 
-# All the file system needs is the absolute path of the destination parent folder.
-filesystem:
-  domain: localhost/preview/mysite
-  destination: /Users/username/Sites/preview/mysite
-  link_root: /preview/mysite
+services:
+  # All the file system needs is the absolute path of the destination parent folder.
+  filesystem:
+    domain: localhost/preview/mysite
+    destination: /Users/username/Sites/preview/mysite
+    link_root: /preview/mysite
 
-# For FTP service to a web server or file server.
-ftp:
-  domain: site.example.com
-  host: example.com
-  username: test%example.com
-  password: 123456
-  link_root: 
-  remote_root_path: 
+  # For FTP service to a web server or file server.
+  ftp:
+    domain: site.example.com
+    host: example.com
+    username: test%example.com
+    password: 123456
+    link_root: 
+    remote_root_path: 
 
-# For service at Amazon S3. By default, this is configured to get the access_key and 
-# secret_key from environment variables, like ENV['AMAZON_ACCESS_KEY_ID']. Just put 
-# the name of the environment variable in those two fields.
-s3:
-  domain: mybucket.s3.amazonaws.com
-  bucket: mybucket
-  access_key: AMAZON_ACCESS_KEY_ID
-  secret_key: AMAZON_SECRET_ACCESS_KEY
-  link_root: 
-  remote_root_path: 
-    
-# Proxy configuration if needed. This only works for S3 right now. Not needed for filesystem.
-# Put 'yes' next to use_proxy: to turn on the proxy settings.
-proxy:
-  use_proxy: no
-  host: proxy.nyit.edu
-  port: 80
-  username: 
-  password: 
+  # For service at Amazon S3. By default, this is configured to get the access_key and 
+  # secret_key from environment variables, like ENV['AMAZON_ACCESS_KEY_ID']. Just put 
+  # the name of the environment variable in those two fields.
+  s3:
+    domain: mybucket.s3.amazonaws.com
+    bucket: mybucket
+    access_key: AMAZON_ACCESS_KEY_ID
+    secret_key: AMAZON_SECRET_ACCESS_KEY
+    link_root: 
+    remote_root_path: 
+
+    # Proxy configuration if needed. This only works for S3 right now. Not needed for filesystem.
+    # Put 'yes' next to use_proxy: to turn on the proxy settings.
+    proxy:
+      use_proxy: no
+      host: proxy.nyit.edu
+      port: 80
+      username: 
+      password: 
 
 # This is a list of the local folders to ignore completely, so the recursive updates
 # won't traverse them. The SASS 'src' folder is a good one to exclude.
@@ -154,7 +155,6 @@ resource_extensions:
 # markdown, or haml files. You have to do those links yourself.
 use_strict_index_links: yes
 
-breadcrumb_omit_current_page: false
 breadcrumb_separator: "&middot;"
 
 # Thumbnails designations and widths.
