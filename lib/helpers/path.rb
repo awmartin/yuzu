@@ -14,7 +14,13 @@ module Helpers
       #Pathname.new(path1).join(Pathname.new(path2)).to_s
     end
 
-    def initialize(path=nil)
+    def initialize(*args)
+      if args.length > 1
+        path = File.join(*args)
+      else
+        path = args[0]
+      end
+
       if path.nil?
         @pathname = pwd
 

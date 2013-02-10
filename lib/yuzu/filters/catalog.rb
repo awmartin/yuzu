@@ -85,13 +85,37 @@ module Yuzu::Filters
       :per_page => 10,
       :per_row => 1,
       :page => 1,
-      :offset => 0
+      :offset => 0,
+      :category => nil
     }
     @@kwd_defaults.each_pair do |key, default_value|
       define_method key do
-        convert = default_value.is_a?(String) ? :to_s : :to_i
-        @kwds.has_key?(key) ? @kwds[key].send(convert) : default_value
+        if @kwds.has_key?(key)
+          # The user's arguments always come in as a String, so this converts the argument into its
+          # appropriate type as specified by the defaults Hash.
+          convert_method = get_default_type_method(key)
+          convert_method.nil? ? @kwds[key] : @kwds[key].send(convert_method)
+        else
+          default_value
+        end
       end
+    end
+
+    def get_default_type_method(key)
+      klass = get_default_type(key)
+      if klass == String
+        :to_s
+      elsif klass == Fixnum
+        :to_i
+      elsif klass == Float
+        :to_f
+      else
+        nil
+      end
+    end
+
+    def get_default_type(key)
+      @@kwd_defaults.has_key?(key) ? @@kwd_defaults[key].class : nil
     end
 
     def should_paginate?
@@ -175,7 +199,8 @@ module Yuzu::Filters
       when @kwds[:path] == ""
         @siteroot
       else
-        @siteroot.find_file_by_path(Path.new(@kwds[:path]))
+        search_path = Path.new(@kwds[:path])
+        @siteroot.find_file_by_path(search_path)
       end
     end
 
@@ -186,7 +211,19 @@ module Yuzu::Filters
     def get_target_files
       return [] if target_folder.nil?
       unsorted = target_folder.all_processable_children.reject {|node| node.index?}
+      if not category.nil?
+        unsorted = unsorted.select {|file| file_has_category?(file)}
+      end
       unsorted.sort {|a, b| b.post_date <=> a.post_date}
+    end
+
+    def file_has_category?(file)
+      file.categories.each do |cat|
+        if cat.name == category.downcase.dasherize
+          return true
+        end
+      end
+      return false
     end
 
     # Returns an array of WebsiteFile objects that are the contents of the catalog on this page.

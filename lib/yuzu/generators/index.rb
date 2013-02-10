@@ -38,6 +38,7 @@ module Yuzu::Generators
 
     def generate_index_at_path!(website_folder)
       new_index = GeneratedIndex.new(website_folder)
+
       website_folder.append_child(new_index)
       IndexGenerator.add_indexed_folder(website_folder)
     end
@@ -45,9 +46,10 @@ module Yuzu::Generators
 
 
   class GeneratedIndex < WebsiteFile
-    def initialize(parent_folder)
-      index_path = parent_folder.path + default_index_filename
+    def initialize(parent_folder, raw_contents=nil)
+      @raw_contents = raw_contents
 
+      index_path = parent_folder.path + default_index_filename
       @path = index_path
       @path.make_file!
       raise "@path is nil for #{self}" if @path.nil?
@@ -74,36 +76,19 @@ module Yuzu::Generators
     end
 
     def get_raw_contents
-      # TODO Put the auto-generated index contents in its own file.
-      relative_path = @parent.path.relative
-      "TEMPLATE(index.haml)
-
-INSERTCATALOG(path:#{relative_path}, page:1, per_page:10, per_col:1, template:_block.haml)
-
-<!--yuzu:nosearch-->"
+      # Only becomes @raw_contents if it is still nil when raw_contents is first called.
+      Yuzu::Generators.default_index_template(@path.dirname)
     end
 
     def created_at
-      load_file_info!
-      @created_at
+      @created_at ||= Time.now
     end
 
     def modified_at
-      load_file_info!
-      @modified_at
+      @modified_at ||= Time.now
     end
 
     def load_file_info!
-      if @raw_contents.nil?
-        f = File.open(@parent.path.absolute, "r")
-        @modified_at = f.mtime
-        @created_at = f.ctime
-        f.close
-
-        #f = File.open(index_template_path, "r")
-        #@raw_contents = f.read
-        #f.close
-      end
     end
 
     def generated?
@@ -111,6 +96,21 @@ INSERTCATALOG(path:#{relative_path}, page:1, per_page:10, per_col:1, template:_b
     end
   end
   Generator.register(:index => IndexGenerator)
+
+  # TODO Put the auto-generated index contents in their own files.
+  def default_index_template(relative_contents_path)
+      "TEMPLATE(index.haml)
+
+INSERTCATALOG(path:#{relative_contents_path}, page:1, per_page:10, per_col:1, template:_block.haml)"
+  end
+  module_function :default_index_template
+
+  def category_index_template(relative_contents_path, category_name)
+      "TEMPLATE(index.haml)
+
+INSERTCATALOG(path:#{relative_contents_path}, page:1, per_page:10, per_col:1, template:_block.haml, category:#{category_name})"
+  end
+  module_function :category_index_template
 
 end
 

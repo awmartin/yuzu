@@ -8,9 +8,9 @@ require 'helpers/string'
 Dir["#{File.dirname(__FILE__)}/commands/*"].each { |c| require c }
 
 
-CONFIG_NOT_FOUND_MESSAGE = "Please run this from the root of your project, with the config file at \
-project/yuzu.yml or project/config/yuzu.yml, typically your root project folder. \
-Or use 'create' to make a new project."
+CONFIG_NOT_FOUND_MESSAGE = \
+%Q{Please run this from the root of your project, in the folder containing
+yuzu.yml or config/yuzu.yml. Or use 'create' to make a new project.}
 
 
 module Yuzu::Command
@@ -23,7 +23,7 @@ module Yuzu::Command
 
     stop = Time.now
     delta = stop - start
-    puts "Yuzu completed in #{delta} seconds."
+    $stderr.puts "Yuzu completed in #{delta} seconds."
   end
 
   def self.parse(command_str)
@@ -58,6 +58,7 @@ module Yuzu::Command
 
     if config_location.nil?
       $stderr.puts CONFIG_NOT_FOUND_MESSAGE
+      Process.exit!(false)
     end
 
     YAML.load_file(config_location)

@@ -38,7 +38,15 @@ module Yuzu::Filters
     end
 
     def url
-      @website_file.blog_folder.link_url + "/" + @name
+      blog_folder.link_url + "/" + @name
+    end
+
+    def path
+      Helpers::Path.new(blog_folder.path.name, @name)
+    end
+
+    def blog_folder
+      @website_file.blog_folder
     end
 
     def <=>(other)

@@ -14,6 +14,13 @@ module Yuzu::Core
       "WebsiteFolder(#{@path})"
     end
 
+    # -------------------------------------------------------------------------------------------
+    # TODO Find a way for folders to know what all the categories are, or better yet, remove this
+    # interface and have another way of files, folders, and processors to ask information about the
+    # entire site.
+    #def all_categories
+    #end
+
     def breadcrumb
       Yuzu::Renderers::BreadcrumbRenderer.new.render(self)
     end
@@ -21,10 +28,10 @@ module Yuzu::Core
     def currentpath
       Yuzu::Filters::CurrentpathFilter.new.value(self)
     end
+    # -------------------------------------------------------------------------------------------
 
     def name
       @path.rootname.titlecase
-      #Yuzu::Filters::PostTitleFilter.new.extract_title_from_filename(@path)
     end
 
     def files
@@ -52,6 +59,11 @@ module Yuzu::Core
       children.select {|child| child.processable?}
     end
 
+    # Returns all the descendants of this folder, as deep as the tree goes, that are "processable"
+    # as specified by the config.
+    #
+    # @return [Array] Of WebsiteFiles representing content that can be translated into HTML or other
+    #   publishable form.
     def all_processable_children
       all_files.select {|child| child.processable? and not child.hidden?}
     end
@@ -62,7 +74,12 @@ module Yuzu::Core
     end
 
     # Add a new child object to the @children. Used by generators to add new files to the existing
-    # file-system-gathered pages.
+    # file-system-gathered pages. This method should only be called in a generator, since their
+    # execution is managed in such a way that new children are added at the right stage of
+    # processing.
+    #
+    # @param [WebsiteFile, WebsiteFolder] new_child The new generated object to add a child.
+    # @return nothing
     def append_child(new_child)
       # Ensure we get the children from disk first.
       children
@@ -74,8 +91,12 @@ module Yuzu::Core
       tr.reject {|c| c.nil?}
     end
 
+    # Returns a WebsiteFile or WebsiteFolder for the given path.
+    #
+    # @param [Path] path The Path object representing the on-disk file or folder.
+    # @return [WebsiteFile, WebsiteFolder, nil] The child of this folder.
     def get_object_for_path(path)
-      # TODO add different file types: processable, resource, etc.
+      # TODO Add different file types: processable, resource, etc.
 
       if path.file?
         WebsiteFile.new(path, self)

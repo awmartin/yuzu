@@ -83,7 +83,7 @@ module Yuzu::Renderers
     end
 
     def structure
-      if in_blog? and not is_blog?
+      if file? and in_blog? and not is_blog? and not index?
         [:home, :blog, :category, :post]
 
       else

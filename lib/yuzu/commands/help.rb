@@ -8,9 +8,8 @@ module Yuzu::Command
     def index
       if @args.first.nil?
         puts <<-eos
-This is yuzu, the Website RENderer. Yuzu is a blog-aware static website 
-generator and publisher that converts a folder structure with text files 
-and images into an HTML5 website.
+This is yuzu, a blog-aware, static-website generator and publisher that converts a folder
+structure with text files and images into an HTML5 website.
 
 -------
 Available Commands
@@ -20,13 +19,13 @@ help [command]                    # Help about the particular command.
 
 preview [filenames]               # Update the preview with the files listed.
 preview:all                       # Update all the files in the preview.
+preview:text                      # Only update the processable content files.
 preview:images                    # Copy all the images into the preview folder.
 preview:resources                 # Copy all the resources, like css and js
                                     files, into the preview folder.
 preview:assets                    # Copy all images and other assets (like pdfs
                                     and other downloadables) into the preview 
                                     folder.
-preview:text                      # Only update the processable files.
 preview:css                       # Regenerates the css files and copies them
                                     to the preview.
 
