@@ -1,4 +1,4 @@
-# Wren Tag Reference
+# Yuzu Tag Reference
 
 ## Post Titles
 
@@ -6,7 +6,7 @@ Specify the title of a post, available with `post.post_title`, with the followin
 
     TITLE(Post Title)
 
-If the `TITLE(...)` tag is not present, wren will attempt to use rules from the translators. For Markdown, it grabs "# ...". If not present, wren will extrapolate the title from the filename. Files should be named in one of two ways:
+If the `TITLE(...)` tag is not present, yuzu will attempt to use rules from the translators. For Markdown, it grabs "# ...". If not present, yuzu will extrapolate the title from the filename. Files should be named in one of two ways:
 
     a-post-title.md
     2011-10-10-a-post-title.md
@@ -29,7 +29,7 @@ The name of the template file in the `_templates` folder to apply to each item i
 * `category`  
 A category filter, showing pages that only have this category.
 * `page`  
-To control which page to render, such as only the first page, use this field. If not present, wren will attempt to paginate the _first_ catalog found in a page without this flag.
+To control which page to render, such as only the first page, use this field. If not present, yuzu will attempt to paginate the _first_ catalog found in a page without this flag.
 
 ## Images
 
@@ -60,13 +60,13 @@ The format of all contents between the braces must match the contents of the fil
 
 ## Templates
 
-All HAML files in the template_dir folder, specified in wren.yml, are considered templates, where several default variables are available to access and insert content.
+All HAML files in the template_dir folder, specified in yuzu.yml, are considered templates, where several default variables are available to access and insert content.
 
 Specifying which template to use for a particular file can be achieved with the TEMPLATE tag:
 
     TEMPLATE(_default.haml)
 
-wren automatically looks in the `_templates` folder for the HAML files to use. The default templates required by wren are:
+yuzu automatically looks in the `_templates` folder for the HAML files to use. The default templates required by yuzu are:
 
 * `index.haml`  
     The template for index.html pages.
@@ -90,7 +90,7 @@ The default templates and partials that must be specified are as follows:
 * `_gallery.haml`  
     Partial that renders a gallery of images. Optional.
 
-These are automatically generated with the `create` command when creating a new wren project from scratch. Partials and auto-generated templates have a leading underscore as part of their name. Your custom templates don't have to have this.
+These are automatically generated with the `create` command when creating a new yuzu project from scratch. Partials and auto-generated templates have a leading underscore as part of their name. Your custom templates don't have to have this.
 
 
 

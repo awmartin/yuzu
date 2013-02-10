@@ -12,14 +12,14 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "wren"
-  gem.homepage = "http://github.com/awmartin/wren"
+  gem.name = "yuzu"
+  gem.homepage = "http://github.com/awmartin/yuzu"
   gem.license = "MIT"
   gem.summary = %Q{A blog-aware, static-website generator that converts a folder of text files and images into an HTML5 website.}
-  gem.description = %Q{Wren is a blog-aware, static-website (and PDF generator) that converts a folder of text files and images into multiple forms and publishes them to an FTP server, file system, or Amazon Simple Storage Service (S3). It is extensible and designed to function with minimal setup.}
+  gem.description = %Q{Yuzu is a blog-aware, static-website (and PDF generator) that converts a folder of text files and images into multiple forms and publishes them to an FTP server, file system, or Amazon Simple Storage Service (S3). It is extensible and designed to function with minimal setup.}
   gem.email = "william.martin@anomalus.com"
   gem.authors = ["William Martin"]
-  gem.executables = ['wren']
+  gem.executables = ['yuzu']
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
   #  gem.add_runtime_dependency 'jabber4r', '> 0.1'
@@ -54,7 +54,7 @@ end
 #   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 # 
 #   rdoc.rdoc_dir = 'rdoc'
-#   rdoc.title = "wren #{version}"
+#   rdoc.title = "yuzu #{version}"
 #   rdoc.rdoc_files.include('README*')
 #   rdoc.rdoc_files.include('lib/**/*.rb')
 # end

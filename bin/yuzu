@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+
+$LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib')
+
+require 'yuzu'
+require 'yuzu/command'
+
+args = ARGV.dup
+ARGV.clear
+command_str = args.shift.strip rescue 'help'
+
+Yuzu::Command.run(command_str, args)
+

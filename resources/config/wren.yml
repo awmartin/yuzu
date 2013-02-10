@@ -24,7 +24,7 @@ template_dir: _templates
 # The preview folder is used to support local design and development before
 # publishing to a remote server.
 #
-# e.g. wren preview:all
+# e.g. yuzu preview:all
 preview:
   domain: localhost/preview/mysite
   destination: /Users/username/Sites/preview/mysite
@@ -34,7 +34,7 @@ preview:
 # for manual FTP-ing to a web server. This gives you the opportunity to get
 # all the paths right for the server.
 #
-# e.g. wren stage:all
+# e.g. yuzu stage:all
 stage:
   domain: localhost
   destination: /Users/username/Sites
@@ -42,7 +42,7 @@ stage:
 
 # For publishing a site...
 #
-# e.g. wren publish:all
+# e.g. yuzu publish:all
 
 # Which connection to use for publication. This should be set to s3, ftp, or 
 # filesystem.
