@@ -1,21 +1,13 @@
-require 'uploader/service.rb'
+# Require service first.
+require 'uploader/service'
+require 'uploader/suppressor'
 
-core_files = ["base.rb", "service.rb"]
+core_files = ["base.rb", "service.rb", "suppressor.rb"]
 Dir["#{File.dirname(__FILE__)}/*"].each do |service|
   if not core_files.include?(File.basename(service))
     require service
   end
 end
-
-BOLD = "\033[1m"
-PURPLE = "\033[95m"
-BLUE = "\033[94m"
-GREEN = "\033[32m"
-YELLOW = "\033[93m"
-CYAN = "\033[96m"
-RED = "\033[91m"
-WHITE = "\033[37m"
-ENDC = "\033[0m"
 
 
 module Uploader

@@ -6,10 +6,13 @@ module Yuzu::Registrar
   class Register
     # Subclasses should redefine `registry` with a unique identifier equal to the name of the class
     # variable that will contain the singletons.
+    @@registered = {}
     def self.registry
       :registered
     end
-    cattr_reader self.registry
+    def self.registered
+      @@registered
+    end
 
     # Subclasses of the Register should call this method after their definitions to register them 
     # into the registry.

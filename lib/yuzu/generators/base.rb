@@ -7,11 +7,13 @@ module Yuzu::Generators
   # Generators are like filters but they have the ability to produce new files and folders in the
   # website tree.
   class Generator < Filter
-    #@@registry = :generators
+    @@generators = {}
     def self.registry
       :generators
     end
-    cattr_reader :generators
+    def self.generators
+      @@generators
+    end
 
     attr_reader :name, :directive
 

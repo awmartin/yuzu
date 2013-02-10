@@ -34,7 +34,7 @@ module Uploader
     def copy_contents_to_file_system(remote_path, contents, binary=true)
       destination = Path.new(@config.destination) + remote_path.relative
 
-      $stderr.puts "Copying #{YELLOW}#{remote_path}#{ENDC} to the file system\n    --> #{destination}"
+      $stderr.puts "Copying #{GREEN}#{remote_path}#{ENDC} to the file system\n    --> #{destination}"
 
       begin
         f = File.open(destination.absolute, "w+")

@@ -12,10 +12,13 @@ module Yuzu::Filters
   # 2. filter -- transforming contents
   # 3. postfilter -- replacing LINKROOT and CURRENTPATH again
   class Filter < Register
+    @@filters = {}
     def self.registry
       :filters
     end
-    cattr_reader :filters
+    def self.filters
+      @@filters
+    end
 
     attr_reader :name, :directive
 

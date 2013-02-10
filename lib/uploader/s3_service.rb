@@ -1,10 +1,17 @@
-require 'aws/s3'
 require 'uploader/suppressor'
 
 module Uploader
   class S3Service < Service
 
     def connect!
+      begin
+        require 'aws/s3'
+      rescue LoadError
+        $stderr.puts %Q{\nThe Amazon S3 service requires the aws-s3 gem (vers >= 0.6.2), which is 
+not required by default. Run 'gem install aws-s3' to install it.\n\n}
+        raise LoadError
+      end
+
       @bucket_name = @config.bucket
       access_key = ENV[@config.access_key]
       secret_key = ENV[@config.secret_key]

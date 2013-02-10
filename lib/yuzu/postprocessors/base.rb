@@ -3,10 +3,13 @@ module Yuzu::PostProcessors
   include Yuzu::Registrar
 
   class PostProcessor < Register
+    @@postprocessors = {}
     def self.registry
       :postprocessors
     end
-    cattr_reader :postprocessors
+    def self.postprocessors
+      @@postprocessors
+    end
 
     attr_reader :name
 

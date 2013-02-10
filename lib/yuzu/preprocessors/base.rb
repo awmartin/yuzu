@@ -6,10 +6,13 @@ module Yuzu::PreProcessors
   # raw_contents of a website_file. e.g. When contents are inserted from other files, they are done
   # so in a manner to create the illusion that those contents were part of the original file.
   class PreProcessor < Register
+    @@preprocessors = {}
     def self.registry
       :preprocessors
     end
-    cattr_reader :preprocessors
+    def self.preprocessors
+      @@preprocessors
+    end
 
     attr_reader :name
 

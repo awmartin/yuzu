@@ -25,7 +25,7 @@ module Yuzu::Core
     end
 
     def self.processors
-      Filter.filters.merge(Renderer.renderers)
+      tr = Filter.filters.merge(Renderer.renderers)
     end
 
     # Create an accessor method for each filter, renderer, postprocessor.

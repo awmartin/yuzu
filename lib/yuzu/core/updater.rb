@@ -2,6 +2,16 @@ require 'core/visitor'
 require 'helpers/path'
 require 'core/siteroot'
 
+BOLD = "\033[1m"
+PURPLE = "\033[95m"
+BLUE = "\033[94m"
+GREEN = "\033[32m"
+YELLOW = "\033[93m"
+CYAN = "\033[96m"
+RED = "\033[91m"
+WHITE = "\033[37m"
+ENDC = "\033[0m"
+
 
 module Yuzu::Core
   # Updater is the primary mechanism to update a website and filter for the files that need

@@ -4,10 +4,13 @@ module Yuzu::Translators
   include Yuzu::Registrar
 
   class Translator < Register
+    @@translators = {}
     def self.registry
       :translators
     end
-    cattr_reader :translators
+    def self.translators
+      @@translators
+    end
 
     def self.translate(contents, file_extension)
       filetype = identify_filetype(file_extension)
