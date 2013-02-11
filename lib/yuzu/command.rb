@@ -34,7 +34,7 @@ module Yuzu::Command
     if options.output == :verbose
       $stderr.puts "Yuzu completed in #{delta} seconds."
     else
-      $stderr.puts " Done."
+      $stderr.puts
     end
   end
 
