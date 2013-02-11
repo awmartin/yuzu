@@ -44,7 +44,7 @@ module Uploader
     end
 
     def upload_via_ftp(remote_path, file, binary=true)
-      server_path = Path.new(@config.remote_root_path) + remote_path
+      server_path = Path.new(@config.remote_root_path) + remote_path.relative
 
       $stderr.puts "Opening an FTP connection for #{remote_path}"
 
@@ -60,6 +60,7 @@ module Uploader
     end
 
     def attempt_upload!(server_path, file, binary)
+      $stderr.puts "Path on server: #{server_path}"
       if binary
         file.binmode
         @ftp.storbinary("STOR #{server_path}", file, Net::FTP::DEFAULT_BLOCKSIZE)

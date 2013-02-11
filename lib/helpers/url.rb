@@ -56,8 +56,7 @@ module Helpers
     # Join a set of paths together
     def join(prefix, path, suffix=nil)
       root = prefix.nil? ? path.relative : prefix + "/" + path.relative
-      root = suffix.nil? ? root : root + "/" + suffix
-      root.gsub("//", "/")
+      suffix.nil? ? root : root + "/" + suffix
     end
   end
 
