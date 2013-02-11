@@ -10,6 +10,7 @@ end
 require 'rake'
 
 require 'jeweler'
+require './lib/yuzu/version.rb'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "yuzu"
@@ -20,6 +21,7 @@ Jeweler::Tasks.new do |gem|
   gem.email = "william.martin@anomalus.com"
   gem.authors = ["William Martin"]
   gem.executables = ['yuzu']
+  gem.version = Yuzu::Version::STRING
 
   gem.add_dependency 'kramdown', '>= 0.13.7'
   gem.add_dependency 'haml', '>= 3.1.1'
