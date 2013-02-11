@@ -58,7 +58,7 @@ module Yuzu::Command
 
     def self.help method
       case method
-      when :default
+      when :index
         "Watches the current directory for changes and automatically updates the preview of changed files."
       else
 

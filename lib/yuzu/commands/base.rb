@@ -36,7 +36,11 @@ module Yuzu::Command
     end
 
     def uploader_config
-      config_hash = @config.services.merge({:connection => @config.connection})
+      options = {
+        :connection => @config.connection,
+        :verbose? => @config.verbose?
+      }
+      config_hash = @config.services.merge(options)
       Uploader::UploaderConfig.new(config_hash)
     end
 
@@ -88,13 +92,13 @@ module Yuzu::Command
     end
 
     def resources
-      puts `compass compile`
+      $stderr.puts `compass compile`
       updater.upload_all_resources
       updater.done
     end
 
     def css
-      puts `compass compile`
+      $stderr.puts `compass compile`
       updater.upload_all_css
       updater.done
     end

@@ -17,8 +17,21 @@ module Yuzu::Command
 
     def self.help(method)
       case method
-      when :default
-        "Updates files in the preview folder."
+      when :index
+%Q{Updates files in the preview folder.
+
+preview [filenames]               # Update the preview with the files listed.
+preview:all                       # Update all the files in the preview.
+preview:text                      # Only update the processable content files.
+preview:css                       # Regenerates the css files and copies them
+                                    to the preview.
+preview:images                    # Copy all the images into the preview folder.
+preview:resources                 # Copy all the resources, like css and js
+                                    files, into the preview folder.
+preview:assets                    # Copy all images and other assets (like pdfs
+                                    and other downloadables) into the preview 
+                                    folder.
+}
       when :all
         "Updates all files in the preview folder. A fresh start."
       when :changed

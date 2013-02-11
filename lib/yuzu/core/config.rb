@@ -5,17 +5,18 @@ module Yuzu::Core
   class Config
     include Helpers
 
-    attr_reader :config_dict, :service
+    attr_reader :config_hash, :service
 
     #@@keys_and_defaults = {}
 
-    def initialize(config_dict, service_override=nil)
-      @config_dict = config_dict
-      @service = service_override || config_dict['connection']
+    def initialize(config_hash, service_override=nil, parsed_options=[])
+      @config_hash = config_hash
+      @service = service_override || config_hash['connection']
+      @options = parsed_options
 
       # Create a method for every top-level key in the configuration dictionary.
       (class << self; self; end).class_eval do
-        config_dict.each_pair do |key, value|
+        config_hash.each_pair do |key, value|
           instance_variable = "@#{key}".to_sym
 
           define_method key do
@@ -31,6 +32,10 @@ module Yuzu::Core
 
         end
       end
+    end
+
+    def verbose?
+      @options.output == :verbose
     end
 
     def pwd
@@ -73,7 +78,7 @@ module Yuzu::Core
     end
 
     def link_root_for_service(service)
-      @config_dict['services'][service]['link_root'].to_s
+      @config_hash['services'][service]['link_root'].to_s
     end
 
     def link_root
@@ -89,7 +94,7 @@ module Yuzu::Core
     end
 
     def domain_for_service service
-      @config_dict[service]['domain'].to_s
+      @config_hash[service]['domain'].to_s
     end
 
     def possible_indices

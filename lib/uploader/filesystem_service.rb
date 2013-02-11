@@ -36,8 +36,12 @@ module Uploader
 
     def copy_contents_to_file_system(remote_path, contents, binary=true)
       destination = Path.new(@config.destination) + remote_path.relative
-
-      $stderr.puts "Copying #{GREEN}#{remote_path}#{ENDC} to the file system\n    --> #{destination}"
+      if @config.verbose?
+        $stderr.puts %Q{Copying #{GREEN}#{remote_path}#{ENDC} to the file system
+      --> #{destination}} 
+      else
+        $stderr.print "."
+      end
 
       begin
         f = File.open(destination.absolute, "w+")
@@ -55,7 +59,7 @@ module Uploader
       unless f.nil?
         f.syswrite(contents)
         f.close
-        $stderr.puts "Done with #{destination.relative}."
+        $stderr.puts "Done with #{destination.relative}." if @config.verbose?
       end
     end
   end

@@ -9,7 +9,9 @@ require 'yuzu/command'
 
 args = ARGV.dup
 ARGV.clear
-command_str = args.shift.strip rescue 'help'
+
+command_str = args[0].strip rescue 'help'
+command_str = command_str.start_with?("-") ? nil : command_str
 
 Yuzu::Command.run(command_str, args)
 

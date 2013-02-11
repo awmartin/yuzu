@@ -7,6 +7,6 @@ module Yuzu
     BUILD = "build"
   end
 
-  STRING = [Version::MAJOR, Version::MINOR, Version::PATCH].compact.join(".")
+  VERSION_STRING = [Version::MAJOR, Version::MINOR, Version::PATCH].compact.join(".")
 end
 

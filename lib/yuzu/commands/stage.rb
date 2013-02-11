@@ -19,8 +19,17 @@ module Yuzu::Command
 
     def self.help method
       case method
-      when :default
-        "Updates files in the staging folder."
+      when :index
+%Q{Updates files in the staging folder.
+
+Can be used in the following forms:
+
+stage [filenames]
+stage:all
+stage:images
+stage:resources
+stage:assets
+}
       when :all
         "Updates all files in the staging folder. A fresh start."
       when :changed

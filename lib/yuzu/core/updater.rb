@@ -19,18 +19,18 @@ module Yuzu::Core
 
       @siteroot = SiteRoot.new(@config)
 
-      $stderr.puts "Updater initialized..."
+      $stderr.puts "Updater initialized..." if @config.verbose?
     end
 
     def update_all
-      $stderr.puts "Updating all..."
+      $stderr.puts "Updating all..." if @config.verbose?
 
       filter = proc {|c| (c.processable? or c.resource? or c.image? or c.asset?) and not c.hidden?}
       update_by_filter(filter)
     end
 
     def update_text
-      $stderr.puts "Updating text files..."
+      $stderr.puts "Updating text files..." if @config.verbose?
 
       filter = proc {|c| c.processable? and not c.hidden?}
       update_by_filter(filter)
@@ -76,7 +76,7 @@ module Yuzu::Core
     # Update a single WebsiteFile. This effectively initiates the uploader to publish the file to
     # the destination specified by the currently selected service.
     def update_file(website_file)
-      $stderr.puts "#{BOLD}#{WHITE}Updating #{website_file}#{ENDC}#{ENDC}"
+      $stderr.puts "#{BOLD}#{WHITE}Updating #{website_file}#{ENDC}#{ENDC}" if @config.verbose?
 
       if website_file.processable?
         @uploader.upload(website_file.remote_path, website_file.html_contents)
@@ -87,7 +87,7 @@ module Yuzu::Core
         f.close
 
       else
-        $stderr.puts "Can't update #{website_file}."
+        $stderr.puts "Can't update #{website_file}." if @config.verbose?
 
       end
     end

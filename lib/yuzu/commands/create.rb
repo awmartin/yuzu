@@ -70,10 +70,11 @@ est laborum.).gsub("\n", "")
 
     def self.help method
       case method
-      when :default
-        "Create a new website project in the current directory. This creates a new sass project then generates a new configuration file."
+      when :index
+%Q{Create a new website project in the current directory.}
       when :post
-        "Creates a new blog post with the date prepended to the file name. Pass a quoted string, capitalized, for the title of the post."
+%Q{Creates a new blog post with the date prepended to the file name.
+Pass a quoted string, capitalized, for the title of the post.}
       else
       end
     end

@@ -16,7 +16,7 @@ module Uploader
   class UploadManager
 
     def initialize(config, service_override=nil)
-      @config = config
+      @config = config   # UploaderConfig
       @service_override = service_override
       @suppressor = Suppressor.new
 
@@ -26,7 +26,7 @@ module Uploader
 
     def set_service!
       service_name, service_class = get_service
-      service_config_hash = @config.send(service_name)
+      service_config_hash = @config.send(service_name).merge({:verbose? => @config.verbose?})
 
       @service = service_class.new(UploaderConfig.new(service_config_hash))
     end
@@ -35,7 +35,8 @@ module Uploader
       service_key = (@service_override || @config.connection).to_sym
 
       if Service.is_registered?(service_key)
-        $stderr.puts "Using service #{service_key}"
+        $stderr.puts "Using service #{service_key}" if @config.verbose?
+
         return service_key, Service.services[service_key]
       else
         raise UnrecognizedService
@@ -57,3 +58,4 @@ module Uploader
   end
 
 end
+

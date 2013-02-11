@@ -1,6 +1,8 @@
-
 require 'yaml'
+
 require 'commands/base'
+require 'argparse'
+
 require 'helpers/object'
 require 'helpers/string'
 
@@ -18,12 +20,22 @@ module Yuzu::Command
   def self.run(command_str, args)
     start = Time.now
 
+    options = ArgParser.parse(args)
+
+    if command_str.nil?
+      exit
+    end
+
     command_class, method = parse(command_str.downcase)
-    execute(command_class, method, args)
+    execute(command_class, method, args[1, args.length] || [], options)
 
     stop = Time.now
     delta = stop - start
-    $stderr.puts "Yuzu completed in #{delta} seconds."
+    if options.output == :verbose
+      $stderr.puts "Yuzu completed in #{delta} seconds."
+    else
+      $stderr.puts " Done."
+    end
   end
 
   def self.parse(command_str)
@@ -35,10 +47,16 @@ module Yuzu::Command
     raise InvalidCommand
   end
 
-  def self.execute(command_class, method, args)
+  def self.execute(command_class, method, args, parsed_options)
     if command_class.requires_config?
-      config_dict = load_config
-      config = Yuzu::Core::Config.new(config_dict, command_class.service_override)
+      config_hash = load_config
+
+      config = \
+      Yuzu::Core::Config.new(
+        config_hash,
+        command_class.service_override,
+        parsed_options
+      )
 
       command_instance = command_class.new(args, config)
       command_instance.send(method)

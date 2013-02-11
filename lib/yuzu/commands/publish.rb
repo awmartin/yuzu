@@ -6,10 +6,19 @@ module Yuzu::Command
 
     def self.help method
       case method
-      when :default
-        "Updates files on the remote server."
+      when :index
+%Q{Updates files and publishes to the current remote service.
+
+Can be used in the following forms:
+
+publish [filenames]
+publish:all
+publish:images
+publish:resources
+publish:assets
+}
       when :all
-        "Updates all files on remote server. A fresh start."
+        "Publishes all files to the remote server."
       when :changed
       when :resources
       when :images
