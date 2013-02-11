@@ -4,9 +4,9 @@ module Yuzu
     MAJOR = 0
     MINOR = 2
     PATCH = 0
-    BUILD = "build"
-  end
+    BUILD = nil
 
-  VERSION_STRING = [Version::MAJOR, Version::MINOR, Version::PATCH].compact.join(".")
+    STRING = [MAJOR, MINOR, PATCH, BUILD].compact.join(".")
+  end
 end
 

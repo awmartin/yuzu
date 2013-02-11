@@ -45,7 +45,7 @@ Available Commands
         end
 
         opts.on_tail("-v", "--version", "Show version.") do
-          puts Yuzu::VERSION_STRING
+          puts Yuzu::Version::STRING
           exit
         end
       end
