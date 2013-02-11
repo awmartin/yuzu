@@ -72,10 +72,14 @@ est laborum.).gsub("\n", "")
       case method
       when :index
 %Q{Create a new website project in the current directory.}
+
       when :post
 %Q{Creates a new blog post with the date prepended to the file name.
 Pass a quoted string, capitalized, for the title of the post.}
+
       else
+        "No help available for #{method}."
+
       end
     end
   end

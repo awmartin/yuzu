@@ -98,7 +98,12 @@ module Yuzu::Core
     # @param [Array] files_to_update An Array of Strings holding absolute file paths or paths
     #   relative to the project folder.
     def update_these(files_to_update=[])
-      $stderr.puts "Calling Updater#update_these..."
+      if files_to_update.empty?
+        update_text
+        return
+      end
+
+      $stderr.puts "Updating files..." if @config.verbose?
 
       files_to_update.each do |relative_path|
         p = Helpers::Path.new(relative_path)
@@ -106,7 +111,7 @@ module Yuzu::Core
         if not website_file.nil?
           update_file(website_file)
         else
-          $stderr.puts "Couldn't find a WebsiteFile for #{p}"
+          $stderr.puts "Couldn't find a WebsiteFile for #{p}" if @config.verbose?
         end
       end
     end  

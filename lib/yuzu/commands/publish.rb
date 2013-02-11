@@ -11,19 +11,32 @@ module Yuzu::Command
 
 Can be used in the following forms:
 
-publish [filenames]
-publish:all
-publish:images
-publish:resources
-publish:assets
+publish                           # Alias for publish:text below.
+publish [filenames]               # Publish just the files listed to the remote server.
+publish:all                       # Publish and upload all files.
+publish:text                      # Only update the processable content files.
+publish:css                       # Regenerates the css files and publishes them.
+publish:images                    # Upload all the images.
+publish:images [files]            # Upload the images given.
+publish:resources                 # Upload all resources like CSS and Javascript files.
+publish:assets                    # Upload all assets (like PDFs and other downloadables). 
 }
+
       when :all
-        "Publishes all files to the remote server."
-      when :changed
+        "Publishes and uploads all files to the remote server."
+
       when :resources
+        "Publish all resources like CSS and Javascript files."
+
       when :images
+        "Upload all the images or the ones given after the command."
+
       when :assets
+        "Upload all file assets (usually PDF files and other download archives.)"
+
       else
+        "No help available for #{method}."
+
       end
     end
   end

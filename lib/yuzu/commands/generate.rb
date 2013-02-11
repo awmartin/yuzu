@@ -8,6 +8,7 @@ module Yuzu::Command
     def index
     end
 
+    # TODO Resurrect PDF rendering.
     #def pdf
     #  f = File.open(@args.first, "r")
     #  unless f.nil?
@@ -19,7 +20,7 @@ module Yuzu::Command
     #  end
     #end
 
-    # TODO: Put this in its own class and integrate with the rest of the app.
+    # TODO: Put this in its own class, update it, and integrate with the rest of the app.
     def thumbnails
       path = args.first
       web_image_types = [".png", ".jpg", ".gif"]
@@ -56,30 +57,39 @@ module Yuzu::Command
           thumbnail_path = image_path.gsub(ext, "-#{thumbnail_type}#{ext}")
           thumbnail_size = @config.thumbnails[thumbnail_type]
 
-          puts `cp #{image_path} #{thumbnail_path}; sips --resampleWidth #{thumbnail_size} #{thumbnail_path}`
+          $stderr.puts `cp #{image_path} #{thumbnail_path}; sips --resampleWidth #{thumbnail_size} #{thumbnail_path}`
         end
       end
     end
 
     def config
-      if not File.exists?("yuzu.yml")
-        FileUtils.copy( "#{File.dirname(__FILE__)}/../templates/yuzu.yml", "#{Dir.pwd}/config/yuzu.yml")
-        puts "Copied a sample config file into the current folder. Update it with your remote server information."
+      if not File.exists?("yuzu.yml") and not File.exists?("config/yuzu.yml")
+        # TODO Update to use Path objects.
+        FileUtils.copy(
+          "#{File.dirname(__FILE__)}/../templates/yuzu.yml",
+          "#{Dir.pwd}/config/yuzu.yml"
+        )
+
+        $stderr.puts %Q{Copied a sample config file into the current folder. \
+Update it with your remote server information.}
+
       else
-        puts "Config file yuzu.yml already exists. Rename or erase it to generate a new one."
+        $stderr.puts %Q{Config file yuzu.yml already exists. Please rename or \
+erase it to generate a new one.}
       end
     end
 
     def self.help method
       case method
-      when :default
-        ""
       when :thumbnails
-        "Generates small, medium, and large thumbnail images from a given path. Uses Mac 'sips' command-line tool."
+        %Q{Generates small, medium, and large thumbnail images from a given path.
+Uses the Mac 'sips' command-line tool.}
+
       else
-        ""
+        "No help available for #{method}."
+
       end
     end
-    
+
   end
 end
