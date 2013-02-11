@@ -3,6 +3,9 @@ require 'uploader/service'
 
 
 module Uploader
+  GREEN = "\033[32m"
+  ENDC = "\033[0m"
+
   class FileSystemService < Service
     def connect!
     end
