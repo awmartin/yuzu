@@ -17,7 +17,7 @@ Jeweler::Tasks.new do |gem|
   gem.homepage = "http://github.com/awmartin/yuzu"
   gem.license = "MIT"
   gem.summary = %Q{A blog-aware, static-website generator that converts a folder of text files and images into an HTML5 website.}
-  gem.description = %Q{Yuzu is a blog-aware, static-website (and PDF generator) that converts a folder of text files and images into multiple forms and publishes them to an FTP server, file system, or Amazon Simple Storage Service (S3). It is extensible and designed to function with minimal setup.}
+  gem.description = %Q{Yuzu is a blog-aware, static-website (and PDF) generator that converts a folder of text files and images into multiple forms and publishes them to an FTP server, file system, or Amazon Simple Storage Service (S3). It is extensible and designed to function with minimal setup.}
   gem.email = "william.martin@anomalus.com"
   gem.authors = ["William Martin"]
   gem.executables = ['yuzu']
