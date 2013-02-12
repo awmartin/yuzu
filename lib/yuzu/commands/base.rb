@@ -41,7 +41,7 @@ module Yuzu::Command
         :verbose? => @config.verbose?
       }
       config_hash = @config.services.merge(options)
-      Uploader::UploaderConfig.new(config_hash)
+      UploaderConfig.new(config_hash)
     end
 
     # This method enables a command to override the configuration's selected publication service.

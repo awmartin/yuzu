@@ -1,0 +1,133 @@
+/* line 3, ../_sass/screen.sass */
+.wrapper {
+  width: 910px;
+  padding: 60px;
+}
+
+/* line 6, ../_sass/screen.sass */
+.contents {
+  width: 700px;
+  float: left;
+  min-height: 600px;
+}
+
+/* line 10, ../_sass/screen.sass */
+.sidebar {
+  width: 200px;
+  margin: 50px 0 0 10px;
+  float: left;
+}
+
+/* line 14, ../_sass/screen.sass */
+footer {
+  padding: 40px 0 0 0;
+  width: 910px;
+  clear: both;
+}
+
+/* line 20, ../_sass/screen.sass */
+.breadcrumb {
+  float: left;
+}
+/* line 22, ../_sass/screen.sass */
+.breadcrumb a {
+  color: #cccccc;
+}
+/* line 24, ../_sass/screen.sass */
+.breadcrumb .breadcrumb_0 {
+  display: none;
+}
+
+/* line 26, ../_sass/screen.sass */
+header {
+  overflow: hidden;
+}
+/* line 28, ../_sass/screen.sass */
+header h1 {
+  float: left;
+}
+
+/* line 32, ../_sass/screen.sass */
+html, body {
+  background-color: white;
+  font-family: Georgia, serif;
+  color: #333333;
+  font-size: 19px;
+  line-height: 30px;
+}
+
+/* line 38, ../_sass/screen.sass */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 100%;
+  margin: 0 0 1em 0;
+  font-weight: bold;
+}
+
+/* line 43, ../_sass/screen.sass */
+a {
+  color: black;
+}
+
+/* line 45, ../_sass/screen.sass */
+a:hover {
+  text-decoration: none;
+}
+
+/* line 47, ../_sass/screen.sass */
+p, ul, ol {
+  margin: 0 0 1em 0;
+  padding: 0;
+}
+
+/* line 51, ../_sass/screen.sass */
+.sidebar ul, .sidebar li {
+  list-style-type: none;
+}
+/* line 53, ../_sass/screen.sass */
+.sidebar li {
+  margin: 0;
+}
+
+/* line 55, ../_sass/screen.sass */
+footer, .date, .sidebar p, .sidebar li, .aside {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #bbbbbb;
+  line-height: 22px;
+}
+
+/* line 61, ../_sass/screen.sass */
+.sidebar h1, .sidebar h2, .sidebar h3, .sidebar h4, .sidebar h5, .sidebar h6 {
+  font-size: 14px;
+  line-height: 22px;
+}
+
+/* line 64, ../_sass/screen.sass */
+.date {
+  line-height: 30px;
+}
+
+/* line 66, ../_sass/screen.sass */
+.breadcrumb {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: normal;
+}
+
+/* line 69, ../_sass/screen.sass */
+.date {
+  float: left;
+  width: 130px;
+}
+
+/* line 72, ../_sass/screen.sass */
+blockquote {
+  padding-left: 20px;
+  color: #999999;
+  font-style: italic;
+}
+
+/* line 79, ../_sass/screen.sass */
+hr {
+  display: none;
+}

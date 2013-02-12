@@ -1,0 +1,7 @@
+# Sample Projects Registry
+
+default:
+    content: introduction
+    theme: minimal
+    description: A getting-started project to get to know Yuzu.
+

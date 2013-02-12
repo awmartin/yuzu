@@ -1,29 +1,21 @@
+require 'content/sample_project'
 
 module Yuzu::Command
 
   # Create produces a new content such as a new yuzu website project or new blog post.
   class Create < ConfiglessCommand
+    include Yuzu::Content
+
     def initialize(args)
       @args = args
     end
 
     def index
-      $stderr.puts "Creating a new yuzu project in this directory."
+      $stderr.puts "Creating a new Yuzu project in this directory."
 
-      # The directory the user is running yuzu in.
-      destination_dir = Dir.pwd
-      resources_dir = File.join(File.dirname(__FILE__), "..", "..", "..", "resources")
-
-      ["_templates", "js", "css", "img", "_sass", "config"].each do |source_dir|
-        $stderr.puts "Copying #{source_dir}..."
-        all_sources = File.join(resources_dir, source_dir)
-        FileUtils.cp_r(all_sources, destination_dir)
-      end
-
-      $stderr.puts "Copying sample content..."
-      ["samples"].each do |folder|
-        rel_path = File.join(resources_dir, folder, "*")
-        FileUtils.cp_r(Dir[rel_path], destination_dir)
+      sample_project_name = @args.length > 0 ? @args[0] : "default"
+      if SampleProject.exists?(sample_project_name)
+        SampleProject.new(sample_project_name).deliver!
       end
 
       $stderr.puts "Remember to edit yuzu.yml to set your site settings, preview path, and remote host."

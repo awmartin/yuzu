@@ -1,0 +1,3 @@
+This piece text was placed in the folder called `_snippets`, which by itself is not special, other than that the preceding undescore hides the file from Yuzu's normal processing. You can hide folders and files in this manner so Yuzu doesn't a separate HTML file for it.
+
+This is used to demonstrate how Yuzu can mix content from various sources. If you want to organize content one way and publish it under a different organization, you can reference content from the root of your project and use the `INSERTCONTENTS` directive.

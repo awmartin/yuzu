@@ -1,5 +1,6 @@
 Yuzu is a blog-aware, static-website generator and publisher that builds an HTML5 website from a folder of text files and images.
 
+For an example of a site rendered with Yuzu, see [Spatial Pixel](http://spatialpixel.com).
 
 ## Current Features
 

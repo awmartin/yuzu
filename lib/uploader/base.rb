@@ -1,12 +1,10 @@
-# Require service first.
+# Require service.rb first.
 require 'uploader/service'
 require 'uploader/suppressor'
+require 'uploader/config'
 
-core_files = ["base.rb", "service.rb", "suppressor.rb"]
 Dir["#{File.dirname(__FILE__)}/*"].each do |service|
-  if not core_files.include?(File.basename(service))
-    require service
-  end
+  require service if service.include?("_service")
 end
 
 
