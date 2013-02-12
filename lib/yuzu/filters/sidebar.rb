@@ -8,7 +8,7 @@ module Yuzu::Filters
     end
 
     def regex
-      /SIDEBAR\{([\w\s\n\*\#\%\.\,\"\'\/\-\[\]\:\)\(<>_=]*)\}/
+      /SIDEBAR\s*\{([\w\W]*?)\}/
     end
 
     def default(website_file=nil)
