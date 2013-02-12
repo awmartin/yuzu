@@ -99,7 +99,7 @@ module Yuzu::Core
     #   relative to the project folder.
     def update_these(files_to_update=[])
       if files_to_update.empty?
-        update_text
+        update_all
         return
       end
 

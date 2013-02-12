@@ -73,6 +73,7 @@ module Yuzu::Command
   end
 
 
+  # The base class for all commands regarding publishing contents, e.g. preview, stage, publish.
   class PublicationCommand < Base
     include Uploader
 

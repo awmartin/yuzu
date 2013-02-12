@@ -7,15 +7,9 @@
       %article.contents
         %header
           %h1= post.post_title
-          .breadcrumb= post.breadcrumb
-          
         = post.contents
         = post.pagination
       .sidebar
-        %h4 Categories
-        %ul
-          - post.all_categories.each do |cat|
-            %li= cat.link
         = post.sidebar
       %footer
         = layout.footer

@@ -1,22 +1,26 @@
 !!! 5
 %html
-  = head
+  = layout.head
 
   %body.generic
-    = menu
-    
-    .container
-      %header.header
-        = header
-      
-      %article.content{:role => 'main'}
+    .wrapper
+      %article.contents
         %header
-          
-        .content-body
-          = contents
+          %h1= post.post_title
+          .breadcrumb= post.breadcrumb
+
+        = post.contents
+
+      .sidebar
+        = layout.menu
+
+        %h4 Categories
+        %ul
+          - post.all_categories.each do |cat|
+            %li= cat.link
         
-        %footer
-      
-      
-      %footer.footer
-        = footer
+        = post.sidebar
+
+      %footer
+        = layout.footer
+

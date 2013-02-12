@@ -11,7 +11,7 @@ module Yuzu::Command
 
 Can be used in the following forms:
 
-publish                           # Alias for publish:text below.
+publish                           # Alias for publish:all below.
 publish [filenames]               # Publish just the files listed to the remote server.
 publish:all                       # Publish and upload all files.
 publish:text                      # Only update the processable content files.

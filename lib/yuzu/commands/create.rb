@@ -8,27 +8,25 @@ module Yuzu::Command
     end
 
     def index
-      puts "Creating a new yuzu project in this directory."
-
-      #['_templates', 'js', 'css', 'blog', 'img'].each do |folder|
-      #  FileUtils.mkdir(folder)
-      #end
+      $stderr.puts "Creating a new yuzu project in this directory."
 
       # The directory the user is running yuzu in.
       destination_dir = Dir.pwd
+      resources_dir = File.join(File.dirname(__FILE__), "..", "..", "..", "resources")
 
-      ["_templates", "js", "css", "img", "_sass"].each do |source_dir|
-        all_sources = File.join(File.dirname(__FILE__), "..", "..", "..", "resources", source_dir)
+      ["_templates", "js", "css", "img", "_sass", "config"].each do |source_dir|
+        $stderr.puts "Copying #{source_dir}..."
+        all_sources = File.join(resources_dir, source_dir)
         FileUtils.cp_r(all_sources, destination_dir)
       end
 
-      ["config", "samples"].each do |folder|
-        rel_path = File.join(File.dirname(__FILE__), "..", "..", "..", "resources", folder, "*")
-        FileUtils.cp_r(Dir[rel_path], File.join(destination_dir, "config"))
+      $stderr.puts "Copying sample content..."
+      ["samples"].each do |folder|
+        rel_path = File.join(resources_dir, folder, "*")
+        FileUtils.cp_r(Dir[rel_path], destination_dir)
       end
 
-      puts
-      puts "Remember to edit yuzu.yml to set your site settings, preview path, and remote host."
+      $stderr.puts "Remember to edit yuzu.yml to set your site settings, preview path, and remote host."
     end
 
     # args[1] is a string that contains the blog title

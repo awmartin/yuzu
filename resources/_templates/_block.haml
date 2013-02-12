@@ -1,8 +1,4 @@
-%li{:class => klass}
-  %a.thumbnail{:href => "#"}
-    %img{:src => "http://placehold.it/360x268"}
-    .caption
-      %h3= post_title
-      %p= first_paragraph
-      %p
-        %a.btn{:href => link_url} Read
+%div{:class => klass}
+  %a{:href => post.link_url}= post.post_title
+  %span(class="location")= post.in_blog? ? post.blog_folder.link_to_self(:class => 'aside') : ""
+  %span(class="date")= format_date(post.post_date)

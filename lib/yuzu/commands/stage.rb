@@ -24,7 +24,7 @@ module Yuzu::Command
 
 Can be used in the following forms:
 
-stage                           # Alias for stage:text below.
+stage                           # Alias for stage:all below.
 stage [filenames]               # Update the local staging folder with the files listed.
 stage:all                       # Update all the files in the staging folder.
 stage:text                      # Only update the processable content files.

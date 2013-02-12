@@ -20,7 +20,7 @@ module Yuzu::Command
       when :index
 %Q{Updates files in the preview folder.
 
-preview                           # Alias for preview:text below.
+preview                           # Alias for preview:all below.
 preview [filenames]               # Update the preview with the files listed.
 preview:all                       # Update all the files in the preview.
 preview:text                      # Only update the processable content files.

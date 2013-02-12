@@ -1,6 +1,6 @@
-# New Site
+TEMPLATE(home.haml)
 
-Yuzu is a website generator and publisher that starts with a text-based file system (txt, textile, haml, sass) and publishes it in HTML and CSS on an FTP server, file system, or S3. 
+# Yuzu Starter Site
 
-The idea is to build a library of text-based content that you can remix and publish in various forms (regular HTML, as a slideshow, in a PDF, etc.) but without having to install resource-intensive publishing systems like Wordpress or Rails.
+    INSERTCATALOG(path:., total:100, per_page:10, per_col:1, template:_block.haml)
 

@@ -9,7 +9,7 @@
   min-height: 600px
 .sidebar
   width: 200px
-  margin: 0 0 0 10px
+  margin: 50px 0 0 10px
   float: left
 footer
   padding: 40px 0 0 0
@@ -21,6 +21,8 @@ footer
   float: left
   a
     color: #ccc
+  .breadcrumb_0
+    display: none
 header
   overflow: hidden
   h1
@@ -50,11 +52,15 @@ p, ul, ol
     list-style-type: none
   li
     margin: 0
-footer, .date, .sidebar p, .sidebar li
+footer, .date, .sidebar p, .sidebar li, .aside
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
   font-size: 14px
   color: #bbb
   line-height: 22px
+.sidebar
+  h1, h2, h3, h4, h5, h6
+    font-size: 14px
+    line-height: 22px
 .date
   line-height: 30px
 .breadcrumb

@@ -243,7 +243,7 @@ module Yuzu::Core
   # to a Haml template or other user-facing mechanism. e.g. This makes "breadcrumb" available in
   # Haml templates and layouts by using post.breadcrumb.
   class FileProperties
-    # instance_methods == public instance methods
+    # instance.methods == public instance methods
     def initialize(website_file)
 
       @website_file = website_file
@@ -256,9 +256,11 @@ module Yuzu::Core
           define_method(method_name) do
             website_file.send(method_name)
           end
+
         end
-      end
-    end
+      end # class_eval
+
+    end # initialize
 
     def to_s
       "Properties(#{@website_file.path.relative})"

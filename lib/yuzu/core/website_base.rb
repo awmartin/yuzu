@@ -100,8 +100,8 @@ module Yuzu::Core
       @parent.config
     end
 
-    def link_to_self
-      @link_to_self ||= Html::Link.new(:href => link_url) << name
+    def link_to_self(attr={})
+      Html::Link.new({:href => link_url}.merge(attr)) << name
     end
 
     def link_url

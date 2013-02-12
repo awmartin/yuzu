@@ -12,7 +12,6 @@ Yuzu is a blog-aware, static-website generator and publisher that builds an HTML
 * Uses Compass and Less for SASS (or SCSS) to CSS.
 * A blog folder for more blog-like content, supporting categories, recent posts, RSS feeds.
 * Automatic index.html file generation for folders.
-* Watcher script for efficient workflow.
 * On Mac: image thumbnail generation.
 
 
@@ -23,6 +22,7 @@ Yuzu is a blog-aware, static-website generator and publisher that builds an HTML
 * Integration with website tools like Bootstrap and HTML5 Boilerplate
 * git hooks for version control and publication management
 * Site themes for quick website creation
+* Watcher script for efficient workflow.
 
 Yuzu supports many features of CMS systems but without having to install resource-intensive publishing software like Wordpress, Drupal, Mephisto, Typo, or Expression Engine, but yuzu is best for small sites that need fast deployment.
 
@@ -34,9 +34,9 @@ Yuzu first came about from the need to publish lecture material for online cours
 1. Edit your Markdown content files
 2. Open a terminal
 3. `cd ~/Documents/yuzu-projects/project-folder`
-4. `yuzu preview:all`
+4. `yuzu preview`
 5. View in a web browser: `http://localhost/~username/project-folder`
-6. Publish to the web: `yuzu publish:all`
+6. Publish to the web: `yuzu publish`
 
 
 ## Contributing to yuzu
