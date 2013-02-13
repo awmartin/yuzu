@@ -15,6 +15,12 @@ Using yuzu requires some familiarity with using a terminal application. On a Mac
 
     yuzu create
 
+5. Render the site
+
+    yuzu preview
+
+This last step renders the site and copies it to the default location, which in this case would be `~/Sites/my-yuzu-project`. To change this location, edit `config/yuzu.yml`.
+
 
 ## Edit yuzu.yml
 

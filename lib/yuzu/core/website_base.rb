@@ -109,7 +109,7 @@ module Yuzu::Core
     end
 
     def get_link_url
-      folder? ? currentpath.full : (currentpath + output_filename).full
+      folder? ? (currentpath + "index.html") : (currentpath + output_filename).full
     end
 
     def remote_path

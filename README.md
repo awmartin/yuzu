@@ -2,6 +2,18 @@ Yuzu is a blog-aware, static-website generator and publisher that builds an HTML
 
 For an example of a site rendered with Yuzu, see [Spatial Pixel](http://spatialpixel.com).
 
+
+## Quick Start (Mac)
+
+1. `mkdir ~/Documents/yuzu-project`
+2. `cd ~/Documents/yuzu-project`
+3. `yuzu create`
+4. `yuzu preview`
+5. Go go file:///Users/username/Sites/yuzu-project/index.html
+
+For Linux, change `/Users` to `/home`
+
+
 ## Current Features
 
 * Website generation from a folder of text files (Markdown, plain text, HAML, and more) with minimal additional configuration.
@@ -11,8 +23,8 @@ For an example of a site rendered with Yuzu, see [Spatial Pixel](http://spatialp
 * Catalogs: A list of files can be gathered, rendered, and paginated on any page.
 * Widget-like components like photo galleries and breadcrumbs.
 * Uses Compass and Less for SASS (or SCSS) to CSS.
-* A blog folder for more blog-like content, supporting categories, recent posts, RSS feeds.
-* Automatic index.html file generation for folders.
+* A blog folder for periodical content, supporting categories, recent posts, RSS feeds.
+* Automatic index.html file generation for folders containing a rendered catalog of the folder's contents.
 * On Mac: image thumbnail generation.
 
 
@@ -32,11 +44,11 @@ Yuzu first came about from the need to publish lecture material for online cours
 
 ## Sample Workflow (Mac)
 
-1. Edit your Markdown content files
+1. Edit your Markdown content files in your favorite text editor
 2. Open a terminal
-3. `cd ~/Documents/yuzu-projects/project-folder`
+3. `cd ~/Documents/yuzu-project`
 4. `yuzu preview`
-5. View in a web browser: `http://localhost/~username/project-folder`
+5. View in a web browser (with Web Sharing enabled): `http://localhost/~username/project-folder`
 6. Publish to the web: `yuzu publish`
 
 

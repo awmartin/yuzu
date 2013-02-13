@@ -129,5 +129,12 @@ blockquote {
 
 /* line 79, ../_sass/screen.sass */
 hr {
-  display: none;
+  clear: both;
+  height: 0px;
+  outline: none;
+  border-top: 1px solid lightgray;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  margin: 1em 0;
 }

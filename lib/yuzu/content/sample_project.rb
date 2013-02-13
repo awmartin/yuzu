@@ -83,6 +83,7 @@ module Yuzu::Content
 
         config_contents.gsub!("HOME", user_home_folder)
         config_contents.gsub!("USERNAME", username)
+        config_contents.gsub!("PROJECTFOLDER", SampleProject.project_folder_name)
 
         File.open(destination_config, "w") do |config|
           config.puts(config_contents)
@@ -120,6 +121,10 @@ module Yuzu::Content
 
     def self.destination_folder
       Dir.pwd
+    end
+
+    def self.project_folder_name
+      File.basename(destination_folder)
     end
 
     def self.exists?(sample_project_name)

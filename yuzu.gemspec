@@ -5,13 +5,13 @@
 
 Gem::Specification.new do |s|
   s.name = %q{yuzu}
-  s.version = "0.2.0"
+  s.version = "0.2.1.pre"
 
-  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
+  s.required_rubygems_version = Gem::Requirement.new("> 1.3.1") if s.respond_to? :required_rubygems_version=
   s.authors = ["William Martin"]
-  s.date = %q{2013-02-10}
+  s.date = %q{2013-02-12}
   s.default_executable = %q{yuzu}
-  s.description = %q{Yuzu is a blog-aware, static-website (and PDF generator) that converts a folder of text files and images into multiple forms and publishes them to an FTP server, file system, or Amazon Simple Storage Service (S3). It is extensible and designed to function with minimal setup.}
+  s.description = %q{Yuzu is a blog-aware, static-website (and PDF) generator that converts a folder of text files and images into multiple forms and publishes them to an FTP server, file system, or Amazon Simple Storage Service (S3). It is extensible and designed to function with minimal setup.}
   s.email = %q{william.martin@anomalus.com}
   s.executables = ["yuzu"]
   s.extra_rdoc_files = [
@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
     "lib/helpers/object.rb",
     "lib/helpers/path.rb",
     "lib/helpers/string.rb",
+    "lib/helpers/system_checks.rb",
     "lib/helpers/url.rb",
     "lib/html/base.rb",
     "lib/uploader/base.rb",
@@ -55,6 +56,8 @@ Gem::Specification.new do |s|
     "lib/yuzu/commands/publish.rb",
     "lib/yuzu/commands/stage.rb",
     "lib/yuzu/commands/watch.rb",
+    "lib/yuzu/content/blog_post.rb",
+    "lib/yuzu/content/sample_project.rb",
     "lib/yuzu/core/config.rb",
     "lib/yuzu/core/layout.rb",
     "lib/yuzu/core/paginated_file.rb",
@@ -101,27 +104,37 @@ Gem::Specification.new do |s|
     "lib/yuzu/translators/markdown.rb",
     "lib/yuzu/translators/plaintext.rb",
     "lib/yuzu/version.rb",
-    "resources/_sass/print.sass",
-    "resources/_sass/screen.sass",
-    "resources/_templates/_block.haml",
-    "resources/_templates/_footer.haml",
-    "resources/_templates/_gallery.haml",
-    "resources/_templates/_head.haml",
-    "resources/_templates/_header.haml",
-    "resources/_templates/_menu.haml",
-    "resources/_templates/generic.haml",
-    "resources/_templates/index.haml",
     "resources/config/compass.rb",
     "resources/config/yuzu.yml",
     "resources/git/post-commit",
-    "resources/js/accordion.js",
-    "resources/js/gallery.js",
-    "resources/js/slideshow.js",
-    "resources/samples/about.md",
-    "resources/samples/index.md",
+    "resources/sample_content/introduction/_snippets/about_insert_contents.md",
+    "resources/sample_content/introduction/about.md",
+    "resources/sample_content/introduction/advanced-posts.md",
+    "resources/sample_content/introduction/blog/blog-folder-is-special.md",
+    "resources/sample_content/introduction/getting-started.md",
+    "resources/sample_content/introduction/index.md",
+    "resources/sample_content/introduction/sample-post.md",
+    "resources/sample_projects.yml",
+    "resources/themes/minimal/_sass/print.sass",
+    "resources/themes/minimal/_sass/screen.sass",
+    "resources/themes/minimal/_templates/_block.haml",
+    "resources/themes/minimal/_templates/_blog.haml",
+    "resources/themes/minimal/_templates/_footer.haml",
+    "resources/themes/minimal/_templates/_gallery.haml",
+    "resources/themes/minimal/_templates/_head.haml",
+    "resources/themes/minimal/_templates/_header.haml",
+    "resources/themes/minimal/_templates/_menu.haml",
+    "resources/themes/minimal/_templates/blog.haml",
+    "resources/themes/minimal/_templates/generic.haml",
+    "resources/themes/minimal/_templates/home.haml",
+    "resources/themes/minimal/_templates/index.haml",
+    "resources/themes/minimal/css/print.css",
+    "resources/themes/minimal/css/screen.css",
+    "resources/themes/minimal/img/favicon.png",
     "resources/yard/default/fulldoc/html/css/common.css",
     "test/helper.rb",
-    "test/test_yuzu.rb"
+    "test/test_yuzu.rb",
+    "yuzu.gemspec"
   ]
   s.homepage = %q{http://github.com/awmartin/yuzu}
   s.licenses = ["MIT"]

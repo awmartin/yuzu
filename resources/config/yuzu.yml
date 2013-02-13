@@ -43,8 +43,10 @@ services:
   #
   # e.g. yuzu preview:all
   preview:
-    destination: HOME/Sites/yuzu-preview
-    link_root: file://HOME/Sites/yuzu-preview
+    # The folder into which the rendered site will be copied.
+    destination: HOME/Sites/PROJECTFOLDER
+    # The value LINKROOT and linkroot become in content and HAML templates, respectively.
+    link_root: file://HOME/Sites/PROJECTFOLDER
 
   # The stage is used to produce a copy of the actual site on the file system
   # for manual FTP-ing to a web server. This gives you the opportunity to get

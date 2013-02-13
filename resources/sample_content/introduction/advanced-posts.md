@@ -6,7 +6,11 @@ Notice how the post is dated February 11, 2013. This is set by using the `DATE` 
 
 Here we will insert some contents from a different file:
 
+---
+
     INSERTCONTENTS(_snippets/about_insert_contents.md)
+
+---
 
 If you look at the source, the directive is indented. I only do this because Markdown highlighters treat underscores as markup to italicize text. Indenting treats it as code with no markup applied.
 

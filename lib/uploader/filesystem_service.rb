@@ -37,6 +37,7 @@ module Uploader
 
     def copy_contents_to_file_system(remote_path, contents, binary=true)
       destination = Path.new(@config.destination) + remote_path.relative
+
       if @config.verbose?
         $stderr.puts %Q{Copying #{GREEN}#{remote_path}#{ENDC} to the file system
       --> #{destination}} 
@@ -48,8 +49,8 @@ module Uploader
         f = File.open(destination.absolute, "w+")
 
       rescue => detail
-        $stderr.puts detail.message
-        $stderr.puts "Attempting to create the path."
+        $stderr.puts detail.message if @config.verbose?
+        $stderr.puts "Attempting to create the path." if @config.verbose?
 
         # Assume the directories leading to the file don't exist. Create them.
         FileUtils::mkdir_p(destination.dirname)

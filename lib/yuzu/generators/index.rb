@@ -69,7 +69,11 @@ module Yuzu::Generators
 
     def get_raw_contents
       # Only becomes @raw_contents if it is still nil when raw_contents is first called.
-      Yuzu::Generators.default_index_template(@path.dirname)
+      if @parent.is_blog?
+        Yuzu::Generators.default_blog_index_template(@parent.path.relative)
+      else
+        Yuzu::Generators.default_index_template(@parent.path.relative)
+      end
     end
 
     def created_at
@@ -96,6 +100,13 @@ module Yuzu::Generators
 INSERTCATALOG(path:#{relative_contents_path}, page:1, per_page:10, per_col:1, template:_block.haml)"
   end
   module_function :default_index_template
+
+  def default_blog_index_template(relative_contents_path)
+      "TEMPLATE(blog.haml)
+
+INSERTCATALOG(path:#{relative_contents_path}, page:1, per_page:10, per_col:1, template:_blog.haml)"
+  end
+  module_function :default_blog_index_template
 
   def category_index_template(relative_contents_path, category_name)
       "TEMPLATE(blog.haml)
