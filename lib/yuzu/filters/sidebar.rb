@@ -1,3 +1,4 @@
+require 'filters/base'
 require 'translators/base'
 
 module Yuzu::Filters

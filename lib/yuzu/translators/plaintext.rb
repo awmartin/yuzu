@@ -1,3 +1,4 @@
+require 'translators/base'
 
 module Yuzu::Translators
 

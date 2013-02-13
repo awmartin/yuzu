@@ -1,3 +1,4 @@
+require 'renderers/base'
 require 'html/base'
 
 module Yuzu::Renderers

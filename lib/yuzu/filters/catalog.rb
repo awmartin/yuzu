@@ -1,3 +1,4 @@
+require 'filters/base'
 require 'core/template'
 require 'helpers/path'
 require 'html/base'

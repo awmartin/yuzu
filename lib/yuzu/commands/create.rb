@@ -11,13 +11,31 @@ module Yuzu::Command
     end
 
     def index
-      $stderr.puts "Creating a new Yuzu project in this directory."
 
+      sample_project = nil
       sample_project_name = @args.length > 0 ? @args[0] : "default"
+
+      $stderr.puts "Creating a new Yuzu '#{sample_project_name}' project in this directory..."
+
       if SampleProject.exists?(sample_project_name)
-        SampleProject.new(sample_project_name).deliver!
+        sample_project = SampleProject.new(sample_project_name)
+        sample_project.deliver!
+      else
+        raise RuntimeError, "Sample project called #{sample_project_name} was not found."
       end
 
+      $stderr.puts "Done!"
+      $stderr.puts
+      $stderr.puts "Now try:"
+      $stderr.puts
+      $stderr.puts "   yuzu preview"
+      $stderr.puts
+
+      preview_url = sample_project.new_config['services']['preview']['link_root'] + '/index.html'
+      $stderr.puts "And point your web browser to #{preview_url}"
+
+      $stderr.puts "to see your new Yuzu site."
+      $stderr.puts
       $stderr.puts "Remember to edit yuzu.yml to set your site settings, preview path, and remote host."
     end
 

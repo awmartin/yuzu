@@ -1,3 +1,4 @@
+require 'filters/base'
 require 'helpers/url'
 
 module Yuzu::Filters

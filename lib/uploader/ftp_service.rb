@@ -1,3 +1,5 @@
+require 'uploader/base'
+require 'uploader/service'
 require 'net/ftp'
 require 'stringio'
 

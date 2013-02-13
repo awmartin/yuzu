@@ -1,3 +1,5 @@
+require 'postprocessors/base'
+require 'core/visitor'
 
 module Yuzu::PostProcessors
 

@@ -1,3 +1,4 @@
+require 'generators/base'
 require 'generators/index'
 require 'helpers/path'
 

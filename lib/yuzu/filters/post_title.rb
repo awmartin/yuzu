@@ -1,3 +1,4 @@
+require 'filters/base'
 
 module Yuzu::Filters
   class PostTitleFilter < Filter

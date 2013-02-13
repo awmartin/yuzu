@@ -1,12 +1,15 @@
+require 'helpers/system_checks'
+require 'uploader/base'
+require 'uploader/service'
 require 'uploader/suppressor'
 
 module Uploader
   class S3Service < Service
 
     def connect!
-      begin
-        require 'aws/s3'
-      rescue LoadError
+      # TODO S3 may not work yet.
+
+      if not SystemChecks.gem_available?('aws/s3')
         $stderr.puts %Q{\nThe Amazon S3 service requires the aws-s3 gem (vers >= 0.6.2), which is 
 not required by default. Run 'gem install aws-s3' to install it.\n\n}
         raise LoadError

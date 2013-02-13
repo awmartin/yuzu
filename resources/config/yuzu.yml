@@ -43,9 +43,8 @@ services:
   #
   # e.g. yuzu preview:all
   preview:
-    domain: localhost/min
-    destination: /Users/awmartin/Sites/yuzu-preview
-    link_root: /~awmartin/yuzu-preview
+    destination: HOME/Sites/yuzu-preview
+    link_root: file://HOME/Sites/yuzu-preview
 
   # The stage is used to produce a copy of the actual site on the file system
   # for manual FTP-ing to a web server. This gives you the opportunity to get
@@ -53,15 +52,13 @@ services:
   #
   # e.g. yuzu stage:all
   stage:
-    domain: localhost
-    destination: /Users/awmartin/Sites/yuzu-staging
-    link_root: /~awmartin/yuzu-staging
+    destination: HOME/Sites/yuzu-staging
+    link_root: /~USERNAME/yuzu-staging
   
   # All the file system needs is the absolute path of the destination parent folder.
   filesystem:
-    domain: localhost/preview/mysite
-    destination: /Users/awmartin/Sites/yuzu-published
-    link_root: /~awmartin/yuzu-published
+    destination: HOME/Sites/yuzu-published
+    link_root: file://HOME/Sites/yuzu-published
 
   # For FTP service to a web server or file server.
   ftp:

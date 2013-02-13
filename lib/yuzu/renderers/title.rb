@@ -1,3 +1,4 @@
+require 'renderers/base'
 
 module Yuzu
 

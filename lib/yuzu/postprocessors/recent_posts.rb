@@ -1,3 +1,4 @@
+require 'postprocessors/base'
 
 module Yuzu::PostProcessors
 

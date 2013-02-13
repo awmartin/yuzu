@@ -93,13 +93,13 @@ module Yuzu::Command
     end
 
     def resources
-      $stderr.puts `compass compile`
+      $stderr.puts `compass compile` if @config.has_compass?
       updater.upload_all_resources
       updater.done
     end
 
     def css
-      $stderr.puts `compass compile`
+      $stderr.puts `compass compile` if @config.has_compass?
       updater.upload_all_css
       updater.done
     end

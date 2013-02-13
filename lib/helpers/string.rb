@@ -18,6 +18,10 @@ unless String.method_defined?(:titlecase)
       self.gsub(" ", "-").gsub("_", "-")
     end
 
+    def underline
+      self.gsub(/\W/, "_")
+    end
+
     def includes_one_of?(arr)
       tr = false
       arr.each do |el|

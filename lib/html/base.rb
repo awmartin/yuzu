@@ -111,7 +111,7 @@ module Html
     end
   end
 
-  # Handler for adding HTML <!-- comments --> inline.
+  # Handler for adding HTML comments inline.
   class Comment < Base
     def << (other)
       "\n<!-- #{other} -->\n"

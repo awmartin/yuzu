@@ -1,3 +1,4 @@
+require 'renderers/base'
 require 'helpers/path'
 require 'html/base'
 

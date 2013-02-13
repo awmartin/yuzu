@@ -1,4 +1,5 @@
 require 'helpers/path'
+require 'helpers/system_checks'
 
 
 module Uploader

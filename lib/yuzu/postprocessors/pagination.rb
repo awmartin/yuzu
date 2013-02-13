@@ -1,3 +1,4 @@
+require 'postprocessors/base'
 require 'html/base'
 
 module Yuzu::PostProcessors

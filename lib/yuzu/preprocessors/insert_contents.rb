@@ -1,3 +1,4 @@
+require 'preprocessors/base'
 require 'helpers/path'
 
 module Yuzu::PreProcessors

@@ -1,5 +1,6 @@
-require 'fileutils'
+require 'uploader/base'
 require 'uploader/service'
+require 'fileutils'
 
 
 module Uploader

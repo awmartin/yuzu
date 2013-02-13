@@ -1,4 +1,4 @@
-
+require 'postprocessors/base'
 
 module Yuzu::PostProcessors
   class FirstParagraphPostProcessor < PostProcessor

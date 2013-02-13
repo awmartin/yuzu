@@ -1,13 +1,13 @@
 require 'pathname'
 require 'helpers/path'
+require 'helpers/string'
+require 'helpers/system_checks'
 
 module Yuzu::Core
   class Config
     include Helpers
 
     attr_reader :config_hash, :service
-
-    #@@keys_and_defaults = {}
 
     def initialize(config_hash, service_override=nil, parsed_options=[])
       @config_hash = config_hash
@@ -32,6 +32,33 @@ module Yuzu::Core
 
         end
       end
+
+      check_for_gems
+    end
+
+    OPTIONAL_GEMS = ['compass']
+
+    # Provides information about installed gems for optional features, like Compass integration, git
+    # integration, 
+    def check_for_gems
+
+      OPTIONAL_GEMS.each do |gem_name|
+        method_name = "has_#{gem_name.underline}?".to_sym
+
+        (class << self; self; end).class_eval do
+          instance_variable_name = "@has_#{gem_name.underline}".to_sym
+
+          define_method method_name do
+            if instance_variable_get(instance_variable_name).nil?
+              gem_installed = SystemChecks.gem_available?(gem_name)
+              instance_variable_set(instance_variable_name, gem_installed)
+            end
+            instance_variable_get(instance_variable_name)
+          end # define_method
+
+        end # class_eval
+
+      end # OPTIONAL_GEMS
     end
 
     def verbose?

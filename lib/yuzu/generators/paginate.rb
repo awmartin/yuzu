@@ -1,3 +1,4 @@
+require 'generators/base'
 require 'core/paginated_file'
 
 

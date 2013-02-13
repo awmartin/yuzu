@@ -1,3 +1,4 @@
+require 'translators/base'
 require 'kramdown'
 
 module Yuzu::Translators
