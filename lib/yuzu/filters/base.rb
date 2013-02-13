@@ -63,7 +63,7 @@ module Yuzu::Filters
     end
 
     def regex
-      Regexp.new('^\s*' + @directive.to_s + '\(([\w\s\.\,\'\"\/\-:]*?)\)')
+      Regexp.new('^\s*' + @directive.to_s + '\(([\w\W]*?)\)')
     end
 
     def process(website_file, processing_contents)

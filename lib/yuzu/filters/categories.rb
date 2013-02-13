@@ -9,6 +9,10 @@ module Yuzu::Filters
       @directive = "CATEGORIES"
     end
 
+    def regex
+      Regexp.new('^\s*CATEGOR[\w]*\(([\w\W]*?)\)')
+    end
+
     def default(website_file)
       [Category.new("uncategorized", website_file)]
     end
