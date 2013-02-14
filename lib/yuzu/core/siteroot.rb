@@ -7,9 +7,9 @@ module Yuzu::Core
     include Yuzu::Generators
 
     attr_reader :config
-    def initialize(yuzu_config)
+    def initialize(yuzu_config, path=nil)
       @config = yuzu_config
-      @path = @config.pwd
+      @path = path.nil? ? @config.pwd : Path.new(path)
       @parent = nil
       @kind = :folder
 

@@ -44,10 +44,12 @@ module Yuzu::Generators
   Generator.register(:paginate => PaginateGenerator)
 
 
+  # The CatalogPaginator determines whether each catalog requires pagination and performs the action
+  # of producing new WebsiteFile objects for the first paginated catalog. Each one of these new
+  # WebsiteFiles is identical to the source, except that its INSERTCATALOG(...) is replaced with a
+  # non-paginatable version, with an explicit page number. The new WebsiteFiles are added to the
+  # parent folder.
   class CatalogPaginator
-    # Determine whether each catalog requires pagination.
-    # Produce the new WebsiteFile objects by replacing each INSERTCATALOG(...) with a new one.
-    # Add the new WebsiteFile objects to the parent.
     def initialize(website_file, catalog_generator)
       @website_file = website_file
       @catalog_generator = catalog_generator

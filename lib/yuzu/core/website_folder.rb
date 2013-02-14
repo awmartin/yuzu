@@ -114,6 +114,7 @@ module Yuzu::Core
       @path.children
     end
 
+    # Gets a child by its Path object.
     def get_child_by_path(path)
       children.each do |child|
         return child if child.path == path
@@ -121,6 +122,7 @@ module Yuzu::Core
       nil
     end
 
+    # Gets a child by a file's filename or a folder's name.
     def get_child_by_rootname(rootname)
       children.each do |child|
         return child if child.path.rootname == rootname
@@ -128,6 +130,8 @@ module Yuzu::Core
       nil
     end
 
+    # Gets a child by the filename's basename. For index.md, this would be index. Folders return
+    # nil.
     def get_child_by_basename(basename)
       children.each do |child|
         return child if child.path.basename == basename
@@ -135,6 +139,7 @@ module Yuzu::Core
       nil
     end
 
+    # Gets a child by the filename alone. e.g. index.md. Folders return nil.
     def get_child_by_filename(filename)
       children.each do |child|
         return child if child.path.filename == filename

@@ -43,7 +43,7 @@ module Yuzu::Filters
     end
 
     def url
-      blog_folder.link_url + "/" + @name
+      blog_folder.link_url.to_s.gsub!("index.html", "") + @name + "/index.html"
     end
 
     def path

@@ -1,0 +1,168 @@
+# Yuzu Config
+
+site_name: Yuzu Test Site
+author: First Last
+
+blog_dir: blog
+template_dir: _templates
+
+# Connection Configurations
+
+# Yuzu uses the project's folder structure as a template for the website structure.
+# In the process of producing the site, it must resolve to problems:
+#
+#    1. Where to place the actual files in the destination
+#    2. How to resolve the URL links so they point at the correct files.
+#
+# Yuzu provides two ways of resolving these: remote_root_path and link_root.
+# 
+# remote_root_path determines where the remote folder is located on the server, relative 
+# to the FTP user's home directory. If the FTP user is configured to place files directly 
+# into the root of the site, leave this blank.
+# 
+# link_root is a string that can be prepended to all links. This enables you to place
+# files wherever you want to in the destination and still get the URLs right.
+# For example, in posts, you can specify links URLs like this:
+# 
+#     LINKROOT/images/my_image.png
+# 
+# If link_root is blank, the URL defaults to the site root. This is especially
+# useful for local setups where the root path isn't localhost, for example:
+# link_root: http://localhost/~awmartin/my_site
+
+# Which connection to use for publication. This should be set to s3, ftp, or 
+# filesystem. For publishing a site to this service use 'publish'.
+#
+# e.g. yuzu publish:all
+#
+connection: filesystem
+
+services:
+  # The preview folder is used to support local design and development before
+  # publishing to a remote server.
+  #
+  # e.g. yuzu preview:all
+  preview:
+    # The folder into which the rendered site will be copied.
+    destination: /tmp/yuzu-test-preview
+    # The value LINKROOT and linkroot become in content and HAML templates, respectively.
+    link_root: /tmp/yuzu-test-preview
+
+  # The stage is used to produce a copy of the actual site on the file system
+  # for manual FTP-ing to a web server. This gives you the opportunity to get
+  # all the paths right for the server.
+  #
+  # e.g. yuzu stage:all
+  stage:
+    destination: HOME/Sites/yuzu-staging
+    link_root: /~USERNAME/yuzu-staging
+  
+  # All the file system needs is the absolute path of the destination parent folder.
+  filesystem:
+    destination: /tmp/yuzu-test-publish
+    link_root: /tmp/yuzu-test-publish
+
+  # For FTP service to a web server or file server.
+  ftp:
+    domain: site.example.com
+    host: example.com
+    username: test%example.com
+    password: 123456
+    link_root: 
+    remote_root_path: 
+
+  # For service at Amazon S3. By default, this is configured to get the access_key and 
+  # secret_key from environment variables, like ENV['AMAZON_ACCESS_KEY_ID']. Just put 
+  # the name of the environment variable in those two fields.
+  s3:
+    domain: mybucket.s3.amazonaws.com
+    bucket: mybucket
+    access_key: AMAZON_ACCESS_KEY_ID
+    secret_key: AMAZON_SECRET_ACCESS_KEY
+    link_root: 
+    remote_root_path: 
+    
+    # Proxy configuration if needed. This only works for S3 right now. Not needed for filesystem.
+    # Put 'yes' next to use_proxy: to turn on the proxy settings.
+    proxy:
+      use_proxy: no
+      host: proxy.nyit.edu
+      port: 80
+      username: 
+      password: 
+
+# This is a list of the local folders to ignore completely, so the recursive updates
+# won't traverse them. The SASS 'src' folder is a good one to exclude.
+folder_blacklist:
+  - _sass
+  - _templates
+  - .sass-cache
+  - .yardoc
+
+# Some folders have to be traversed to update resources, but we don't want to create
+# auto-generated index.html files for them. This is the list of such folders.
+no_index_folders:
+  - js
+  - sass
+  - css
+  - img
+
+# These files will not be rendered, even if they have a processable extension.
+no_render:
+  - robots.txt
+
+# Files with these extensions will be ignored.
+extension_blacklist:
+  - .rb
+  - .sassc
+  - .yml
+
+# Files with these extensions will be put through the Textile or HAML markup generators.
+processable_extensions:
+  - .text
+  - .textile
+  - .haml
+  - .txt
+  - .markdown
+  - .mdown
+  - .md
+
+# Images.
+image_extensions:
+  - .png
+  - .gif
+  - .jpg
+  - .jpeg
+
+# Assets are files that rarely change, like PDFs and Java archives, that should be uploaded
+# once and then ignored. Assets are generally ignored unless you ask them to be uploaded,
+# since they can also be uploaded more easily with a graphic FTP client.
+asset_extensions:
+  - .pdf
+  - .jar
+  - .pde
+  - .java
+  - .html
+
+# Resources are files like CSS and Javascript that still may change when 
+# adding functionality or changing the styling of the site. These aren't put 
+# through the markup processors and are just uploaded when asked to.
+resource_extensions:
+  - .css
+  - .js
+
+# Thumbnail image names and widths.
+# Every entry here will cause the generate:thumbnails command to produce a
+# resized image with the key appended to the name. For example, an entry of
+# small: 320 will cause the command to take "my-photo.png" and produce a new
+# image, "my-photo-small.png" with a width of 320 pixels. "medium: 600" will 
+# produce "my-photo-medium.png" with a width of 600 pixels.
+thumbnails:
+  small: 350
+  medium: 700
+  large: 1050
+
+# Config under development.
+remove_h1_tags: true
+breadcrumb_separator: "&middot;"
+

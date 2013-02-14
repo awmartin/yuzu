@@ -150,20 +150,30 @@ module Yuzu::Core
       contents
     end
 
+    # Returns the creation time of the file this website file represents.
+    #
+    # @return [Time] The creation time of the file on disk.
     def created_at
       @created_at ||= @path.pathname.ctime
     end
 
+    # Returns the modification time of the file this website file represents.
+    #
+    # @return [Time] The last modified time of the file on disk.
     def modified_at
       @modified_at ||= @path.pathname.mtime
     end
 
+    # Executes the preprocessors.
     def preprocess!
       PreProcessor.preprocessors.each do |name, preprocessor|
         preprocessor.process(self, @raw_contents)
       end
     end
 
+    # Returns the raw contents passed through the prefilters.
+    #
+    # @return [String] The prefiltered contents.
     def prefiltered_contents
       @prefiltered_contents ||= get_prefiltered_contents
     end
@@ -176,7 +186,7 @@ module Yuzu::Core
       tr
     end
 
-    # Returns the contents passed through the filters.
+    # Returns the prefiltered contents passed through the main filters and postfilters.
     #
     # @return [String] the processed contents
     def processed_contents
@@ -191,8 +201,8 @@ module Yuzu::Core
       tr
     end
 
-    # Return the results of running the processed_contents through the textual processors, e.g.
-    # markdown.
+    # Return the results of running the processed_contents through the textual translators, e.g.
+    # markdown to HTML translator.
     #
     # @return [String] the file's html-rendered contents
     def rendered_contents
@@ -208,7 +218,6 @@ module Yuzu::Core
     def layout_contents
       layout.render(self)
     end
-
 
     # The user-facing entry for post.contents in the Haml templates.
     def contents
@@ -243,7 +252,13 @@ module Yuzu::Core
   # to a Haml template or other user-facing mechanism. e.g. This makes "breadcrumb" available in
   # Haml templates and layouts by using post.breadcrumb.
   class FileProperties
-    # instance.methods == public instance methods
+
+    # Initialize a new FileProperties to represent a WebsiteFile. This mirrors all the unique
+    # public instance methods from the WebsiteFile so they can be accessed with "post" in a
+    # template.
+    #
+    # @param [WebsiteFile] website_file The page this object will represent.
+    # @return nothing
     def initialize(website_file)
 
       @website_file = website_file
@@ -268,3 +283,4 @@ module Yuzu::Core
   end
 
 end
+
