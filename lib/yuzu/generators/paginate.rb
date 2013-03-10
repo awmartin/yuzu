@@ -5,6 +5,13 @@ import 'yuzu/core/paginated_file'
 
 
 module Yuzu::Generators
+  # The PaginateGenerator is responsible for creating new files that contain the overflow from
+  # paginated Catalogs. If a Catalog rendered in index.md (which becomes index.html) has 22 items
+  # and each page contains 10, this Generator will produce 2 new WebsiteFiles (index_2.html and
+  # index_3.html) that contain the overflowed Catalog entries.
+  #
+  # This generator stashes the generated, paginated pages into the WebsiteFile's stash. Access with
+  # WebsiteFile.stash[:paginated_siblings]
   class PaginateGenerator < Generator
 
     @@generated = []
@@ -65,6 +72,8 @@ module Yuzu::Generators
 
     def generate_files_from_catalogs!(catalogs)
       paginating_catalogs = catalogs.select {|cat| cat.should_paginate?}
+
+      # We can only really paginate the first paginatable catalog.
       first_paginating_catalog = paginating_catalogs.empty? ? nil : paginating_catalogs[0]
 
       generate_files_for_paginating_catalog!(first_paginating_catalog)

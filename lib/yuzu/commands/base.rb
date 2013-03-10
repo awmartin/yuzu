@@ -78,6 +78,7 @@ module Yuzu::Command
   class PublicationCommand < Base
     include Uploader
 
+    # The default command treats the given arguments as files, and so updates each accordingly.
     def index
       updater.update_these(@args)
       updater.done
