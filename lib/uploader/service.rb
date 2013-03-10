@@ -1,5 +1,7 @@
-require 'helpers/path'
-require 'helpers/system_checks'
+require 'helpers/import'
+
+import 'helpers/path'
+import 'helpers/system_checks'
 
 
 module Uploader

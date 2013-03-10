@@ -1,4 +1,7 @@
-require 'core/template'
+require 'helpers/import'
+
+import 'yuzu/core/template'
+
 
 module Yuzu::Core
   # A Layout is a Template that lays out an entire page. It consists of a collection of partial

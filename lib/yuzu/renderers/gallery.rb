@@ -1,5 +1,6 @@
-require 'renderers/base'
-require 'html/base'
+require 'helpers/import'
+import 'html/base'
+import 'yuzu/renderers/base'
 
 module Yuzu::Renderers
   class GalleryRenderer < Renderer

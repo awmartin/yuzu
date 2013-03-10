@@ -1,22 +1,27 @@
 require 'yaml'
+require 'helpers/import'
 
-require 'commands/base'
-require 'argparse'
-
-require 'helpers/object'
-require 'helpers/string'
+import 'helpers/object'
+import 'helpers/string'
+import 'yuzu/argparse'
 
 # Load all the commands.
-Dir["#{File.dirname(__FILE__)}/commands/*"].each { |c| require c }
+import 'yuzu/commands/base'
+Dir.glob(File.join(File.dirname(__FILE__), "commands", "*")).each do |file|
+  require file if not file.include?('base.rb')
+end
 
+module Yuzu::Command
 
 CONFIG_NOT_FOUND_MESSAGE = \
 %Q{Please run this from the root of your project, in the folder containing
 yuzu.yml or config/yuzu.yml. Or use 'create' to make a new project.}
 
-
-module Yuzu::Command
-
+  # Execute the current command typically specified by the user on the command line.
+  #
+  # @param [String] command_str The command entered on the command line, e.g. "preview:text"
+  # @param [Array] args An array of strings representing all the other arguments entered after the
+  #   command_str.
   def self.run(command_str, args)
     start = Time.now
 
@@ -38,6 +43,10 @@ module Yuzu::Command
     end
   end
 
+  # Takes the command string and returns the class and method corresponding to the specified
+  # command.
+  #
+  # @param [String] command_str The command entered by the user, e.g. "preview:text"
   def self.parse(command_str)
     command, method = command_str.split(':').collect {|part| part.strip}
     method = method.nil? ? :index : method.to_sym
@@ -47,6 +56,13 @@ module Yuzu::Command
     raise InvalidCommand
   end
 
+  # Execute the specified command, given the class, method, command arguments, and command-line
+  # flags entered after the command (e.g. --verbose).
+  #
+  # @param [Command] command_class The class of the requested command.
+  # @param [Symbol] method The method to execute, e.g. :text or :all.
+  # @param [Array] args An Array of Strings holding the non-flagged arguments after the command.
+  # @param [Array] parsed_options An Array of Strings with the flagged arguments (e.g. --verbose)
   def self.execute(command_class, method, args, parsed_options)
     if command_class.requires_config?
       config_hash = load_config
@@ -71,6 +87,9 @@ module Yuzu::Command
     raise CommandFailed
   end
 
+  # Loads the configuration file yuzu.yml.
+  #
+  # @return [Hash] Containing the YAML structure of the yuzu.yml file.
   def self.load_config
     config_location = locate_config
 
@@ -82,6 +101,9 @@ module Yuzu::Command
     YAML.load_file(config_location)
   end
 
+  # Returns the location of the configuration file when found.
+  #
+  # @return [String] A path relative to the active project folder.
   def self.locate_config
     possible_config_locations.each do |path|
       if File.exists?(path)
@@ -91,6 +113,10 @@ module Yuzu::Command
     return nil
   end
 
+  # Returns the acceptable locations of the yuzu.yml file that Yuzu will search for on commands that
+  # need a configuration.
+  #
+  # @return [Array] List of Strings of paths relative to the project folder.
   def self.possible_config_locations
     [
       File.join(Dir.pwd, "yuzu.yml"),

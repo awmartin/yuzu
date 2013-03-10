@@ -1,6 +1,9 @@
-require 'core/website_folder'
+require 'helpers/import'
+import 'yuzu/core/website_folder'
 
-Dir["#{File.dirname(__FILE__)}/../generators/*"].each { |c| require c }
+Dir.glob(File.join(File.dirname(__FILE__), "..", "generators", "*")).each do |c|
+  require c
+end
 
 module Yuzu::Core
   class SiteRoot < WebsiteFolder

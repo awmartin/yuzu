@@ -1,4 +1,6 @@
-require 'core/website_file'
+require 'helpers/import'
+
+import 'yuzu/core/website_file'
 
 module Yuzu::Core
   class WebsiteFolder < WebsiteBase

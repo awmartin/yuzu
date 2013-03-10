@@ -1,6 +1,8 @@
-require 'generators/base'
-require 'generators/index'
-require 'helpers/path'
+require 'helpers/import'
+
+import 'helpers/path'
+import 'yuzu/generators/base'
+import 'yuzu/generators/index'
 
 module Yuzu::Generators
   class CategoryFoldersGenerator < Generator
@@ -17,7 +19,9 @@ module Yuzu::Generators
 
     def visitor_filter
       proc do |c| 
-        if c.file?
+        if c.file? and @all_categories.nil?
+          # HACK Find a better way of gathering the categories outside of this stateful update in
+          # the visitor's traversal.
           @all_categories = c.all_categories
         end
         c.folder?

@@ -1,18 +1,31 @@
-require 'html/base'
-require 'core/website_base'
-require 'core/layout'
+require 'helpers/import'
 
-require 'filters/base'
-require 'renderers/base'
-require 'preprocessors/base'
-require 'postprocessors/base'
-require 'translators/base'
+import 'html/base'
+
+import 'yuzu/core/layout'
+import 'yuzu/core/website_base'
+import 'yuzu/filters/base'
+import 'yuzu/renderers/base'
+import 'yuzu/preprocessors/base'
+import 'yuzu/postprocessors/base'
+import 'yuzu/translators/base'
+
 
 %w(filters renderers preprocessors postprocessors translators).each do |folder|
-  Dir["#{File.dirname(__FILE__)}/../#{folder}/*"].each { |c| require c if not c.include?("base.rb")}
+  Dir.glob(File.join(File.dirname(__FILE__), "..", folder, "*")).each do |c|
+    import c if not c.include?("base.rb")
+  end
 end
 
+
 module Yuzu::Core
+
+  # A WebsiteFile represents a single web page, usually rendered as HTML. It is typically mapped
+  # directly to a file on disk, with textual authored content.
+  #
+  # For example, a file "index.md" will be represented by a WebsiteFile, which is responsible for
+  # loading the content and processing it into HTML (index.html) through a series of
+  # transformations.
   class WebsiteFile < WebsiteBase
     include Yuzu::Filters
     include Yuzu::Renderers
@@ -25,7 +38,7 @@ module Yuzu::Core
     end
 
     def self.processors
-      tr = Filter.filters.merge(Renderer.renderers)
+      Filter.filters.merge(Renderer.renderers)
     end
 
     # Create an accessor method for each filter, renderer, postprocessor.
@@ -61,9 +74,9 @@ module Yuzu::Core
           end
           instance_variable_get(instance_variable)
         rescue => e
-          puts "\033[91mEXCEPTION IN #{name}\033[0m"
-          #puts e.message
-          #puts e.backtrace
+          $stderr.puts "\033[91mEXCEPTION IN #{name}\033[0m"
+          $stderr.puts e.message
+          $stderr.puts e.backtrace
         end
       end
 
@@ -71,6 +84,9 @@ module Yuzu::Core
 
     attr_reader :page, :parent, :path
 
+    # @param [Path] path The path of the source file on disk.
+    # @param [WebsiteFolder] parent The folder that contains this file.
+    # @param [Fixnum] page The page of this file in a set of paginated files.
     def initialize(path, parent, page=1)
       @path = path
       raise "@path is nil for #{self}" if @path.nil?
@@ -81,7 +97,10 @@ module Yuzu::Core
       @kind = :file
     end
 
-    # Returns a Hash of the properties of this file, like the name, etc.
+    # Returns an object that holds the "properties" of this file, like the post_title, etc. This is
+    # used to provide access to this file's attributes using dot notation in a HAML template. When
+    # you refer to "post.post_title" in a template or layout, it's the result of this method that is
+    # referred to by "post".
     def properties
       @properties ||= FileProperties.new(self)
     end
@@ -90,6 +109,7 @@ module Yuzu::Core
       "WebsiteFile(#{@path.relative})"
     end
 
+    # The display name of this file.
     def name
       post_title
     end
@@ -268,8 +288,8 @@ module Yuzu::Core
 
         unique_methods.each do |method_name|
 
-          define_method(method_name) do
-            website_file.send(method_name)
+          define_method(method_name) do |*args|
+            website_file.send(method_name, *args)
           end
 
         end

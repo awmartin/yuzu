@@ -1,4 +1,5 @@
-require 'postprocessors/base'
+require 'helpers/import'
+import 'yuzu/postprocessors/base'
 
 module Yuzu::PostProcessors
   class ExcerptPostProcessor < PostProcessor

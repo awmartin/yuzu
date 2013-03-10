@@ -1,5 +1,7 @@
-require 'content/sample_project'
-require 'content/blog_post'
+require 'helpers/import'
+
+import 'yuzu/content/sample_project'
+import 'yuzu/content/blog_post'
 
 module Yuzu::Command
 

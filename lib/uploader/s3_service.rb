@@ -1,7 +1,9 @@
-require 'helpers/system_checks'
-require 'uploader/base'
-require 'uploader/service'
-require 'uploader/suppressor'
+require 'helpers/import'
+
+import 'helpers/system_checks'
+import 'uploader/base'
+import 'uploader/service'
+import 'uploader/suppressor'
 
 module Uploader
   class S3Service < Service

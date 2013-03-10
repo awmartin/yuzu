@@ -1,6 +1,8 @@
-require 'uploader/base'
-require 'uploader/service'
 require 'fileutils'
+
+require 'helpers/import'
+import 'uploader/base'
+import 'uploader/service'
 
 
 module Uploader

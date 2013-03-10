@@ -5,7 +5,6 @@ require 'rubygems'
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib')
 
 require 'yuzu'
-require 'yuzu/command'
 
 args = ARGV.dup
 ARGV.clear

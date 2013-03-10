@@ -276,7 +276,13 @@ module Helpers
       # the folder has no children, it's nil.
       return nil if not exists?
       return nil if @pathname.children.nil?
-      folder? ? @pathname.children.collect {|c| Path.new(c)} : nil
+      if file?
+        nil
+      else
+        # Includes hidden files
+        pathname_children = @pathname.children
+        pathname_children.reject { |c| c.basename.to_s[0].chr == "." }.collect {|c| Path.new(c)}
+      end
     end
 
     def files

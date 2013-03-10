@@ -1,12 +1,13 @@
 require 'fileutils'
+require 'helpers/import'
 
-require 'uploader/base'
+import 'uploader/base'
 
-require 'core/updater'
-require 'core/config'
+import 'helpers/string'
+import 'helpers/object'
 
-require 'helpers/string'
-require 'helpers/object'
+import 'yuzu/core/updater'
+import 'yuzu/core/config'
 
 module Yuzu::Command
 

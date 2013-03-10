@@ -1,5 +1,8 @@
-require 'filters/base'
-require 'helpers/url'
+require 'helpers/import'
+
+import 'helpers/url'
+import 'yuzu/filters/base'
+
 
 module Yuzu::Filters
   class CurrentpathFilter < Filter

@@ -1,5 +1,6 @@
 require 'haml'
-require 'helpers/path'
+require 'helpers/import'
+import 'helpers/path'
 
 module Yuzu::Core
   class Template

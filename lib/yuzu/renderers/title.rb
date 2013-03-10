@@ -1,4 +1,5 @@
-require 'renderers/base'
+require 'helpers/import'
+import 'yuzu/renderers/base'
 
 module Yuzu
 

@@ -1,5 +1,7 @@
-require 'postprocessors/base'
-require 'core/visitor'
+require 'helpers/import'
+
+import 'yuzu/core/visitor'
+import 'yuzu/postprocessors/base'
 
 module Yuzu::PostProcessors
 

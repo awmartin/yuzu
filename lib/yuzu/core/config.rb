@@ -1,7 +1,10 @@
 require 'pathname'
-require 'helpers/path'
-require 'helpers/string'
-require 'helpers/system_checks'
+require 'helpers/import'
+
+import 'helpers/path'
+import 'helpers/string'
+import 'helpers/system_checks'
+
 
 module Yuzu::Core
   class Config

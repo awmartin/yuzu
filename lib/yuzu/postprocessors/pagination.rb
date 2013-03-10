@@ -1,5 +1,6 @@
-require 'postprocessors/base'
-require 'html/base'
+require 'helpers/import'
+import 'html/base'
+import 'yuzu/postprocessors/base'
 
 module Yuzu::PostProcessors
   class PaginationPostProcessor < PostProcessor

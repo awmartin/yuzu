@@ -1,5 +1,7 @@
-require 'filters/base'
-require 'translators/base'
+require 'helpers/import'
+
+import 'yuzu/filters/base'
+import 'yuzu/translators/base'
 
 module Yuzu::Filters
   class SidebarFilter < Filter

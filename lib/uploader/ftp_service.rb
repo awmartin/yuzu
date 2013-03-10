@@ -1,7 +1,9 @@
-require 'uploader/base'
-require 'uploader/service'
 require 'net/ftp'
 require 'stringio'
+
+require 'helpers/import'
+import 'uploader/base'
+import 'uploader/service'
 
 module Uploader
   class FtpService < Service

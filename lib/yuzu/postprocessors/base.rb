@@ -1,3 +1,5 @@
+require 'helpers/import'
+import 'yuzu/core/registrar'
 
 module Yuzu::PostProcessors
   include Yuzu::Registrar

@@ -1,7 +1,7 @@
-require 'core/visitor'
-require 'helpers/path'
-require 'core/siteroot'
-
+require 'helpers/import'
+import 'helpers/path'
+import 'yuzu/core/visitor'
+import 'yuzu/core/siteroot'
 
 
 module Yuzu::Core

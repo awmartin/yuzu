@@ -1,4 +1,6 @@
-require 'filters/base'
+require 'helpers/import'
+
+import 'yuzu/filters/base'
 
 module Yuzu::Filters
   class DescriptionFilter < Filter

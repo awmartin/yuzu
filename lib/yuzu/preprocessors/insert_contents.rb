@@ -1,5 +1,6 @@
-require 'preprocessors/base'
-require 'helpers/path'
+require 'helpers/import'
+import 'helpers/path'
+import 'yuzu/preprocessors/base'
 
 module Yuzu::PreProcessors
   class InsertContentsPreProcessor < PreProcessor

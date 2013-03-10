@@ -1,6 +1,7 @@
-require 'renderers/base'
-require 'helpers/path'
-require 'html/base'
+require 'helpers/import'
+import 'helpers/path'
+import 'html/base'
+import 'yuzu/renderers/base'
 
 module Yuzu::Renderers
   class BreadcrumbRenderer < Renderer

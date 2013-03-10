@@ -1,4 +1,5 @@
-require 'translators/base'
+require 'helpers/import'
+import 'yuzu/translators/base'
 
 module Yuzu::Translators
 

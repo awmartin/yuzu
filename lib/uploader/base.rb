@@ -1,10 +1,12 @@
+require 'helpers/import'
+
 # Require service.rb first.
-require 'uploader/service'
-require 'uploader/suppressor'
-require 'uploader/config'
+import 'uploader/service'
+import 'uploader/suppressor'
+import 'uploader/config'
 
 Dir["#{File.dirname(__FILE__)}/*"].each do |service|
-  require service if service.include?("_service")
+  import service if service.include?("_service")
 end
 
 

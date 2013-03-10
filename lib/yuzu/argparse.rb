@@ -1,6 +1,8 @@
 require 'ostruct'
 require 'optparse'
-require 'version'
+require 'helpers/import'
+
+import 'yuzu/version'
 
 module Yuzu::Command
   HELP_MESSAGE = %Q{

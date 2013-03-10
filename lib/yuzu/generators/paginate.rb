@@ -1,5 +1,7 @@
-require 'generators/base'
-require 'core/paginated_file'
+require 'helpers/import'
+
+import 'yuzu/generators/base'
+import 'yuzu/core/paginated_file'
 
 
 module Yuzu::Generators

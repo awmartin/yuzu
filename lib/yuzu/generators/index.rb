@@ -1,4 +1,6 @@
-require 'generators/base'
+require 'helpers/import'
+
+import 'yuzu/generators/base'
 
 module Yuzu::Generators
   class IndexGenerator < Generator

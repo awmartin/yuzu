@@ -1,6 +1,10 @@
-require 'filters/base'
-require 'helpers/url'
-require 'helpers/path'
+require 'helpers/import'
+
+import 'helpers/url'
+import 'helpers/path'
+
+import 'yuzu/filters/base'
+
 
 module Yuzu::Filters
   class CategoriesFilter < Filter

@@ -1,7 +1,9 @@
-require 'filters/base'
-require 'core/template'
-require 'helpers/path'
-require 'html/base'
+require 'helpers/import'
+
+import 'html/base'
+import 'helpers/path'
+import 'yuzu/filters/base'
+import 'yuzu/core/template'
 
 
 module Yuzu::Filters

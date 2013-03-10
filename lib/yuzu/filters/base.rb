@@ -1,4 +1,5 @@
-require 'core/registrar'
+require 'helpers/import'
+import 'yuzu/core/registrar'
 
 module Yuzu::Filters
   include Yuzu::Registrar
