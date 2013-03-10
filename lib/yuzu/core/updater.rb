@@ -86,11 +86,6 @@ module Yuzu::Core
     def update_file(website_file, force_paginated_siblings=false)
       $stderr.puts "#{BOLD}#{WHITE}Updating #{website_file}#{ENDC}#{ENDC}" if @config.verbose?
 
-      if not website_file.path.exists?
-        $stderr.puts %Q{WARNING: Website file #{website_file} does not exist on disk. Generated files 
-cannot be updated directly. Update the original, generating file instead.}
-      end
-
       if website_file.processable?
         @uploader.upload(website_file.remote_path, website_file.html_contents)
 
