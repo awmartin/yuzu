@@ -6,12 +6,16 @@ module Yuzu::Core
   class Template
     include Helpers
 
-    # TODO Make this part of a module-level config.
-    @@template_dir = Path.new("_templates")
+    @@template_dir = nil
 
     # template_name -- String. The filename of the template, e.g. _gallery.haml
     def initialize(template_name)
       @template_name = template_name
+
+      # TODO Make this part of a module-level config.
+      if @@template_dir.nil?
+        @@template_dir = Path.new("_templates")
+      end
     end
 
     def path

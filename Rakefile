@@ -10,7 +10,7 @@ end
 require 'rake'
 
 require 'jeweler'
-require './lib/yuzu/version.rb'
+require File.expand_path('./lib/yuzu/version.rb')
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "yuzu"
@@ -33,6 +33,12 @@ require 'yard'
 YARD::Rake::YardocTask.new do |t|
   #t.files   = ['lib/**/*.rb', OTHER_PATHS]
   t.options = ['t', 'default', '-p', 'resources/yard', "--markup", "markdown"]
+end
+
+require 'rspec'
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec) do |config|
+  #config.rcov = true
 end
 
 # require 'rake/testtask'

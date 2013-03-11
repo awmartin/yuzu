@@ -3,7 +3,7 @@
 This is the index testing file.
 
 TEMPLATE(test.haml)
-CATEGORIES(category1, category2)
+CATEGORIES(category 1, category 2)
 SIDEBAR{
 sidebar content
 }

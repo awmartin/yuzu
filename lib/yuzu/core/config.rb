@@ -5,10 +5,26 @@ import 'helpers/path'
 import 'helpers/string'
 import 'helpers/system_checks'
 
+module Yuzu::Core
+  module Environment
+    @@working_dir = nil
+    # working_dir is used for testing purposes, to displace the "pwd" function from the current
+    # execution directory.
+    def working_dir
+      @@working_dir || Pathname.pwd
+    end
+
+    def working_dir=(other)
+      @@working_dir = other
+    end
+  end
+end
+
 
 module Yuzu::Core
   class Config
     include Helpers
+    include Environment
 
     attr_reader :config_hash, :service
 
@@ -69,7 +85,7 @@ module Yuzu::Core
     end
 
     def pwd
-      Path.new
+      working_dir
     end
 
     def processable?(path)

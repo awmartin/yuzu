@@ -32,8 +32,10 @@ module Yuzu::Generators
     end
 
     def generate!(website_folder)
-      @all_categories.each do |category|
-        generate_folder_for_category!(category, website_folder.blog_folder)
+      if not @all_categories.nil?
+        @all_categories.each do |category|
+          generate_folder_for_category!(category, website_folder.blog_folder)
+        end
       end
     end
 

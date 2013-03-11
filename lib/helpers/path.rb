@@ -8,6 +8,15 @@ module Helpers
   class Path
     attr_reader :pathname
 
+    @@root = nil
+    # This method is only used to override the pwd function's result, mainly for testing.
+    def self.root=(other)
+      @@root = other
+    end
+    def self.root
+      @@root
+    end
+
     def self.join(path1, path2)
       # TODO This is rather expensive. Make the join more efficient.
       Path.new(path1).join(Path.new(path2))
@@ -40,7 +49,7 @@ module Helpers
       raise "@pathname was nil" if @pathname.nil?
 
       if not @pathname.absolute?
-        @pathname = @pathname.expand_path.relative_path_from(pwd)
+        @pathname = expand_path
       end
       @force_is_file = false
       @force_is_folder = false
@@ -74,7 +83,7 @@ module Helpers
 
     def == (other)
       return false if not other.is_a?(Path)
-      @pathname.expand_path == other.pathname.expand_path
+      expand_path == other.pathname.expand_path
     end
 
     def stringify
@@ -217,7 +226,11 @@ module Helpers
     end
 
     def pwd
-      Pathname.pwd
+      @@root || Pathname.pwd
+    end
+
+    def self.pwd
+      Path.new(@@root || Pathname.pwd)
     end
 
     def to_s
@@ -230,7 +243,15 @@ module Helpers
     end
 
     def absolute_path
-      @pathname.expand_path
+      expand_path
+    end
+
+    def expand_path
+      if @pathname.absolute?
+        @pathname.expand_path
+      else
+        Pathname.new(File.expand_path(File.join(pwd, @pathname.to_s)))
+      end
     end
 
     # Return the relative path of this Path object as a String.
@@ -241,7 +262,7 @@ module Helpers
     end
 
     def relative_path
-      @pathname.expand_path.relative_path_from(pwd.expand_path)
+      expand_path.relative_path_from(pwd.expand_path)
     end
 
     def descend(&block)
@@ -274,15 +295,10 @@ module Helpers
     def get_children
       # Run these checks first. If the pathname doesn't exist, we can't check for its children. If
       # the folder has no children, it's nil.
-      return nil if not exists?
-      return nil if @pathname.children.nil?
-      if file?
-        nil
-      else
-        # Includes hidden files
-        pathname_children = @pathname.children
-        pathname_children.reject { |c| c.basename.to_s[0].chr == "." }.collect {|c| Path.new(c)}
-      end
+      return nil if not exists? or @pathname.children.nil? or file?
+
+      pathname_children = @pathname.children  # Includes hidden files
+      pathname_children.reject { |c| c.basename.to_s.start_with?(".") }.collect {|c| Path.new(c)}
     end
 
     def files

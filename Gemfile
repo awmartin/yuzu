@@ -22,5 +22,6 @@ group :development do
   gem "jeweler", "~> 1.8.4"
   gem "rcov", ">= 0"
   gem "yard", ">= 0.8.3"
+  gem "rspec", ">= 2.12.0"
 end
 

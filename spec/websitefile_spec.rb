@@ -1,11 +1,11 @@
 require 'spec_helper'
+require 'set'
 
 describe Yuzu::Core::WebsiteFile do
+  include TestMocks
+
   before do
-    @config_hash = YAML.load_file('content/config/yuzu.yml')
-    @config = Yuzu::Core::Config.new(@config_hash, "preview")
-    @siteroot = Yuzu::Core::SiteRoot.new(@config, 'content')
-    @test_file = @siteroot.get_child_by_basename("index")
+    @test_file = test_site.get_child_by_basename("index")
   end
 
   def has_methods_defined?(names)
@@ -27,6 +27,10 @@ describe Yuzu::Core::WebsiteFile do
 
     it "should be the home page" do
       @test_file.should be_home
+    end
+
+    it "should not be in the blog" do
+      @test_file.in_blog?.should == false
     end
   end
 
@@ -69,7 +73,9 @@ describe Yuzu::Core::WebsiteFile do
     end
 
     it "should have the correct categories" do
-      @test_file.categories.collect {|cat| cat.name}.sort.should == ["category1", "category2"]
+      file_categories = @test_file.categories.collect {|cat| cat.name}
+      test_categories = ["category-1", "category-2"]
+      Set.new(file_categories).should == Set.new(test_categories)
     end
 
     it "should have the correct sidebar content" do

@@ -1,4 +1,5 @@
 require 'helpers/import'
+import 'helpers/path'
 import 'yuzu/core/website_folder'
 
 Dir.glob(File.join(File.dirname(__FILE__), "..", "generators", "*")).each do |c|
@@ -12,7 +13,7 @@ module Yuzu::Core
     attr_reader :config
     def initialize(yuzu_config, path=nil)
       @config = yuzu_config
-      @path = path.nil? ? @config.pwd : Path.new(path)
+      @path = path.nil? ? Path.pwd : Path.new(path)
       @parent = nil
       @kind = :folder
 
