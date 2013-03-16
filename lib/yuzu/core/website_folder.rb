@@ -85,7 +85,12 @@ module Yuzu::Core
     def append_child(new_child)
       # Ensure we get the children from disk first.
       children
-      @children.push(new_child)
+
+      if not @children.include?(new_child)
+        @children.push(new_child)
+      else
+        $stderr.puts "Warning. #{new_child} is already a child of #{self}."
+      end
     end
 
     def get_children

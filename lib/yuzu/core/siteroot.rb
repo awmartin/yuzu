@@ -3,7 +3,7 @@ import 'helpers/path'
 import 'yuzu/core/website_folder'
 
 Dir.glob(File.join(File.dirname(__FILE__), "..", "generators", "*")).each do |c|
-  require c
+  import c
 end
 
 module Yuzu::Core

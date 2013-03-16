@@ -86,9 +86,9 @@ module Yuzu::Filters
     # the root.
     def path
       if @website_file.in_blog?
-        Helpers::Path.new(blog_folder.path.name, @name)
+        blog_folder.path + @name
       else
-        Helpers::Path.new(siteroot.path.name, @name)
+        siteroot.path + @name
       end
     end
 

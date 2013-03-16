@@ -9,6 +9,7 @@ describe Yuzu::Filters::Filter do
   end
 end
 
+
 describe Yuzu::Filters::CatalogFilter do
   include TestMocks
 
@@ -31,5 +32,35 @@ describe Yuzu::Filters::CatalogFilter do
     end
   end
 
+end
+
+
+describe Yuzu::Filters::CategoriesFilter do
+  include TestMocks
+
+  before do
+    @home = test_site.get_child_by_filename("index.md")
+    @blog_post = test_site.get_child_by_rootname("blog").get_child_by_filename("blog_post_1.md")
+  end
+
+  def home_categories
+    @home.categories.sort
+  end
+
+  def home_category_names
+    home_categories.collect {|cat| cat.name}
+  end
+
+  def blog_post_categories
+    @blog_post.categories.sort
+  end
+
+  it "should collect the proper categories from a page" do
+    Set.new(home_category_names).should == Set.new(['category-1', 'category-2'])
+  end
+
+  it "should create blog categories with the correct paths" do
+    blog_post_categories[0].path.should == Helpers::Path.new("blog/blog-category-1")
+  end
 end
 

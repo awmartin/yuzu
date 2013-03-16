@@ -74,6 +74,7 @@ module Helpers
     end
 
     def parent
+      return nil if @pathname.to_s == "/"
       Path.new(@pathname.parent)
     end
 
@@ -87,7 +88,7 @@ module Helpers
 
     def == (other)
       return false if not other.is_a?(Path)
-      expand_path == other.pathname.expand_path
+      absolute == other.absolute
     end
 
     def stringify
@@ -320,6 +321,17 @@ module Helpers
     def url_for(prefix=nil)
       Url.new(self, prefix=prefix)
     end
+
+    def is_descendant?(other)
+      p = other
+
+      until p.parent.absolute == p.absolute or p.nil?
+        return true if p.absolute == self.absolute
+        p = p.parent
+      end
+
+      return false
+    end
   end
 
 
@@ -354,7 +366,8 @@ module Helpers
     end
 
     def parent
-      self
+      nil
+      #self
     end
 
     def basename(extension="")

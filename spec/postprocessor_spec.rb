@@ -34,9 +34,16 @@ describe Yuzu::PostProcessors::BlogCategoriesPostProcessor do
     @test_file = test_site.get_child_by_basename("index")
   end
 
+  def blog_categories
+    @test_file.blog_categories
+  end
+
+  def blog_category_names
+    blog_categories.collect {|cat| cat.name}
+  end
+
   describe "(values)" do
     it "should produce categories from the blog only" do
-      blog_category_names = @test_file.blog_categories.collect {|cat| cat.name}
       Set.new(blog_category_names).should == Set.new(["blog-category-1", "blog-category-2"])
     end
   end

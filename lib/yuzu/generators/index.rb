@@ -39,7 +39,7 @@ module Yuzu::Generators
     end
 
     def generate_index_at_path!(website_folder)
-      new_index = GeneratedIndex.new(website_folder)
+      new_index = GeneratedIndexFile.new(website_folder)
 
       website_folder.append_child(new_index)
       IndexGenerator.add_indexed_folder(website_folder)
@@ -47,7 +47,7 @@ module Yuzu::Generators
   end
 
 
-  class GeneratedIndex < WebsiteFile
+  class GeneratedIndexFile < WebsiteFile
     def initialize(parent_folder, raw_contents=nil)
       @raw_contents = raw_contents
 
@@ -62,7 +62,7 @@ module Yuzu::Generators
     end
 
     def to_s
-      "GeneratedIndex(#{@path.relative})"
+      "GeneratedIndexFile(#{@path.relative})"
     end
 
     def default_index_filename
