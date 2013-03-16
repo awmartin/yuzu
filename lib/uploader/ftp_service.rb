@@ -53,13 +53,13 @@ module Uploader
     def upload_via_ftp(remote_path, file, binary=true)
       server_path = Path.new(@config.remote_root_path) + remote_path.relative
 
-      $stderr.puts "Opening an FTP connection for #{remote_path}" + (@config.dry_run? ? " (dry run)" : "")
+      $stderr.puts "Attempting to upload via FTP: #{remote_path}" + (@config.dry_run? ? " (dry run)" : "")
 
       begin
         attempt_upload!(server_path, file, binary)
       rescue => e
         $stderr.puts "FTP Error"
-        $stderr.puts e.message
+        $stderr.puts e.message + " (#{e.class})"
 
         create_remote_folder!(server_path)
         attempt_upload!(server_path, file, binary)
