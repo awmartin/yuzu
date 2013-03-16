@@ -15,6 +15,11 @@ module Yuzu::Translators
       rendered = rendered.gsub("<p><noscript></p>", "<noscript>").gsub("<p></noscript></p>", "</noscript>")
       rendered.gsub(/\n\s*<\/code>/, "</code>").gsub(/<code>(?!\s)/, "<code>  ")
     end
+
+    def extract_title_from_contents(contents)
+      m = contents.match(/^#\s+.*?\n/)
+      return m.nil? ? nil : m[0].sub("#", "").strip
+    end
   end
   Translator.register(:markdown => MarkdownTranslator)
 

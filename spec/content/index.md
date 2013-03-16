@@ -1,4 +1,3 @@
-# Index File For Testing
 
 This is the index testing file.
 

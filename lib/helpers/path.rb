@@ -17,19 +17,8 @@ module Helpers
       @@local_root
     end
 
-    def self.join(path1, path2)
-      # TODO This is rather expensive. Make the join more efficient.
-      Path.new(path1).join(Path.new(path2))
-      #Pathname.new(path1).join(Pathname.new(path2)).to_s
-    end
-
     def initialize(path, root=nil)
       @root = root
-      #if args.length > 1
-      #  path = File.join(*args)
-      #else
-      #  path = args[0]
-      #end
 
       if path.nil?
         @pathname = EmptyPathname.new
@@ -49,10 +38,6 @@ module Helpers
       end
       raise "@pathname was nil" if @pathname.nil?
 
-      #if not @pathname.absolute?
-      #  @pathname = expand_path
-      #end
-      #@absolute = @pathname.to_s.start_with?("/")
       @absolute = @pathname.absolute?
 
       @force_is_file = false
@@ -74,16 +59,12 @@ module Helpers
     end
 
     def parent
+      @parent ||= get_parent
+    end
+
+    def get_parent
       return nil if @pathname.to_s == "/"
       Path.new(@pathname.parent)
-    end
-
-    def markdown?
-      [".md", ".mdown", ".mkd", ".markdown", ".markd"].include?(extension)
-    end
-
-    def plaintext?
-      [".txt", ".text"].include?(extension)
     end
 
     def == (other)
@@ -252,11 +233,9 @@ module Helpers
     end
 
     def expand_path
-      if @pathname.absolute?
-        @pathname.expand_path
-      else
-        Pathname.new(File.expand_path(File.join(pwd, @pathname.to_s)))
-      end
+      @expanded_path ||= (@pathname.absolute? ?
+                          @pathname.expand_path :
+                          Pathname.new(File.expand_path(File.join(pwd, @pathname.to_s))))
     end
 
     # Return the relative path of this Path object as a String.
@@ -367,7 +346,6 @@ module Helpers
 
     def parent
       nil
-      #self
     end
 
     def basename(extension="")

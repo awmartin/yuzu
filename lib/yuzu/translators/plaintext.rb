@@ -5,11 +5,7 @@ module Yuzu::Translators
 
   class PlaintextTranslator < Translator
     def extensions
-      %(txt text)
-    end
-
-    def translate(contents)
-      contents
+      %w(.txt .text)
     end
   end
   Translator.register(:plaintext => PlaintextTranslator)

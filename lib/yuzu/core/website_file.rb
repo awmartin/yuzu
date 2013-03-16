@@ -138,14 +138,6 @@ module Yuzu::Core
       processable? ? @path.with_extension(extension).filename : filename
     end
 
-    def markdown?
-      @path.markdown?
-    end
-
-    def plaintext?
-      @path.plaintext?
-    end
-
     # Alias
     def link_root
       linkroot

@@ -33,7 +33,7 @@ module Yuzu::Translators
       Translator.translators.each_pair do |filetype, translator|
         return filetype if translator.translates?(file_extension)
       end
-      return nil
+      nil
     end
 
     def self.filetypes
@@ -49,7 +49,11 @@ module Yuzu::Translators
     end
 
     def translate(contents)
-      contents
+      "<div><code><pre>#{contents}</pre></code></div>"
+    end
+
+    def extract_title_from_contents(contents)
+      nil
     end
   end
 

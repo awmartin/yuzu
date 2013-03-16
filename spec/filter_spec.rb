@@ -64,3 +64,40 @@ describe Yuzu::Filters::CategoriesFilter do
   end
 end
 
+describe Yuzu::Filters::PostTitleFilter do
+  include TestMocks
+
+  before do
+    @home = test_site.get_child_by_filename("index.md")
+    @blog = test_site.get_child_by_rootname("blog").get_child_by_filename("index.md")
+    @page = test_site.get_child_by_filename("page1.md")
+    @pages_folder_index = test_site.get_child_by_rootname("pages").get_child_by_filename("index.md")
+    @generic_page = test_site.get_child_by_rootname("pages").get_child_by_filename("generic-mock-website-page.md")
+    @dated_page = test_site.get_child_by_rootname("pages").get_child_by_filename("2013-03-16-dated-mock-website-page.md")
+  end
+
+  it "should extract the correct title from home page" do
+    @home.post_title.should == "Home"
+  end
+
+  it "should extract the correct title from index files" do
+    @pages_folder_index.post_title.should == "Pages"
+  end
+
+  it "should extract the correct title from index files" do
+    @blog.post_title.should == "Blog Index"
+  end
+
+  it "should extract the correct title from markdown files" do
+    @page.post_title.should == "Test Page 1"
+  end
+
+  it "should extract the correct title from filenames" do
+    @generic_page.post_title.should == "Generic Mock Website Page"
+  end
+
+  it "should extract the correct title from a filename with date" do
+    @dated_page.post_title.should == "Dated Mock Website Page"
+  end
+end
+

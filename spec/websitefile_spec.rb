@@ -55,10 +55,6 @@ describe Yuzu::Core::WebsiteFile do
   end
 
   describe "(filter values)" do
-    it "should have the correct post title" do
-      @test_file.post_title.should == "Index File For Testing"
-    end
-
     it "should have the correct extension" do
       @test_file.extension.should == ".html"
     end
