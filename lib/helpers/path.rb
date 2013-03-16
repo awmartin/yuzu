@@ -244,7 +244,7 @@ module Helpers
 
     # Return the absolute path of this Path object as a String.
     def absolute
-      absolute_path.to_s
+      @absolute_path_string ||= absolute_path.to_s
     end
 
     def absolute_path
@@ -261,17 +261,17 @@ module Helpers
 
     # Return the relative path of this Path object as a String.
     def relative
+      @relative ||= get_relative
+    end
+
+    def get_relative
       tr = relative_path.to_s
       return "" if tr == "."
       tr
     end
 
     def relative_path
-      if @absolute
-        expand_path.relative_path_from(pwd.expand_path)
-      else
-        @pathname
-      end
+      @relative_path ||= (@absolute ? expand_path.relative_path_from(pwd.expand_path) : @pathname)
     end
 
     def descend(&block)
@@ -311,15 +311,15 @@ module Helpers
     end
 
     def files
-      children.select {|path| path.file?}
+      @files ||= children.select {|path| path.file?}
     end
 
     def folders
-      children.select {|path| path.folder?}
+      @folders ||= children.select {|path| path.folder?}
     end
 
     def url_for(prefix=nil)
-      Url.new(self, prefix=prefix)
+      @url ||= Url.new(self, prefix=prefix)
     end
 
     def is_descendant?(other)
