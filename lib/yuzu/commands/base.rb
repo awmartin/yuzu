@@ -24,9 +24,9 @@ module Yuzu::Command
       @config = config
     end
 
-    def self.shell(cmd)
-      FileUtils.cd(Dir.pwd) {|d| return `#{cmd}`}
-    end
+    #def self.shell(cmd)
+    #  FileUtils.cd(Dir.pwd) {|d| return `#{cmd}`}
+    #end
 
     def updater
       @updater ||= Yuzu::Core::Updater.new(uploader, @config)
@@ -39,7 +39,8 @@ module Yuzu::Command
     def uploader_config
       options = {
         :connection => @config.connection,
-        :verbose? => @config.verbose?
+        :verbose? => @config.verbose?,
+        :dry_run? => @config.dry_run?
       }
       config_hash = @config.services.merge(options)
       UploaderConfig.new(config_hash)

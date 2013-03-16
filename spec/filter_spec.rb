@@ -14,6 +14,7 @@ describe Yuzu::Filters::CatalogFilter do
 
   before do
     @blog_index = test_site.blog_folder.get_child_by_basename("index")
+    @catalog_test_folder = test_site.get_child_by_rootname("catalogs")
   end
 
   describe "(values)" do
@@ -29,5 +30,6 @@ describe Yuzu::Filters::CatalogFilter do
       Set.new(titles).should == Set.new(["Blog Post 1", "Blog Post 2"])
     end
   end
+
 end
 

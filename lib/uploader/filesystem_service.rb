@@ -41,30 +41,40 @@ module Uploader
       destination = Path.new(@config.destination) + remote_path.relative
 
       if @config.verbose?
+        message = @config.dry_run? ? " (dry run)" : ""
         $stderr.puts %Q{Copying #{GREEN}#{remote_path}#{ENDC} to the file system
-      --> #{destination}} 
+      --> #{destination}#{message}}
       else
         $stderr.print "."
       end
 
-      begin
-        f = File.open(destination.absolute, "w+")
+      if not @config.dry_run?
 
-      rescue => detail
-        $stderr.puts detail.message if @config.verbose?
-        $stderr.puts "Attempting to create the path." if @config.verbose?
+        begin
+          f = File.open(destination.absolute, "w+")
 
-        # Assume the directories leading to the file don't exist. Create them.
-        FileUtils::mkdir_p(destination.dirname)
+        rescue => detail
+          $stderr.puts detail.message if @config.verbose?
+          $stderr.puts "Attempting to create the path." if @config.verbose?
 
-        f = File.open(destination.absolute, "w+")
+          # Assume the directories leading to the file don't exist. Create them.
+          FileUtils::mkdir_p(destination.dirname)
+
+          f = File.open(destination.absolute, "w+")
+        end
+
+        unless f.nil?
+          f.syswrite(contents)
+          f.close
+          #$stderr.puts "Done with #{remote_path}." if @config.verbose?
+        end
+
+      else
+
+        $stderr.puts "Done with #{remote_path}. (dry run)" if @config.verbose?
+
       end
 
-      unless f.nil?
-        f.syswrite(contents)
-        f.close
-        $stderr.puts "Done with #{destination.relative}." if @config.verbose?
-      end
     end
   end
 

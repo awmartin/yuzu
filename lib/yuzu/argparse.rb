@@ -28,6 +28,7 @@ Available Commands
     def self.parse(args)
       options = OpenStruct.new
       options.output = :quiet    # :verbose, :debug
+      options.dry_run = false
 
       option_parser = \
       OptionParser.new do |opts|
@@ -38,6 +39,10 @@ Available Commands
 
         opts.on("--verbose", "Run showing verbose output.") do
           options.output = :verbose
+        end
+
+        opts.on("-n", "--dry-run", "Execute the command but don't actually copy or publish files.") do
+          options.dry_run = true
         end
 
         opts.on_tail("-h", "--help", "Show this help message.") do

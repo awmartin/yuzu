@@ -44,7 +44,7 @@ services:
   # e.g. yuzu preview:all
   preview:
     # The folder into which the rendered site will be copied.
-    destination: /tmp/yuzu-test-preview
+    destination: /tmp/destination/yuzu-test-preview
     # The value LINKROOT and linkroot become in content and HAML templates, respectively.
     link_root: /tmp/yuzu-test-preview
 

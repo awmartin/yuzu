@@ -11,7 +11,7 @@ import 'yuzu'
 import 'helpers/path'
 
 SITE_DIR = Pathname.new(File.expand_path(File.join(File.dirname(__FILE__), "content")))
-Helpers::Path.root = SITE_DIR
+Helpers::Path.local_root = SITE_DIR
 #require File.expand_path(File.join(File.dirname(__FILE__), "..", "lib", "yuzu"))
 #require File.expand_path(File.join(File.dirname(__FILE__), "..", "lib", "helpers", "path"))
 
@@ -34,13 +34,19 @@ module_function
     @test_site ||= get_test_site
   end
 
-  def get_test_site
+  def config
+    @config ||= get_config
+  end
+
+  def get_config
     config_path = File.expand_path(File.join(parent_folder, "content", "config", "yuzu.yml"))
 
     config_hash = YAML.load_file(config_path)
     config = Yuzu::Core::Config.new(config_hash, "preview")
-    config.working_dir = SITE_DIR
+    config
+  end
 
+  def get_test_site
     Yuzu::Core::SiteRoot.new(config, File.join(parent_folder, 'content'))
   end
 

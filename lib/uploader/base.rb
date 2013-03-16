@@ -24,9 +24,16 @@ module Uploader
       connect!
     end
 
+    def command_line_options
+      {
+        :verbose? => @config.verbose?,
+        :dry_run? => @config.dry_run?
+      }
+    end
+
     def set_service!
       service_name, service_class = get_service
-      service_config_hash = @config.send(service_name).merge({:verbose? => @config.verbose?})
+      service_config_hash = @config.send(service_name).merge(command_line_options)
 
       @service = service_class.new(UploaderConfig.new(service_config_hash))
     end
@@ -35,7 +42,11 @@ module Uploader
       service_key = (@service_override || @config.connection).to_sym
 
       if Service.is_registered?(service_key)
-        $stderr.puts "Using service #{service_key}" if @config.verbose?
+        if @config.dry_run?
+          $stderr.puts "Using service #{service_key} (dry run)" if @config.verbose?
+        else
+          $stderr.puts "Using service #{service_key}" if @config.verbose?
+        end
 
         return service_key, Service.services[service_key]
       else

@@ -6,6 +6,8 @@ module Yuzu::Core
   class Template
     include Helpers
 
+    class TemplateFolderDoesNotExist < StandardError; end
+
     @@template_dir = nil
 
     # template_name -- String. The filename of the template, e.g. _gallery.haml
@@ -15,6 +17,10 @@ module Yuzu::Core
       # TODO Make this part of a module-level config.
       if @@template_dir.nil?
         @@template_dir = Path.new("_templates")
+      end
+
+      if not @@template_dir.exists?
+        raise TemplateFolderDoesNotExist
       end
     end
 

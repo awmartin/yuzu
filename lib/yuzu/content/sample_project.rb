@@ -119,6 +119,7 @@ module Yuzu::Content
       File.join(File.dirname(__FILE__), "..", "..", "..", "resources")
     end
 
+    # Where to copy the sample project when created.
     def self.destination_folder
       Dir.pwd
     end

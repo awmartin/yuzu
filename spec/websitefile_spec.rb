@@ -1,6 +1,9 @@
 require 'spec_helper'
 require 'set'
 
+require 'helpers/import'
+import 'helpers/path'
+
 describe Yuzu::Core::WebsiteFile do
   include TestMocks
 
@@ -80,6 +83,16 @@ describe Yuzu::Core::WebsiteFile do
 
     it "should have the correct sidebar content" do
       @test_file.sidebar.strip.should == "<p>sidebar content</p>"
+    end
+  end
+
+  describe "(publication)" do
+    it "should have the correct remote_path" do
+      #destination = Helpers::Path.new(config.services['preview']['destination']) + @test_file.remote_path.relative
+      #correct_path =  "/tmp/destination/yuzu-test-preview/index.html"
+      destination = Helpers::Path.new(config.services['ftp']['remote_root_path']) + @test_file.remote_path.relative
+      correct_path = "index.html"
+      destination.to_s.should == correct_path
     end
   end
 

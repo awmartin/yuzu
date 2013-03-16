@@ -8,13 +8,13 @@ module Helpers
   class Path
     attr_reader :pathname
 
-    @@root = nil
+    @@local_root = nil
     # This method is only used to override the pwd function's result, mainly for testing.
-    def self.root=(other)
-      @@root = other
+    def self.local_root=(other)
+      @@local_root = other
     end
-    def self.root
-      @@root
+    def self.local_root
+      @@local_root
     end
 
     def self.join(path1, path2)
@@ -23,21 +23,22 @@ module Helpers
       #Pathname.new(path1).join(Pathname.new(path2)).to_s
     end
 
-    def initialize(*args)
-      if args.length > 1
-        path = File.join(*args)
-      else
-        path = args[0]
-      end
+    def initialize(path, root=nil)
+      @root = root
+      #if args.length > 1
+      #  path = File.join(*args)
+      #else
+      #  path = args[0]
+      #end
 
       if path.nil?
-        @pathname = pwd
+        @pathname = EmptyPathname.new
 
       elsif path.is_a?(Pathname)
         @pathname = path
 
       elsif path.is_a?(String)
-        @pathname = Pathname.new(path)
+        @pathname = path.empty? ? EmptyPathname.new : Pathname.new(path)
 
       elsif path.is_a?(Path)
         @pathname = path.pathname
@@ -48,9 +49,12 @@ module Helpers
       end
       raise "@pathname was nil" if @pathname.nil?
 
-      if not @pathname.absolute?
-        @pathname = expand_path
-      end
+      #if not @pathname.absolute?
+      #  @pathname = expand_path
+      #end
+      #@absolute = @pathname.to_s.start_with?("/")
+      @absolute = @pathname.absolute?
+
       @force_is_file = false
       @force_is_folder = false
     end
@@ -212,7 +216,7 @@ module Helpers
       if other.is_a?(String)
         path = Path.new(Pathname.new(other))
 
-      elsif other.is_a?(Pathname)
+      elsif other.is_a?(Pathname) or other.is_a?(EmptyPathname)
         path = Path.new(other)
 
       elsif other.is_a?(Path)
@@ -226,11 +230,11 @@ module Helpers
     end
 
     def pwd
-      @@root || Pathname.pwd
+      @root || (@@local_root || Pathname.pwd)
     end
 
     def self.pwd
-      Path.new(@@root || Pathname.pwd)
+      Path.new(@root || (@@local_root || Pathname.pwd))
     end
 
     def to_s
@@ -262,7 +266,11 @@ module Helpers
     end
 
     def relative_path
-      expand_path.relative_path_from(pwd.expand_path)
+      if @absolute
+        expand_path.relative_path_from(pwd.expand_path)
+      else
+        @pathname
+      end
     end
 
     def descend(&block)
@@ -274,7 +282,7 @@ module Helpers
     end
 
     def exists?
-      @pathname.exist?
+      @pathname.exist? or absolute_path.exist?
     end
 
     def folder?
@@ -311,6 +319,62 @@ module Helpers
 
     def url_for(prefix=nil)
       Url.new(self, prefix=prefix)
+    end
+  end
+
+
+  class EmptyPathname
+    def init
+    end
+
+    def to_s
+      ""
+    end
+
+    def expand_path
+      self
+    end
+
+    def absolute?
+      true
+    end
+
+    def file?
+      false
+    end
+
+    def folder?
+      true
+    end
+
+    def descend(&block)
+    end
+
+    def ascend(&block)
+    end
+
+    def parent
+      self
+    end
+
+    def basename(extension="")
+      ""
+    end
+
+    def dirname
+      ""
+    end
+
+    def +(other)
+      Pathname.new(other)
+    end
+
+    def children
+      []
+    end
+
+    def exist?
+      true
     end
   end
 
