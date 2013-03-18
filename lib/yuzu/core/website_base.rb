@@ -131,8 +131,8 @@ module Yuzu::Core
 
     def default_stash
       {
-        :generated_siblings => [],
-        :catalog => nil
+        :paginated_siblings => [],
+        :source_catalog => nil
       }
     end
 

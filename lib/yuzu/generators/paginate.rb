@@ -46,7 +46,7 @@ module Yuzu::Generators
       return if website_file.is_a?(Yuzu::Core::PaginatedWebsiteFile) or \
         PaginateGenerator.is_generated?(website_file)
 
-      CatalogPaginator.new(website_file, self).generate!
+      CatalogPaginator.new(website_file).generate!
       PaginateGenerator.add_generator(website_file)
     end
   end
@@ -59,24 +59,37 @@ module Yuzu::Generators
   # non-paginatable version, with an explicit page number. The new WebsiteFiles are added to the
   # parent folder.
   class CatalogPaginator
-    def initialize(website_file, catalog_generator)
+    # Instantiate a new CatalogPaginator instance.
+    #
+    # @param [WebsiteFile] website_file The file to be paginated.
+    def initialize(website_file)
       @website_file = website_file
-      @catalog_generator = catalog_generator
     end
 
     def generate!
-      catalog_args = @website_file.raw_contents.scan(@catalog_generator.regex).flatten
-      catalogs = catalogs_from_args(catalog_args)
-      generate_files_from_catalogs!(catalogs)
+      # We can only really paginate one paginatable catalog, so grab the first one.
+      first_paginating = self.class.get_first_paginating_catalog(@website_file)
+      if not first_paginating.nil?
+        generate_files_for_paginating_catalog!(first_paginating)
+      end
     end
 
-    def generate_files_from_catalogs!(catalogs)
-      paginating_catalogs = catalogs.select {|cat| cat.should_paginate?}
+    def self.get_first_paginating_catalog(website_file)
+      paginating_catalogs = get_paginating_catalogs(website_file)
+      paginating_catalogs.empty? ? nil : paginating_catalogs[0]
+    end
 
-      # We can only really paginate the first paginatable catalog.
-      first_paginating_catalog = paginating_catalogs.empty? ? nil : paginating_catalogs[0]
+    def self.get_paginating_catalogs(website_file)
+      get_all_catalogs(website_file).select {|cat| cat.should_paginate?}
+    end
 
-      generate_files_for_paginating_catalog!(first_paginating_catalog)
+    def self.get_all_catalogs(website_file)
+      catalog_args = website_file.raw_contents.scan(catalog_regex).flatten
+      catalogs_from_args(website_file, catalog_args)
+    end
+
+    def self.catalog_regex
+      Regexp.new('^\s*INSERTCATALOG\(([\w\W]*?)\)')
     end
 
     # Return an Array of Catalog instances from the given user-specified catalog arguments.
@@ -84,21 +97,21 @@ module Yuzu::Generators
     # @param [Array] catalog_args An Array of Hashes containing the arguments gathered from the
     #   INSERTCATALOG directives of the page.
     # @return [Array] An Array of corresponding Catalog objects.
-    def catalogs_from_args(catalog_args)
-      catalog_args.collect {|args| Yuzu::Filters.catalog_for(@website_file, args)}
+    def self.catalogs_from_args(website_file, catalog_args)
+      catalog_args.collect {|args| Yuzu::Filters.catalog_for(website_file, args)}
     end
 
     # Given a Catalog instance, check to see if it requires pagination and generate the appropriate
     # files for the given content.
     # 
     # @param [Catalog] catalog The Yuzu::Generator.Catalog object that represents the contents to
-    #   insert into the page.
+    #   paginate over several pages.
     # @return nothing
     def generate_files_for_paginating_catalog!(catalog)
       return if catalog.nil?
 
       num_pages = catalog.num_pages
-      return if num_pages == 1
+      return if num_pages == 1  # No pagination required.
 
       # Don't generate the first page, it's all ready to go.
       num_pages_to_generate = num_pages - 1
@@ -117,10 +130,17 @@ module Yuzu::Generators
       original_directive = catalog.original_directive
       directive_for_page = catalog.directive_for_page(page)
 
+      # TODO BUG The original_directive may not be the same as the actual directive written by the
+      # user in the page. It's assumed to be the same. See the Catalog object for details. A better
+      # regex is needed.
       new_raw_contents = @website_file.raw_contents.sub(original_directive, directive_for_page)
 
       paginated_file = Yuzu::Core::PaginatedWebsiteFile.new(@website_file, new_raw_contents, page)
-      add_file(paginated_file)
+
+      # Remember the catalog that this paginated file holds.
+      paginated_file.stash(:source_catalog => catalog)
+
+      add_file!(paginated_file)
     end
 
     # Takes the PaginatedWebsiteFile instance and adds it as a sibling to the root WebsiteFile being
@@ -128,7 +148,7 @@ module Yuzu::Generators
     #
     # @param [PaginatedWebsiteFile] paginated_file The new page to add as a sibling.
     # @return nothing
-    def add_file(paginated_file)
+    def add_file!(paginated_file)
       container = @website_file.parent
       container.append_child(paginated_file)
       stash_paginated_file(paginated_file)

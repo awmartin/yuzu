@@ -83,17 +83,20 @@ module Yuzu::Core
 
     # Update an explicit collection of WebsiteFiles. This effectively initiates the uploader to 
     # publish the files to the destination specified by the currently selected service.
-    def update_file(website_file, force_paginated_siblings=false)
+    #
+    # @param [WebsiteFile] website_file The file to be updated.
+    # @param [boolean] force_update_dependants Whether to update the file's containers, paginated
+    #   siblings, indices that contain it, etc.
+    # @return nothing
+    def update_file(website_file, force_update_dependants=false)
       $stderr.puts "#{BOLD}#{WHITE}Updating #{website_file}#{ENDC}#{ENDC}" if @config.verbose?
 
       if website_file.processable?
         @uploader.upload(website_file.remote_path, website_file.html_contents)
 
-        if force_paginated_siblings and website_file.stash.has_key?(:paginated_siblings)
-          paginated_siblings = website_file.stash[:paginated_siblings]
-          paginated_siblings.each do |wf|
-            @uploader.upload(wf.remote_path, wf.html_contents)
-          end
+        if force_update_dependants
+          update_pagination!(website_file)
+          update_dependants!(website_file)
         end
 
       elsif website_file.resource? or website_file.image? or website_file.asset?
@@ -108,6 +111,35 @@ module Yuzu::Core
       else
         $stderr.puts "Can't update #{website_file}." if @config.verbose?
 
+      end
+    end
+
+    # Update the file's paginated siblings. e.g. For index.html, render index_2.html, 
+    # index_3.html, etc.
+    def update_pagination!(website_file)
+      paginated_siblings = website_file.stash[:paginated_siblings]
+      paginated_siblings.each do |wf|
+        @uploader.upload(wf.remote_path, wf.html_contents)
+      end
+    end
+
+    # Find all the files with catalogs that include the given page and update them.
+    def update_dependants!(website_file)
+      paginated_siblings = website_file.stash[:paginated_siblings]
+      to_update = []
+
+      files_only = proc {|f| f.file?}
+      visitor = Yuzu::Core::Visitor.new(files_only)
+
+      visitor.traverse(website_file.root) do |f|
+        if not (f == website_file) and not paginated_siblings.include?(f)
+          catalogs = Yuzu::Generators::CatalogPaginator.get_all_catalogs(f)
+          catalogs.each do |catalog|
+            if not catalog.nil? and catalog.include?(website_file)
+              @uploader.upload(f.remote_path, f.html_contents)
+            end
+          end
+        end
       end
     end
 

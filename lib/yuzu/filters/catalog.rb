@@ -23,10 +23,11 @@ module Yuzu::Filters
       catalog = Yuzu::Filters.catalog_for(website_file, match(processing_contents))
 
       if catalog.should_paginate? and catalog.num_pages > 1
-        website_file.stash(:catalog => catalog)
+        # Store the original, paginatable catalog in the root file.
+        website_file.stash(:source_catalog => catalog)
       end
 
-      return catalog.render
+      catalog.render
     end
   end
   Filter.register(:catalog => CatalogFilter)
@@ -68,7 +69,8 @@ module Yuzu::Filters
 
 
   # Catalogs render one page of collected contents and have no knowledge of pagination. The
-  # auto-pagination happens earlier as part of the generation process.
+  # auto-pagination happens earlier as part of the generation process (see the PaginateGenerator and
+  # CatalogPaginator classes).
   class Catalog
     include Helpers
     attr_reader :website_file
@@ -102,6 +104,10 @@ module Yuzu::Filters
           default_value
         end
       end
+    end
+
+    def to_s
+      "Catalog(#{@website_file}, page:#{page})"
     end
 
     def get_default_type_method(key)
@@ -162,6 +168,10 @@ module Yuzu::Filters
       end
     end
 
+    # Renders the nth row of a catalog grid.
+    #
+    # @param [Fixnum] row Which row to render, zero-indexed.
+    # @return [String] The HTML results rendered as a String.
     def render_nth_row(row)
       start = row * per_row
       stop = (row + 1) * per_row
@@ -234,6 +244,10 @@ module Yuzu::Filters
       start = (page - 1) * per_page + offset
       stop = page * per_page + offset
       target_files[start...stop]
+    end
+
+    def include?(other)
+      files_to_render_this_page.include?(other)
     end
 
     def num_rows_this_page
