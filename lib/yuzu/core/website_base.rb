@@ -140,6 +140,7 @@ module Yuzu::Core
     def stash(kwds={})
       @stash = default_stash if @stash.nil?
       kwds.empty? ? @stash : @stash.update(kwds)
+      @stash
     end
 
     def generated?

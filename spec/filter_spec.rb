@@ -16,20 +16,33 @@ describe Yuzu::Filters::CatalogFilter do
   before do
     @blog_index = test_site.blog_folder.get_child_by_basename("index")
     @catalog_test_folder = test_site.get_child_by_rootname("catalogs")
+    @catalog_pagination_test = \
+      test_site.get_child_by_rootname("catalogs").get_child_by_filename("pagination1.md")
   end
 
-  describe "(values)" do
-    # Looks for the title of each blog post inserted as a <h2> tag, sepcified in
-    # _templates/_block.haml.
-    it "should have generated the correct posts" do
-      rendered_contents = @blog_index.rendered_contents
+  # Looks for the title of each blog post inserted as a <h2> tag, sepcified in
+  # _templates/_block.haml.
+  it "should have generated the correct posts" do
+    rendered_contents = @blog_index.rendered_contents
 
-      regex = Regexp.new('<h2[^>]*?>([\w\W]*?)</h2>')
-      matches = rendered_contents.scan(regex)
+    regex = Regexp.new('<h2[^>]*?>([\w\W]*?)</h2>')
+    matches = rendered_contents.scan(regex)
 
-      titles = matches.collect {|m| m[0].to_s}
-      Set.new(titles).should == Set.new(["Blog Post 1", "Blog Post 2"])
-    end
+    titles = matches.collect {|m| m[0].to_s}
+    Set.new(titles).should == Set.new(["Blog Post 1", "Blog Post 2"])
+  end
+
+  it "should have generated posts in a paginated catalog" do
+    catalog_filter = Yuzu::Filters::Filter.filters[:catalog]
+    match_string = catalog_filter.get_value(@catalog_pagination_test)
+    catalog = Yuzu::Filters.catalog_for(@catalog_pagination_test, match_string)
+
+    catalog.should_not be_nil
+    catalog.num_pages.should_not == 0
+    catalog.num_pages.should == 4
+    catalog.number_of_files_to_show.should == 5
+    catalog.num_total_files.should == 20
+    catalog.should_paginate?.should be_true
   end
 
 end

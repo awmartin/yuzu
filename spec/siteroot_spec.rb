@@ -29,7 +29,14 @@ describe Yuzu::Core::SiteRoot do
 
   it "should have a blog folder with the correct number of children" do
     blog_folder = test_site.get_child_by_rootname("blog")
+    blog_index = blog_folder.get_child_by_filename("index.md")
+
     files = Dir.glob(File.join(File.dirname(__FILE__), "content", "blog", "*"))
-    blog_folder.children.length.should == files.length
+
+    num_blog_categories = blog_index.blog_categories.length
+    num_predicted_children = num_blog_categories + files.length
+
+    blog_folder.children.length.should == num_predicted_children
   end
 end
+

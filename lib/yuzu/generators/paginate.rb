@@ -69,7 +69,9 @@ module Yuzu::Generators
     def generate!
       # We can only really paginate one paginatable catalog, so grab the first one.
       first_paginating = self.class.get_first_paginating_catalog(@website_file)
+
       if not first_paginating.nil?
+        @website_file.stash(:source_catalog => first_paginating)
         generate_files_for_paginating_catalog!(first_paginating)
       end
     end

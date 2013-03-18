@@ -10,10 +10,9 @@ require 'helpers/import'
 import 'yuzu'
 import 'helpers/path'
 
+# Set the Path root directory to the root of the sample content.
 SITE_DIR = Pathname.new(File.expand_path(File.join(File.dirname(__FILE__), "content")))
 Helpers::Path.local_root = SITE_DIR
-#require File.expand_path(File.join(File.dirname(__FILE__), "..", "lib", "yuzu"))
-#require File.expand_path(File.join(File.dirname(__FILE__), "..", "lib", "helpers", "path"))
 
 module TestMocks
 module_function
@@ -30,12 +29,13 @@ module_function
     Set.new(registry_symbols)
   end
 
+  @@test_site = nil
   def test_site
-    @test_site ||= get_test_site
+    @@test_site ||= get_test_site
   end
 
   def config
-    @config ||= get_config
+    @@config ||= get_config
   end
 
   def get_config
@@ -47,7 +47,7 @@ module_function
   end
 
   def get_test_site
-    Yuzu::Core::SiteRoot.new(config, File.join(parent_folder, 'content'))
+    Yuzu::Core::SiteRoot.new(config)
   end
 
 end

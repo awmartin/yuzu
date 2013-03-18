@@ -48,3 +48,20 @@ describe Yuzu::Generators::CategoryFoldersGenerator do
   end
 end
 
+describe Yuzu::Generators::PaginateGenerator do
+  include TestMocks
+
+  before do
+    @paginated_page = test_site.get_child_by_rootname("catalogs").get_child_by_filename("pagination1.md")
+  end
+
+  it "should generate the proper number of pages" do
+    num_siblings_generated = @paginated_page.stash[:paginated_siblings]
+    catalog_to_be_paginated = @paginated_page.stash[:source_catalog]
+
+    catalog_to_be_paginated.should_not be_nil
+    catalog_to_be_paginated.num_pages.should == (num_siblings_generated.length + 1)
+    num_siblings_generated.length.should_not == 0
+  end
+end
+
