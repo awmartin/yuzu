@@ -17,7 +17,7 @@ describe Yuzu::Filters::CatalogFilter do
     @blog_index = test_site.blog_folder.get_child_by_basename("index")
     @catalog_test_folder = test_site.get_child_by_rootname("catalogs")
     @catalog_pagination_test = \
-      test_site.get_child_by_rootname("catalogs").get_child_by_filename("pagination1.md")
+      test_site.get_child_by_rootname("catalogs").get_child_by_filename("pagination_default.md")
   end
 
   # Looks for the title of each blog post inserted as a <h2> tag, sepcified in

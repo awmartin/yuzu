@@ -12,7 +12,7 @@ describe Yuzu::Core::SiteRoot do
       all_are_children &&= test_site.path.is_descendant?(node.path)
     end
 
-    all_are_children.should == true
+    all_are_children.should be_true
   end
 
   it "should properly identify the blog folder" do
@@ -23,8 +23,7 @@ describe Yuzu::Core::SiteRoot do
   end
 
   it "should properly identify the blog name" do
-    blog_folder = test_site.get_child_by_rootname("blog")
-    blog_folder.path.name.should == "blog"
+    test_site.blog_folder.path.name.should == "blog"
   end
 
   it "should have a blog folder with the correct number of children" do
