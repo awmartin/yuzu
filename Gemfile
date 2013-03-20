@@ -13,9 +13,6 @@ gem 'kramdown', ">= 0.13.7"
 #gem 'hpricot', ">= 0.8.3"
 #gem 'prawn', ">= 0.8.4"
 
-# Textile rendering not available yet.
-#gem 'RedCloth', ">= 4.2.3"
-
 group :development do
   gem "shoulda", ">= 0"
   gem "bundler", "~> 1.2.3"
@@ -23,5 +20,8 @@ group :development do
   gem "rcov", ">= 0"
   gem "yard", ">= 0.8.3"
   gem "rspec", ">= 2.12.0"
+
+  # Optional Gems
+  gem "RedCloth", ">= 4.2.7"
 end
 

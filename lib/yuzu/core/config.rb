@@ -53,7 +53,7 @@ module Yuzu::Core
       check_for_gems
     end
 
-    OPTIONAL_GEMS = ['compass']
+    OPTIONAL_GEMS = ['compass', 'RedCloth']
 
     # Provides information about installed gems for optional features, like Compass integration, git
     # integration, 
