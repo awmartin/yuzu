@@ -17,8 +17,12 @@ module Yuzu::Translators
     end
 
     def extract_title_from_contents(contents)
-      m = contents.match(/^#\s+.*?\n/)
+      m = contents.match(h1_regex)
       return m.nil? ? nil : m[0].sub("#", "").strip
+    end
+
+    def h1_regex
+      Regexp.new('^#\s+.*?\n')
     end
   end
   Translator.register(:markdown => MarkdownTranslator)

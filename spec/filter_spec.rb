@@ -114,3 +114,21 @@ describe Yuzu::Filters::PostTitleFilter do
   end
 end
 
+describe Yuzu::Filters::PostTitleRemovedFilter do
+  include TestMocks
+
+  before do
+    @filter = Yuzu::Filters::Filter.filters[:post_title_removed]
+    @page = test_site.get_child_by_filename("page1.md")
+  end
+
+  it "should remove h1 titles" do
+    post_title = @page.post_title
+    contents = @page.raw_contents
+    contents.include?(post_title).should be_true
+
+    new_contents = @filter.process(@page, contents)
+    new_contents.include?(post_title).should be_false
+  end
+end
+
