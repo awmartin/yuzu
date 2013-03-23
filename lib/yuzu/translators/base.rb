@@ -55,6 +55,10 @@ module Yuzu::Translators
     def extract_title_from_contents(contents)
       nil
     end
+
+    def h1_regex
+      nil
+    end
   end
 
 end
