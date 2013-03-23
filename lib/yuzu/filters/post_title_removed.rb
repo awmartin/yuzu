@@ -32,12 +32,12 @@ module Yuzu::Filters
 
       possible_translators = \
         translators.select {|name, translator| translator.translates?(website_file.path.extension)}
-      return new_contents if possible_translators.length == 0
+      return processing_contents if possible_translators.length == 0
 
       translator = possible_translators[0][1]
 
-      # Just remove the first one.
-      processing_contents.sub(translator.h1_regex, "")
+      # Just remove the first one, if we can.
+      translator.h1_regex.nil? ? processing_contents : processing_contents.sub(translator.h1_regex, "")
     end
   end
   Filter.register(:post_title_removed => PostTitleRemovedFilter)
