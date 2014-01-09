@@ -29,6 +29,16 @@ unless String.method_defined?(:titlecase)
       end
       tr
     end
+
+    def to_bool
+      if self == "true"
+        return true
+      elsif self == "false"
+        return false
+      else
+        raise ArgumentError, "String must be true or false to convert to TrueClass or FalseClass."
+      end
+    end
   end
 
 end
