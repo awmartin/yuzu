@@ -18,8 +18,9 @@ module Uploader
         @ftp.login(@config.username, @config.password)
       end
     rescue => e
-      $strerr.puts "Something went wrong with the FTP login."
-      @stderr.puts e.message
+      $stderr.puts "Something went wrong with the FTP login."
+      $stderr.puts e.message
+      exit
     end
 
     def close!
@@ -55,12 +56,18 @@ module Uploader
 
       $stderr.puts "Attempting to upload via FTP: #{remote_path}" + (@config.dry_run? ? " (dry run)" : "")
 
+      create_folder_on_fail = false
       begin
         attempt_upload!(server_path, file, binary)
       rescue => e
         $stderr.puts "FTP Error"
         $stderr.puts e.message + " (#{e.class})"
-
+        
+        create_folder_on_fail = true
+      end
+      
+      if create_folder_on_fail
+        $stderr.puts "Failed to upload the file, so attempting to create the path #{server_path}"
         create_remote_folder!(server_path)
         attempt_upload!(server_path, file, binary)
       end
@@ -98,11 +105,12 @@ module Uploader
 
       server_path.descend do |path|
         begin
-          @ftp.mkdir(path)
+          @ftp.mkdir(path.to_s)
         rescue Net::FTPPermError
           $stderr.puts "Remote folder already exists."
-        rescue
+        rescue => e
           # Ok.
+          $stderr.puts e.message
         end
       end
     end
