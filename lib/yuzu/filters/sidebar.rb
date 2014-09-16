@@ -20,7 +20,8 @@ module Yuzu::Filters
 
     def get_value(website_file)
       sidebar = match(website_file.raw_contents).to_s
-      Yuzu::Translators::Translator.translate(sidebar, website_file.path.extension)
+      tr = Yuzu::Translators::Translator.translate(sidebar, website_file.path.extension)
+      tr.gsub("LINKROOT", website_file.config.linkroot)
     end
   end
   Filter.register(:sidebar => SidebarFilter)
