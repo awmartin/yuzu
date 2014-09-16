@@ -2,6 +2,7 @@ require 'helpers/import'
 
 import 'html/base'
 import 'helpers/path'
+import 'helpers/string'
 import 'yuzu/filters/base'
 import 'yuzu/core/template'
 
@@ -110,7 +111,8 @@ module Yuzu::Filters
       :page => 1,
       :offset => 0,
       :category => nil,
-      :sort => :post_date_reversed
+      :sort => :post_date_reversed,
+      :split_rows => true
     }
     @@kwd_defaults.each_pair do |key, default_value|
       define_method key do
@@ -145,6 +147,10 @@ module Yuzu::Filters
         :to_f
       elsif klass == Symbol
         :to_sym
+      elsif klass == TrueClass
+        :to_bool
+      elsif klass == FalseClass
+        :to_bool
       else
         nil
       end
@@ -264,7 +270,11 @@ module Yuzu::Filters
     # @return [String] The HTML tag containing the row as a String.
     def render_row(files)
       rendered_files = files.collect {|file| render_post(file)}.join("\n")
-      Html::Div.new(:class => 'row') << rendered_files
+      if split_rows
+        Html::Div.new(:class => 'row') << rendered_files
+      else
+        rendered_files
+      end
     end
 
     # Renders a single WebsiteFile contained in the Catalog with the specified template.
@@ -341,7 +351,10 @@ module Yuzu::Filters
     # @return [Array] An Array of all WebsiteFile instances contained in target_folder.
     def get_unsorted_target_files
       return [] if target_folder.nil?
-      target_folder.all_processable_children.reject {|node| node.index?}
+      tr = target_folder.all_processable_children.reject {|node| node.index?}
+
+      # Replace all links with their targets.
+      tr.collect {|f| f.is_link? ? f.link : f }
     end
 
     # Get the WebsiteFolder that the 'path' key in the Catalog directive refers to.

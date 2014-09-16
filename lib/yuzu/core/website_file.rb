@@ -257,6 +257,9 @@ module Yuzu::Core
       @postfilters ||= filters.values.select {|filt| filt.filter_type.include?(:postfilter)}
     end
 
+    def is_link?
+      not link.nil?
+    end
   end
 
 
