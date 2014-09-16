@@ -33,8 +33,13 @@ module Yuzu::Generators
     end
 
     def should_generate?(website_file)
+      match = 
+        website_file.raw_contents
+          .encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+          .scan(regex)
+
       not PaginateGenerator.is_generated?(website_file) and \
-        not website_file.raw_contents.scan(regex).flatten.empty?
+        not match.flatten.empty?
     end
 
     def visitor_filter
@@ -86,7 +91,11 @@ module Yuzu::Generators
     end
 
     def self.get_all_catalogs(website_file)
-      catalog_args = website_file.raw_contents.scan(catalog_regex).flatten
+      catalog_args =
+        website_file.raw_contents
+          .encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+          .scan(catalog_regex)
+          .flatten
       catalogs_from_args(website_file, catalog_args)
     end
 

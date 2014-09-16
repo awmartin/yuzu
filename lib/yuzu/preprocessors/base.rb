@@ -48,7 +48,9 @@ module Yuzu::PreProcessors
     def process(website_file, new_contents)
       replaced = false
 
-      m = new_contents.match(regex)
+      m = new_contents
+            .encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+            .match(regex)
 
       while not m.nil?
         repl = replacement(website_file, new_contents)

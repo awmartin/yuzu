@@ -49,7 +49,9 @@ module Yuzu::Filters
     end
 
     def get_match(contents)
-      m = contents.match(regex)
+      m = contents
+            .encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+            .match(regex)
       m.nil? ? nil : m[1]
     end
 

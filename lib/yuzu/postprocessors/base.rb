@@ -24,7 +24,11 @@ module Yuzu::PostProcessors
     end
 
     def match(contents)
-      contents.to_s.match(regex)
+      m = contents.to_s
+        .encode('UTF-8', 'binary', invalid: :replace, undef: :replace, replace: '')
+        .match(regex)
+
+      m.nil? ? nil : m[1]
     end
 
     def regex
