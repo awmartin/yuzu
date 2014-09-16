@@ -27,7 +27,7 @@ module Yuzu::PostProcessors
       cats = []
       found_names = []
 
-      v = Yuzu::Core::Visitor.new(proc {|c| c.file?})
+      v = Yuzu::Core::Visitor.new(proc {|c| c.file? and not c.hidden?})
       v.traverse(website_file.root) do |f|
         # NOTE Because of Ruby's hashing algorithm, we'll get different results calling uniq on an
         # array with objects hashed against a simple string. The comparison doesn't produce truly

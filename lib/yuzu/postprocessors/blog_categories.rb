@@ -30,7 +30,7 @@ module Yuzu::PostProcessors
       search_root = website_file.blog_folder
       return [] if search_root.nil?
 
-      v = Yuzu::Core::Visitor.new(proc {|c| c.file?})
+      v = Yuzu::Core::Visitor.new(proc {|c| c.file? and not c.hidden?})
       v.traverse(search_root) do |f|
         # NOTE Because of Ruby's hashing algorithm, we'll get different results calling uniq on an
         # array with objects hashed against a simple string. The comparison doesn't produce truly
