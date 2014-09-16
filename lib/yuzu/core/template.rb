@@ -1,4 +1,5 @@
 require 'haml'
+require 'date'
 require 'helpers/import'
 import 'helpers/path'
 
@@ -133,12 +134,12 @@ module Yuzu::Core
     end
 
     def format_date(raw_date)
-      if not raw_date.is_a?(String) and not raw_date.is_a?(Time)
-        return raw_date
+      if not raw_date.is_a?(String) and not raw_date.is_a?(Time) and not raw_date.is_a?(Date)
+        return raw_date.to_s
       end
 
       if raw_date.is_a?(String)
-        raw_date = Time.parse(raw_date)
+        raw_date = Date.parse(raw_date)
       end
 
       date = raw_date.strftime("%Y-%m-%d")

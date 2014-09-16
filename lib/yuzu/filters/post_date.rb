@@ -1,4 +1,5 @@
 require 'helpers/import'
+require 'date'
 
 import 'yuzu/filters/base'
 
@@ -18,8 +19,8 @@ module Yuzu::Filters
 
       if not date.nil?
         begin
-            date = Time.parse(date)
-        rescue
+          date = Date.parse(date)
+        rescue => e
           date = nil
         end
       end
@@ -33,12 +34,12 @@ module Yuzu::Filters
     def extract_date_from_filename(website_file)
       post_filename = website_file.filename
       m = post_filename.match(/[0-9]{4}\-[0-9]{2}\-[0-9]{2}/)
-      m.nil? ? nil : Time.parse(m[0])
+      m.nil? ? nil : Date.parse(m[0])
     end
 
     def extract_date_from_folder_structure(website_file)
       m = website_file.path.relative.match(/[0-9]{4}\/[0-9]{2}\/[0-9]{2}/)
-      m.nil? ? nil : Time.parse(m[0].gsub("/", "-"))
+      m.nil? ? nil : Date.parse(m[0].gsub("/", "-"))
     end
 
   end
