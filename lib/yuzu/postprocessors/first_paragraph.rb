@@ -9,7 +9,7 @@ module Yuzu::PostProcessors
     end
 
     def regex
-      /<p\b[^>]*?>(.*?)<\/p>/n
+      /<p\b[^>]*?>([\w\W]*?)<\/p>/n
     end
   end
   PostProcessor.register(:first_paragraph => FirstParagraphPostProcessor)
