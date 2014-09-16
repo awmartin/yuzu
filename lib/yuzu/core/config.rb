@@ -117,8 +117,11 @@ module Yuzu::Core
       @config_hash['services'][service]['link_root'].to_s
     end
 
+
+    attr_accessor :link_root_override
+
     def link_root
-      link_root_for_service(@service)
+      @link_root_override || link_root_for_service(@service)
     end
 
     def linkroot
