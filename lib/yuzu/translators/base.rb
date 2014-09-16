@@ -40,7 +40,12 @@ module Yuzu::Translators
       Translator.translators.keys
     end
 
-    def translates?(file_extension)
+    def translates?(file)
+      if file.is_a? Yuzu::Core::WebsiteFile
+        file_extension = file.path.extension
+      else
+        file_extension = file
+      end
       extensions.include?(file_extension)
     end
 
@@ -49,7 +54,7 @@ module Yuzu::Translators
     end
 
     def translate(contents)
-      "<div><code><pre>#{contents}</pre></code></div>"
+      contents.to_s
     end
 
     def extract_title_from_contents(contents)
