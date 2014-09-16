@@ -33,7 +33,7 @@ module Yuzu::PreProcessors
       if not file_to_insert.nil?
         "\n" + file_to_insert.prefiltered_contents
       else
-        insert_file(file_path)
+        insert_file_contents_from_disk(file_path)
       end
     end
 
@@ -41,7 +41,7 @@ module Yuzu::PreProcessors
     #
     # @param [Path] path refers to the file on disk.
     # @return [String] The contents of the file.
-    def insert_file(path)
+    def insert_file_contents_from_disk(path)
       if path.exists?
         f = File.open(path.absolute, "r")
         contents = f.read
