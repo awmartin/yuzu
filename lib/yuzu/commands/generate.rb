@@ -4,7 +4,7 @@ module Yuzu::Command
 
   # Generate handles some cross-media production (e.g. pdf) and handling of the creation of files
   # (e.g. thumbnails).
-  class Generate < ConfiglessCommand
+  class Generate < Base
     def index
     end
 
@@ -22,7 +22,8 @@ module Yuzu::Command
 
     # TODO: Put this in its own class, update it, and integrate with the rest of the app.
     def thumbnails
-      path = args.first
+      path = @args.first
+
       web_image_types = [".png", ".jpg", ".gif"]
       thumbnail_types = @config.thumbnails.keys
 
@@ -62,22 +63,23 @@ module Yuzu::Command
       end
     end
 
-    def config
-      if not File.exists?("yuzu.yml") and not File.exists?("config/yuzu.yml")
-        # TODO Update to use Path objects.
-        FileUtils.copy(
-          "#{File.dirname(__FILE__)}/../templates/yuzu.yml",
-          "#{Dir.pwd}/config/yuzu.yml"
-        )
+    # Generates a configuration. This does not require a config file, obviously.
+#    def config
+#      if not File.exists?("yuzu.yml") and not File.exists?("config/yuzu.yml")
+#        # TODO Update to use Path objects.
+#        FileUtils.copy(
+#          "#{File.dirname(__FILE__)}/../templates/yuzu.yml",
+#          "#{Dir.pwd}/config/yuzu.yml"
+#        )
 
-        $stderr.puts %Q{Copied a sample config file into the current folder. \
-Update it with your remote server information.}
+#        $stderr.puts %Q{Copied a sample config file into the current folder. \
+#Update it with your remote server information.}
 
-      else
-        $stderr.puts %Q{Config file yuzu.yml already exists. Please rename or \
-erase it to generate a new one.}
-      end
-    end
+#      else
+#        $stderr.puts %Q{Config file yuzu.yml already exists. Please rename or \
+#erase it to generate a new one.}
+#      end
+#    end
 
     def self.help method
       case method
