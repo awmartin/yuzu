@@ -30,12 +30,33 @@ module Yuzu::Core
       @filter = filter.nil? ? proc {|c| true} : filter
     end
 
+    # Traverse depth-first through the tree.
     def traverse(container, &block)
       return if container.children.nil?
 
       container.children.each do |child|
         block.call(child) if @filter.call(child)
         self.traverse(child, &block) if not child.children.nil?
+      end
+    end
+
+    # Traverse the tree breadth-first.
+    def traverse_breadth(container, &block)
+      return if container.children.nil?
+
+      containers = [container]
+
+      while containers.length > 0
+        next_child = containers[0]
+
+        if not next_child.children.nil?
+          next_child.children.each do |child|
+            block.call(child) if @filter.call(child)
+            containers.push(child) if not child.children.nil?
+          end
+        end
+
+        containers.shift
       end
     end
   end
