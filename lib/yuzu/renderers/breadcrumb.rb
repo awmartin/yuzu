@@ -130,7 +130,12 @@ module Yuzu::Renderers
       Html::Link.new(
         :href => @website_obj.link_url,
         :class => "breadcrumb_#{@level}"
-      ) << @website_obj.name
+      ) << trunc_name
+    end
+
+    def trunc_name
+      title = @website_obj.name
+      title.length > 40 ? title[0..40] + "..." : title
     end
   end
 
