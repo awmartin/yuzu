@@ -31,10 +31,16 @@ module Yuzu::Filters
       return processing_contents if not website_file.config.remove_h1_tags
 
       possible_translators = \
-        translators.select {|name, translator| translator.translates?(website_file.path.extension)}
+        translators.select {|name, translator| translator.translates?(website_file)}
       return processing_contents if possible_translators.length == 0
 
-      translator = possible_translators[0][1]
+      #if possible_translators.nil?
+      #  throw "nil 1"
+      #elsif possible_translators[0].nil?
+      #  throw "nil 2"
+      #end
+
+      translator = possible_translators.values[0]
 
       # Just remove the first one, if we can.
       translator.h1_regex.nil? ? processing_contents : processing_contents.sub(translator.h1_regex, "")
