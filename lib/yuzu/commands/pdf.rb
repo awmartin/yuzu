@@ -10,11 +10,24 @@ module Yuzu::Command
 
   class Pdf < Base
     def index
+      single
+    end
+    
+    def single
       # Override needed because paths should all be local file paths, not URL-based.
       @config.link_root_override = Dir.pwd.to_s
       @siteroot = Yuzu::Core::SiteRoot.new(@config)
+      
       @pdf = PdfMaker.new(@siteroot)
-      @pdf.write_to_disk
+      @pdf.render!
+    end
+    
+    def individual
+      @config.link_root_override = Dir.pwd.to_s
+      @siteroot = Yuzu::Core::SiteRoot.new(@config)
+      
+      @pdf = PdfMaker.new(@siteroot)
+      @pdf.render_individual_files!
     end
 
     def self.help(method)
@@ -28,8 +41,6 @@ module Yuzu::Command
   class PdfMaker
     def initialize(siteroot)
       @siteroot = siteroot
-
-      render!
     end
 
     def render_pdfkit!
@@ -46,9 +57,32 @@ module Yuzu::Command
     def pdf_name
       @siteroot.config.site_name.gsub(" ", "_")
     end
+    
+    def render_individual_files!
+      files_to_render = get_all_website_files()
+      
+      top_margin = bottom_margin = 0.75.send(:in)
+      left_margin = right_margin = 1.0.send(:in)
+      
+      files_to_render.each do |website_file|
+        page_filename = website_file.path.with_extension('.pdf').relative
+        $stderr.puts("Writing: #{page_filename}")
+        
+        Prawn::Document.generate(
+          page_filename, 
+          :top_margin => top_margin,
+          :bottom_margin => bottom_margin,
+          :left_margin => left_margin,
+          :right_margin => right_margin
+        ) do |pdf|
+          set_fonts!(pdf)
+          render_page_for!(website_file, pdf)
+        end
+      end
+    end
 
     def render!
-      files_to_render = get_all_website_files
+      files_to_render = get_all_website_files()
 
       top_margin = bottom_margin = 0.75.send(:in)
       left_margin = right_margin = 1.0.send(:in)
@@ -60,35 +94,42 @@ module Yuzu::Command
         :left_margin => left_margin,
         :right_margin => right_margin
       ) do |pdf|
-
-        #:normal => "#{Prawn::DATADIR}/fonts/Chalkboard.ttf"
-        pdf.font_families.update(
-          "Times" => {
-            :normal => "/System/Library/Fonts/Times.dfont"
-          },
-          "Georgia" => {
-            :normal => "/Library/Fonts/Georgia.ttf"
-          },
-          "sans" => {
-            :normal => "/System/Library/Fonts/HelveticaNeue.dfont"
-          }
-        )
-
-        pdf.font(default_font)
-        pdf.font_size(default_size)
-        pdf.default_leading(5)
-
+        set_fonts!(pdf)
         files_to_render.each do |website_file|
-          $stderr.puts website_file
+          $stderr.puts("Rendering: #{website_file}")
           render_page_for!(website_file, pdf)
           pdf.start_new_page
         end
-
       end
     end
 
+    def set_fonts!(pdf)
+      #:normal => "#{Prawn::DATADIR}/fonts/Chalkboard.ttf"
+      pdf.font_families.update(
+        "Times" => {
+          :normal => "/System/Library/Fonts/Times.dfont"
+        },
+        "Georgia" => {
+          :normal => "/Library/Fonts/Georgia.ttf"
+        },
+        "sans" => {
+          :normal => "/System/Library/Fonts/HelveticaNeue.dfont"
+        }
+      )
+      
+      pdf.font(default_font)
+      pdf.font_size(default_size)
+      pdf.default_leading(5)
+    end
+    
     def get_all_website_files
-      files_only = proc {|f| f.file? and f.processable? and not f.hidden? and not f.generated? and not f.index?}
+      files_only = proc {|f| 
+        f.file?
+        and f.processable?
+        and not f.hidden?
+        and not f.generated?
+        and not f.index?
+      }
       v = Yuzu::Core::Visitor.new(files_only)
 
       files = []
@@ -98,16 +139,8 @@ module Yuzu::Command
       files
     end
 
-    def render_title_for!(website_file, pdf)
-      pdf.font_size(16)
-      pdf.text(website_file.name)
-      pdf.move_down(20)
-      pdf.font_size(default_size)
-    end
-
+    
     def render_page_for!(website_file, pdf)
-      #render_title_for!(website_file, pdf)
-
       contents = website_file.html_contents
       html = Nokogiri::HTML(contents)
 
@@ -134,6 +167,14 @@ module Yuzu::Command
         end
       end
 
+    end
+    
+    
+    def render_title_for!(website_file, pdf)
+      pdf.font_size(16)
+      pdf.text(website_file.name)
+      pdf.move_down(20)
+      pdf.font_size(default_size)
     end
 
     def render_image!(el, pdf)
@@ -162,7 +203,7 @@ module Yuzu::Command
       source = source.sub("-large.", "-medium.")
 
       if not is_hidden
-        $stderr.puts "Inserting image #{source}"
+        $stderr.puts "  Inserting image #{source}"
         width = 6.5.in
         pdf.image(source, :width => width)
         pdf.move_down(20)
@@ -285,9 +326,6 @@ module Yuzu::Command
 
     def code_font
       "Courier"
-    end
-
-    def write_to_disk
     end
   end
 

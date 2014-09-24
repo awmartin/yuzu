@@ -135,6 +135,7 @@ module Yuzu::Core
     end
 
     def output_filename
+      # 'extension' is defined by the ExtensionFilter.
       processable? ? @path.with_extension(extension).filename : filename
     end
 
