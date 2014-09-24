@@ -255,7 +255,7 @@ module Yuzu::Filters
     def render_nth_row(row)
       start = row * per_row
       stop = (row + 1) * per_row
-      files_this_row = files_to_render_this_page[start...stop]
+      files_this_row = files_to_render_this_page[start...stop] || []
       if files_this_row.empty?
         Html::Div.new(:class => 'row') << Html::Comment.new << "No files in this row."
       else
@@ -312,7 +312,7 @@ module Yuzu::Filters
     #
     # @return [Array] An Array of WebsiteFile instances contained by the target folder.
     def target_files
-      @target_files ||= get_target_files
+      @target_files ||= (get_target_files || [])
     end
 
     # Calculates the child WebsiteFile instances represented by this Catalog and returns them in the
@@ -321,7 +321,7 @@ module Yuzu::Filters
     # @return [Array] An Array of WebsiteFile instances contained by the target folder.
     def get_target_files
       filtered = get_category_filtered_target_files(get_unsorted_target_files)
-      get_sorted_target_files(filtered)
+      get_sorted_target_files(filtered) || []
     end
 
     # Apply the current Catalog sorting to the given files.
@@ -391,7 +391,7 @@ module Yuzu::Filters
     def files_to_render_this_page
       start = (page - 1) * per_page + offset
       stop = page * per_page + offset
-      target_files[start...stop]
+      target_files[start...stop] || []
     end
 
     # Return whether the Catalog includes a WebsiteFile on this page.

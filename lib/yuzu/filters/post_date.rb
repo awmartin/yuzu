@@ -28,7 +28,8 @@ module Yuzu::Filters
       date ||= extract_date_from_filename(website_file)
       date ||= extract_date_from_folder_structure(website_file)
       date ||= default(website_file)
-      date
+      
+      date.is_a?(Date) ? date : Date.parse(date.to_s)
     end
 
     def extract_date_from_filename(website_file)
