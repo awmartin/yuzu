@@ -124,10 +124,10 @@ module Yuzu::Command
     
     def get_all_website_files
       files_only = proc {|f| 
-        f.file?
-        and f.processable?
-        and not f.hidden?
-        and not f.generated?
+        f.file? \
+        and f.processable? \
+        and not f.hidden? \
+        and not f.generated? \
         and not f.index?
       }
       v = Yuzu::Core::Visitor.new(files_only)
